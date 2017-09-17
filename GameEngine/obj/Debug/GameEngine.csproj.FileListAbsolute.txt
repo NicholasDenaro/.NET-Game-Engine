@@ -1,0 +1,7 @@
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\bin\Debug\GameEngine.exe.config
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\bin\Debug\GameEngine.exe
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\bin\Debug\GameEngine.pdb
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\obj\Debug\GameEngine.csprojResolveAssemblyReference.cache
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\obj\Debug\GameEngine.exe
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\obj\Debug\GameEngine.pdb
+m:\users\nicholas\documents\visual studio 2017\Projects\GameEngine\GameEngine\bin\Debug\Sprites\Untitled.png
