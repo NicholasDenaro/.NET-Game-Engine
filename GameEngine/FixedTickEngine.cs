@@ -15,7 +15,7 @@ namespace GameEngine
         public FixedTickEngine(int tps)
         {
             this.ticksPerSecond = tps;
-            period = (int)TimeSpan.FromSeconds(1).TotalMilliseconds / ticksPerSecond;
+            period = (int)TimeSpan.FromSeconds(1).Ticks / ticksPerSecond;
             Console.WriteLine("period: {0}", period);
         }
 
@@ -31,11 +31,12 @@ namespace GameEngine
             long wait;
             while (true)
             {
-                wait = period - overwait;
-                while (sw.ElapsedMilliseconds < wait) { };
-                overwait = wait - sw.ElapsedMilliseconds;
+                wait = period + overwait;
+                while (sw.ElapsedTicks < wait) { };
+                overwait = sw.ElapsedTicks - wait;
                 sw.Restart();
                 Tick();
+                View.Tick();
                 Draw();
             }
         }

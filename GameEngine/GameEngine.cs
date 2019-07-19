@@ -1,9 +1,8 @@
-﻿using System;
+﻿using GameEngine.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using View = GameEngine.Interfaces.View;
 
 namespace GameEngine
 {
@@ -11,6 +10,8 @@ namespace GameEngine
 
     public abstract class GameEngine : ITicker
     {
+        public enum QueueAction { Add, Remove }
+
         public TickHandler Ticker;
 
         private Location currentLocation;
@@ -50,22 +51,8 @@ namespace GameEngine
             }
         }
 
-        private Controller controller;
-        public Controller Controller
-        {
-            get
-            {
-                return controller;
-            }
-            set
-            {
-                if (Active)
-                {
-                    throw new Exception("Engine is active, no swapping controllers!");
-                }
-                controller = value;
-            }
-        }
+        private List<Controller> controllers = new List<Controller>();
+        private List<(QueueAction, Controller)> controllerQueue = new List<(QueueAction, Controller)>();
 
         private IFocusable currentFocus;
         private IFocusable nextFocus;
@@ -102,6 +89,10 @@ namespace GameEngine
 
         public void Tick()
         {
+            foreach (Controller controller in controllers)
+            {
+                controller.Input();
+            }
             Ticker(this, null);
             Location.Tick();
             currentLocation = nextLocation;
@@ -112,7 +103,31 @@ namespace GameEngine
                 currentView = nextView;
                 currentView.Open();
             }
-            controller.Input();
+
+            foreach((QueueAction action, Controller controller) queueAction in controllerQueue)
+            {
+                switch(queueAction.action)
+                {
+                    case QueueAction.Add:
+                        controllers.Add(queueAction.controller);
+                        break;
+                    case QueueAction.Remove:
+                        controllers.Remove(queueAction.controller);
+                        break;
+                }
+            }
+        }
+
+        public void AddController(Controller controller)
+        {
+            if (Active)
+            {
+                controllerQueue.Add((QueueAction.Add, controller));
+            }
+            else
+            {
+                controllers.Add(controller);
+            }
         }
 
         public void Draw()

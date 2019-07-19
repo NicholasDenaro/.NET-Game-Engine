@@ -36,9 +36,15 @@ namespace GameEngine
         {
             if (!started)
             {
-                this.Pane.StartPosition = FormStartPosition.Manual;
-                this.Pane.SetBounds(rect.X, rect.Y, rect.Width, rect.Height);
+                this.Pane.DpiChanged += (o, e) => Console.WriteLine("{0} -> {1}", e.DeviceDpiOld, e.DeviceDpiNew);
+                this.Pane.StartPosition = FormStartPosition.CenterScreen;
+                this.Pane.FormBorderStyle = FormBorderStyle.None;
+                this.Pane.AutoScaleMode = AutoScaleMode.None;
+                this.Pane.AutoSize = false;
+                this.Pane.AutoScaleDimensions = new SizeF(240, 160);
+                this.Pane.SetBounds(0, 0, rect.Width, rect.Height, BoundsSpecified.Size);
                 Task.Run(() => Application.Run(this.Pane));
+                Task.Delay(2000).ContinueWith(t => Console.WriteLine(this.Pane.Parent));
             }
         }
 

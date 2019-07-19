@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>GameEngine</RootNamespace>
     <AssemblyName>GameEngine</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -46,21 +47,23 @@
   <ItemGroup>
     <Compile Include="Entity.cs" />
     <Compile Include="FixedTickEngine.cs" />
-    <Compile Include="Controller.cs" />
+    <Compile Include="Interfaces\Controller.cs" />
+    <Compile Include="Interfaces\FollowingView.cs" />
     <Compile Include="GameEngine.cs" />
     <Compile Include="GameFrame.cs" />
     <Compile Include="GamePanel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GameView2D.cs" />
-    <Compile Include="IFocusable.cs" />
+    <Compile Include="Interfaces\IFocusable.cs" />
+    <Compile Include="Interfaces\IFollowable.cs" />
     <Compile Include="KeyController.cs" />
-    <Compile Include="View.cs" />
+    <Compile Include="Interfaces\View.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sprite.cs" />
-    <Compile Include="Ticker.cs" />
+    <Compile Include="Interfaces\ITicker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

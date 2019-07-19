@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
 
-namespace GameEngine
+namespace GameEngine.Interfaces
 {
-    public abstract class View
+    public abstract class View : ITicker
     {
         internal Drawer Drawer { get; private set; }
 
@@ -20,6 +17,7 @@ namespace GameEngine
         public abstract void Close();
 
         internal abstract void Draw(Location location);
+        public abstract void Tick();
     }
 
     public class Drawer

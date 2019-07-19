@@ -1,8 +1,5 @@
-﻿using System;
+﻿using GameEngine.Interfaces;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GameEngine
@@ -28,17 +25,23 @@ namespace GameEngine
 
         public void KeyDown(object sender, KeyEventArgs args)
         {
-            if (keys[args.KeyCode].State != KeyState.HOLD)
+            if (keys.ContainsKey(args.KeyCode))
             {
-                keys[args.KeyCode].State = KeyState.PRESSED;
+                if (keys[args.KeyCode].State != KeyState.HOLD)
+                {
+                    keys[args.KeyCode].State = KeyState.PRESSED;
+                }
             }
         }
 
         public void KeyUp(object sender, KeyEventArgs args)
         {
-            if (keys[args.KeyCode].State != KeyState.UP)
+            if (keys.ContainsKey(args.KeyCode))
             {
-                keys[args.KeyCode].State = KeyState.RELEASE;
+                if (keys[args.KeyCode].State != KeyState.UP)
+                {
+                    keys[args.KeyCode].State = KeyState.RELEASE;
+                }
             }
         }
 

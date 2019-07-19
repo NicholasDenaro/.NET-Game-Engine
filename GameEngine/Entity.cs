@@ -1,13 +1,11 @@
-﻿using System;
+﻿using GameEngine.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameEngine
 {
-    public class Entity : ITicker, IFocusable
+    public class Entity : ITicker, IFocusable, IFollowable
     {
         public static Dictionary<Guid, Entity> Entities { get; private set; } = new Dictionary<Guid, Entity>();
 
@@ -18,6 +16,7 @@ namespace GameEngine
         public Sprite Sprite { get; private set; }
         public int ImageIndex { get; set; }
 
+        public Point Position => new Point((int)X, (int)Y);
 
         public Entity(int x, int y)
         {
@@ -40,7 +39,7 @@ namespace GameEngine
             this.Y = y;
         }
 
-        public void SetCoordsRel(double dx, double dy)
+        public void ChangeCoordsDelta(double dx, double dy)
         {
             SetCoords(X + dx, Y + dy);
         }
