@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace GameEngine
+namespace GameEngine._2D
 {
     public class TileMap
     {

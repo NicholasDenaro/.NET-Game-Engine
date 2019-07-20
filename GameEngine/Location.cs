@@ -1,4 +1,5 @@
-﻿using GameEngine.Interfaces;
+﻿using GameEngine._2D;
+using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

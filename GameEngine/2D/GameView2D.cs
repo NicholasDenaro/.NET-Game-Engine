@@ -1,8 +1,7 @@
 ﻿using GameEngine.Interfaces;
 using System.Drawing;
-using System.Windows.Forms;
 
-namespace GameEngine
+namespace GameEngine._2D
 {
     public class GameView2D : FollowingView
     {
@@ -87,8 +86,12 @@ namespace GameEngine
 
         private void DrawEntity(Entity entity, Graphics gfx)
         {
-            Image img = entity.Image();
-            gfx.DrawImage(img, (float)entity.X, (float)entity.Y);
+            Description2D description = entity.Description as Description2D;
+            if (description != null)
+            {
+                Image img = description.Image();
+                gfx.DrawImage(img, (float)description.X, (float)description.Y);
+            }
         }
 
         private void DrawSprite(Sprite sprite, int index, int x, int y, Graphics gfx)
@@ -105,11 +108,11 @@ namespace GameEngine
         public override void Tick()
         {
             Rectangle fBounds = new Rectangle(Following.Position, new Size(0, 0));
-            Entity entity = Following as Entity;
-            if (entity != null)
+            Description2D entityDescription = Following as Description2D;
+            if (entityDescription != null)
             {
-                fBounds.Width = entity.Sprite?.Width ?? 0;
-                fBounds.Height = entity.Sprite?.Height ?? 0;
+                fBounds.Width = entityDescription.Sprite?.Width ?? 0;
+                fBounds.Height = entityDescription.Sprite?.Height ?? 0;
             }
 
             if (fBounds.X < Bounds.X + ScrollLeft)

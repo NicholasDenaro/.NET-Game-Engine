@@ -1,4 +1,5 @@
-﻿using GameEngine.Interfaces;
+﻿using GameEngine._2D;
+using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,28 +24,29 @@ namespace GameEngine
             controller.Hook(view.Pane);
             Engine.Location = Location.Load(@"Maps\map.dat");
             Sprite sprite = new Sprite("ent1", @"Sprites\untitled.png", 0, 0, 16, 24);
-            Entity player = new Entity(0, 0, sprite);
-            view.Follow(player);
+            Description2D description = new Description2D(sprite, 0, 0);
+            Entity player = new Entity(description);
+            view.Follow(description);
             player.TickAction = () =>
             {
                 if(controller[(int)KEYS.UP] == KeyState.HOLD)
                 {
-                    player.ChangeCoordsDelta(0, -1);
+                    description.ChangeCoordsDelta(0, -1);
                 }
 
                 if (controller[(int)KEYS.DOWN] == KeyState.HOLD)
                 {
-                    player.ChangeCoordsDelta(0, 1);
+                    description.ChangeCoordsDelta(0, 1);
                 }
 
                 if (controller[(int)KEYS.LEFT] == KeyState.HOLD)
                 {
-                    player.ChangeCoordsDelta(-1, 0);
+                    description.ChangeCoordsDelta(-1, 0);
                 }
 
                 if (controller[(int)KEYS.RIGHT] == KeyState.HOLD)
                 {
-                    player.ChangeCoordsDelta(1, 0);
+                    description.ChangeCoordsDelta(1, 0);
                 }
             };
             Engine.Focus = player;
