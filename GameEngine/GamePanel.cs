@@ -34,6 +34,11 @@ namespace GameEngine
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            if (buffer == null)
+            {
+                return;
+            }
+
             //if (Draw)
             {
                 //Draw = false;

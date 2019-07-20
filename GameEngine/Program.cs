@@ -2,10 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GameEngine
@@ -25,7 +21,7 @@ namespace GameEngine
             Engine.View = view;
             KeyController controller = new KeyController(CreateKeyMap());
             controller.Hook(view.Pane);
-            Engine.Location = new Location(300, 200);
+            Engine.Location = Location.Load(@"Maps\map.dat");
             Sprite sprite = new Sprite("ent1", @"Sprites\untitled.png", 0, 0, 16, 24);
             Entity player = new Entity(0, 0, sprite);
             view.Follow(player);

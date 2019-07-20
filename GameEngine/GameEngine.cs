@@ -45,6 +45,7 @@ namespace GameEngine
                 nextView = value;
                 if (!Active)
                 {
+                    currentView?.Close();
                     currentView = nextView;
                     currentView.Open();
                 }

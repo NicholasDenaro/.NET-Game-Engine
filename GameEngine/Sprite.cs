@@ -16,50 +16,60 @@ namespace GameEngine
         public int Y { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public int TileWidth { get; private set; }
-        public int TileHeight { get; private set; }
 
-        public Sprite(string name, Bitmap bmp, int x, int y, int width, int height)
+        public Sprite(string name, string bmpFile, int tileWidth, int tileHeight) : this(name, (Bitmap)Image.FromFile(bmpFile), 0, 0)
+        {
+            SetupSubImages(image[0], tileWidth, tileHeight);
+        }
+
+        public Sprite(string name, Bitmap bmp, int x, int y)
         {
             this.name = name;
             this.image = new[] { bmp };
             hSubImages = 1;
             vSubImages = 1;
+            Width = bmp.Width;
+            Height = bmp.Height;
             X = x;
             Y = y;
-            Width = width;
-            Height = height;
             Sprites.Add(name, this);
         }
 
-        public Sprite(string name, string bmpFile, int x, int y, int width, int height) : this(name, (Bitmap)Image.FromFile(bmpFile), x, y, width, height)
+        public Sprite(string name, string bmpFile, int x, int y, int width, int height) : this(name, (Bitmap)Image.FromFile(bmpFile), x, y)
         {
             
         }
 
-        public Sprite(string name, Bitmap bmp, int x, int y, int width, int height, int tilewidth, int tileheight) : this(name, (Bitmap)null, x, y, width, height)
+        public Sprite(string name, Bitmap bmp, int x, int y, int width, int height, int tileWidth, int tileHeight) : this(name, bmp, x, y)
         {
-            TileWidth = tilewidth;
-            TileHeight = tileheight;
+            SetupSubImages(image[0], tileWidth, tileHeight);
+        }
 
-            hSubImages = (bmp.Width / TileWidth);
-            vSubImages = (bmp.Height / TileHeight);
+        public Sprite(string name, string bmpFile, int x, int y, int width, int height, int tileWidth, int tileHeight) : this(name, (Bitmap)Image.FromFile(bmpFile), x, y, width, height, tileWidth, tileHeight)
+        {
+
+        }
+
+        private void SetupSubImages(Bitmap bmp, int tileWidth, int tileHeight)
+        {
+            Width = tileWidth;
+            Height = tileHeight;
+
+            hSubImages = (bmp.Width / Width);
+            vSubImages = (bmp.Height / Height);
 
             image = new Bitmap[hSubImages * vSubImages];
 
-            for(int j = 0; j < vSubImages; j++)
+            for (int j = 0; j < vSubImages; j++)
             {
                 for (int i = 0; i < hSubImages; i++)
                 {
-                    image[i + j * hSubImages] = bmp.Clone(new Rectangle(i, j, TileWidth, TileHeight), System.Drawing.Imaging.PixelFormat.DontCare);
+                    image[i + j * hSubImages] = bmp.Clone(new Rectangle(i * Width, j * Height, Width, Height), System.Drawing.Imaging.PixelFormat.DontCare);
                 }
             }
         }
 
-        public Sprite(string name, string bmpFile, int x, int y, int width, int height, int tilewidth, int tileheight) : this(name, (Bitmap)Image.FromFile(bmpFile), x, y, width, height, tilewidth, tileheight)
-        {
-
-        }
+        public Image[] Images => image;
 
         public Bitmap GetImage(int index)
         {

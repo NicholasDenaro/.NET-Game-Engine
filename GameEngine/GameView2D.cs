@@ -8,6 +8,7 @@ namespace GameEngine
     {
         private GameFrame frame;
         public GamePanel Pane { get; private set; }
+        private Graphics gfx;
         private Bitmap buffer;
 
         private Rectangle Bounds;
@@ -51,18 +52,31 @@ namespace GameEngine
         internal override void Draw(Location location)
         {
             while (frame.Pane.Drawing) { };
-            Graphics gfx = Graphics.FromImage(buffer);
+
+            if (!Drawer.IsSetup)
+            {
+                gfx = Graphics.FromImage(buffer);
+                Drawer.Setup(
+                    (Entity entity) =>
+                    {
+                        DrawEntity(entity, gfx);
+                    },
+                    (Sprite sprite, int index, int x, int y) =>
+                    {
+                        DrawSprite(sprite, index, x, y, gfx);
+                    },
+                    (Image image, int x, int y) =>
+                    {
+                        DrawImage(image, x, y, gfx);
+                    });
+            }
+
             gfx.FillRectangle(Brushes.Magenta, 0, 0, Bounds.Width, Bounds.Height);
 
             gfx.TranslateTransform(-Bounds.X, -Bounds.Y);
             gfx.FillRectangle(location.BackgroundColor, 0, 0, location.Width, location.Height);
 
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-
-            Drawer.Setup((Entity entity) =>
-            {
-                DrawEntity(entity, gfx);
-            });
 
             location.Draw(Drawer);
 
@@ -75,6 +89,17 @@ namespace GameEngine
         {
             Image img = entity.Image();
             gfx.DrawImage(img, (float)entity.X, (float)entity.Y);
+        }
+
+        private void DrawSprite(Sprite sprite, int index, int x, int y, Graphics gfx)
+        {
+            Image img = sprite.GetImage(index);
+            gfx.DrawImage(img, x, y);
+        }
+
+        private void DrawImage(Image image, int x, int y, Graphics gfx)
+        {
+            gfx.DrawImage(image, x, y);
         }
 
         public override void Tick()

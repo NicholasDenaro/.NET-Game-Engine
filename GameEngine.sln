@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine", "GameEngine\GameEngine.csproj", "{4889EB77-DED0-4491-A508-F031EF1A956A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapEditor", "MapEditor\MapEditor.csproj", "{122A524A-E96E-4434-B1A5-29CBC1979ADB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +17,15 @@ Global
 		{4889EB77-DED0-4491-A508-F031EF1A956A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4889EB77-DED0-4491-A508-F031EF1A956A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4889EB77-DED0-4491-A508-F031EF1A956A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{122A524A-E96E-4434-B1A5-29CBC1979ADB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{122A524A-E96E-4434-B1A5-29CBC1979ADB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{122A524A-E96E-4434-B1A5-29CBC1979ADB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{122A524A-E96E-4434-B1A5-29CBC1979ADB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {888CE569-D745-40FF-AD95-3364856A67BA}
 	EndGlobalSection
 EndGlobal

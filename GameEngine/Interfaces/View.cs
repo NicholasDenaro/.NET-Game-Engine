@@ -22,16 +22,32 @@ namespace GameEngine.Interfaces
 
     public class Drawer
     {
-        private Action<Entity> action;
+        public bool IsSetup { get; private set; }
+        private Action<Entity> drawEntity;
+        private Action<Sprite, int, int, int> drawSprite;
+        private Action<Image, int, int> drawImage;
 
         public void Draw(Entity entity)
         {
-            action(entity);
+            drawEntity(entity);
         }
 
-        public void Setup(Action<Entity> action)
+        public void Draw(Sprite sprite, int index, int x, int y)
         {
-            this.action = action;
+            drawSprite(sprite, index, x, y);
+        }
+
+        public void Draw(Image image, int x, int y)
+        {
+            drawImage(image, x, y);
+        }
+
+        public void Setup(Action<Entity> drawEntity, Action<Sprite, int, int, int> drawSprite, Action<Image, int, int> drawImage)
+        {
+            this.drawEntity = drawEntity;
+            this.drawSprite = drawSprite;
+            this.drawImage = drawImage;
+            this.IsSetup = true;
         }
     }
 }

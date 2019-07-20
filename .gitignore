@@ -9,3 +9,5 @@
 /.vs/GameEngine/v15/.suo
 /GameEngine/bin
 /GameEngine/obj
+/MapEditor/bin/Debug
+/MapEditor/obj/Debug
