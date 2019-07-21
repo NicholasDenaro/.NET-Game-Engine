@@ -11,14 +11,18 @@ namespace GameEngine
     {
         public static GameEngine Engine { get; private set; }
 
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+
         static void Main(string[] args)
         {
+            SetProcessDPIAware();
             int width = 240;
             int height = 160;
             Engine = new FixedTickEngine(60);
             int ticks = 0;
             Engine.Ticker += (e, o) => ticks++;
-            GameView2D view = new GameView2D(width, height, 3, 3);
+            GameView2D view = new GameView2D(width, height, 4, 4);
             Engine.View = view;
             KeyController controller = new KeyController(CreateKeyMap());
             controller.Hook(view.Pane);

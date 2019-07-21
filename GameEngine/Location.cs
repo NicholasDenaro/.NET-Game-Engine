@@ -11,16 +11,11 @@ namespace GameEngine
     {
         private Dictionary<Guid,Entity> entities = new Dictionary<Guid, Entity>();
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        public Brush BackgroundColor { get; internal set; } = Brushes.Gray;
-        public TileMap Map { get; set; }
+        public IDescription Description { get; set; }
 
-        public Location(int width, int height)
+        public Location(IDescription description)
         {
-            Width = width;
-            Height = height;
-            Map = null;
+            Description = description;
         }
 
         public void AddEntity(Entity entity)
@@ -46,24 +41,9 @@ namespace GameEngine
             }
         }
 
-        public void Draw(Drawer drawer)
+        public void Draw(IDrawer drawer)
         {
-            if (Map != null)
-            {
-                int x = 0;
-                int y = 0;
-                foreach (byte tile in Map.Tiles)
-                {
-                    drawer.Draw(Map.Image(tile), x * Map.Sprite.Width, y * Map.Sprite.Height);
-                    x++;
-                    if (x >= Map.Width)
-                    {
-                        x = 0;
-                        y++;
-                    }
-
-                }
-            }
+            drawer.Draw(this);
 
             foreach (Entity entity in entities.Values)
             {
@@ -82,17 +62,39 @@ namespace GameEngine
                 int tileWidth = reader.ReadInt32();
                 int tileHeight = reader.ReadInt32();
                 Sprite sprite = new Sprite(Path.GetFileNameWithoutExtension(spName), spName, tileWidth, tileHeight);
-                TileMap map = new TileMap(sprite);
-                Location location = new Location(width, height);
-                location.Map = map;
-                map.Setup(location);
-                int i = 0;
-                while (reader.BaseStream.Position < reader.BaseStream.Length)
+                TileMap map = new TileMap(sprite, width, height);
+                Location location = new Location(map);
+                int tiles = reader.ReadInt32();
+                for (int i = 0; i < tiles; i++)
                 {
-                    map.Tiles[i++] = reader.ReadByte();
+                    map.Tiles[i] = reader.ReadByte();
                 }
 
                 return location;
+            }
+        }
+
+        public static byte[] Save(Location location, string spritePath)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(stream))
+            {
+                TileMap description = location.Description as TileMap;
+                if (description != null)
+                {
+                    writer.Write(description.Width);
+                    writer.Write(description.Height);
+                    writer.Write(spritePath);
+                    writer.Write(description.Sprite.Width);
+                    writer.Write(description.Sprite.Height);
+                    writer.Write(description.Tiles.Length);
+                    foreach (byte b in description.Tiles)
+                    {
+                        writer.Write(b);
+                    }
+                }
+
+                return stream.GetBuffer();
             }
         }
     }

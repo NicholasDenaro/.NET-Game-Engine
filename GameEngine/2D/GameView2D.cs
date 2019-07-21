@@ -10,6 +10,9 @@ namespace GameEngine._2D
         private Graphics gfx;
         private Bitmap buffer;
 
+        private Drawer2D drawer;
+        public override IDrawer Drawer => drawer;
+
         private Rectangle Bounds;
 
         public int ScrollTop { get; set; }
@@ -24,8 +27,14 @@ namespace GameEngine._2D
             Bounds = new Rectangle(0, 0, width, height);
             frame = new GameFrame(0, 0, (int)(width * hscale), (int)(height * vscale));
             Pane = frame.Pane;
-
             buffer = new Bitmap(width, height);
+            gfx = Graphics.FromImage(buffer);
+            gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            gfx.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+
+            drawer = new Drawer2D(gfx);
+
             ScrollTop = 20;
             ScrollBottom = 20;
             ScrollLeft = 20;
@@ -52,30 +61,14 @@ namespace GameEngine._2D
         {
             while (frame.Pane.Drawing) { };
 
-            if (!Drawer.IsSetup)
-            {
-                gfx = Graphics.FromImage(buffer);
-                Drawer.Setup(
-                    (Entity entity) =>
-                    {
-                        DrawEntity(entity, gfx);
-                    },
-                    (Sprite sprite, int index, int x, int y) =>
-                    {
-                        DrawSprite(sprite, index, x, y, gfx);
-                    },
-                    (Image image, int x, int y) =>
-                    {
-                        DrawImage(image, x, y, gfx);
-                    });
-            }
-
             gfx.FillRectangle(Brushes.Magenta, 0, 0, Bounds.Width, Bounds.Height);
 
             gfx.TranslateTransform(-Bounds.X, -Bounds.Y);
-            gfx.FillRectangle(location.BackgroundColor, 0, 0, location.Width, location.Height);
-
-            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            TileMap tileMap = location.Description as TileMap;
+            if (tileMap != null)
+            {
+                gfx.FillRectangle(tileMap.BackgroundColor, 0, 0, tileMap.Width, tileMap.Height);
+            }
 
             location.Draw(Drawer);
 
@@ -107,6 +100,16 @@ namespace GameEngine._2D
 
         public override void Tick()
         {
+            Follow();
+
+            if (LockViewToLocation)
+            {
+                LockFollow();
+            }
+        }
+
+        public void Follow()
+        {
             Rectangle fBounds = new Rectangle(Following.Position, new Size(0, 0));
             Description2D entityDescription = Following as Description2D;
             if (entityDescription != null)
@@ -132,12 +135,16 @@ namespace GameEngine._2D
             {
                 Bounds.Y = fBounds.Y + fBounds.Height + ScrollBottom - Bounds.Height;
             }
+        }
 
-            if (LockViewToLocation)
+        public void LockFollow()
+        {
+            TileMap tileMap = Program.Engine.Location.Description as TileMap;
+            if (tileMap != null)
             {
-                if (Bounds.X + Bounds.Width > Program.Engine.Location.Width)
+                if (Bounds.X + Bounds.Width > tileMap.Width)
                 {
-                    Bounds.X = Program.Engine.Location.Width - Bounds.Width;
+                    Bounds.X = tileMap.Width - Bounds.Width;
                 }
 
                 if (Bounds.X < 0)
@@ -145,14 +152,53 @@ namespace GameEngine._2D
                     Bounds.X = 0;
                 }
 
-                if (Bounds.Y + Bounds.Height > Program.Engine.Location.Height)
+                if (Bounds.Y + Bounds.Height > tileMap.Height)
                 {
-                    Bounds.Y = Program.Engine.Location.Height - Bounds.Height;
+                    Bounds.Y = tileMap.Height - Bounds.Height;
                 }
 
                 if (Bounds.Y < 0)
                 {
                     Bounds.Y = 0;
+                }
+            }
+        }
+    }
+
+    public class Drawer2D : IDrawer
+    {
+        private Graphics gfx;
+
+        public Drawer2D(Graphics gfx)
+        {
+            this.gfx = gfx;
+        }
+
+        public void Draw(Entity entity)
+        {
+            Description2D description = entity.Description as Description2D;
+            if (description != null)
+            {
+                gfx.DrawImage(description.Image(), (float)description.X, (float)description.Y);
+            }
+        }
+
+        public void Draw(Location location)
+        {
+            TileMap description = location.Description as TileMap;
+            if (description.Sprite != null)
+            {
+                int x = 0;
+                int y = 0;
+                foreach (byte tile in description.Tiles)
+                {
+                    gfx.DrawImage(description.Image(tile), x * description.Sprite.Width, y * description.Sprite.Height);
+                    x++;
+                    if (x >= description.Columns)
+                    {
+                        x = 0;
+                        y++;
+                    }
                 }
             }
         }

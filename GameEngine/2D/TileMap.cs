@@ -1,24 +1,26 @@
-﻿using System.Drawing;
+﻿using GameEngine.Interfaces;
+using System.Drawing;
 
 namespace GameEngine._2D
 {
-    public class TileMap
+    public class TileMap : IDescription
     {
         public Sprite Sprite { get; private set; }
+        public Brush BackgroundColor { get; internal set; } = Brushes.Gray;
         public byte[] Tiles { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public int Columns { get; private set; }
+        public int Rows { get; private set; }
 
-        public TileMap(Sprite sprite)
+        public TileMap(Sprite sprite, int width, int height)
         {
             Sprite = sprite;
-        }
-
-        public void Setup(Location location)
-        {
-            Width = location.Width / Sprite.Width;
-            Height = location.Height / Sprite.Height;
-            Tiles = new byte[Width * Height];
+            Width = width;
+            Height = height;
+            Columns = Width / sprite?.Width ?? 1;
+            Rows = Height / sprite?.Height ?? 1;
+            Tiles = new byte[Columns * Rows];
         }
 
         public Image Image(byte tile)
@@ -30,11 +32,11 @@ namespace GameEngine._2D
         {
             get
             {
-                return Tiles[x + y * Width];
+                return Tiles[x + y * Columns];
             }
             set
             {
-                Tiles[x + y * Width] = value;
+                Tiles[x + y * Columns] = value;
             }
         }
     }

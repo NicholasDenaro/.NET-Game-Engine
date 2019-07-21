@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameEngine.Interfaces
 {
-    public class IDescription
+    public interface IDescription
     {
     }
 }

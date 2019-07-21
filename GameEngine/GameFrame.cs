@@ -36,15 +36,15 @@ namespace GameEngine
         {
             if (!started)
             {
-                this.Pane.DpiChanged += (o, e) => Console.WriteLine("{0} -> {1}", e.DeviceDpiOld, e.DeviceDpiNew);
                 this.Pane.StartPosition = FormStartPosition.CenterScreen;
                 this.Pane.FormBorderStyle = FormBorderStyle.None;
-                this.Pane.AutoScaleMode = AutoScaleMode.None;
-                this.Pane.AutoSize = false;
-                this.Pane.AutoScaleDimensions = new SizeF(240, 160);
-                this.Pane.SetBounds(0, 0, rect.Width, rect.Height, BoundsSpecified.Size);
+                this.Pane.AutoScaleMode = AutoScaleMode.Dpi;
+                //this.Pane.AutoSize = false;
+                //this.Pane.Font = new System.Drawing.Font("Arial", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel, ((byte)(0)));
+                //this.Pane.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+                this.Pane.Width = rect.Width;
+                this.Pane.Height = rect.Height;
                 Task.Run(() => Application.Run(this.Pane));
-                Task.Delay(2000).ContinueWith(t => Console.WriteLine(this.Pane.Parent));
             }
         }
 
