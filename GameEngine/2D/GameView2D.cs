@@ -1,4 +1,5 @@
 ﻿using GameEngine.Interfaces;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace GameEngine._2D
@@ -7,8 +8,9 @@ namespace GameEngine._2D
     {
         private GameFrame frame;
         public GamePanel Pane { get; private set; }
-        private Graphics gfx;
-        private Bitmap buffer;
+        private Graphics[] gfxs;
+        private Bitmap[] buffer;
+        private int buf;
 
         private Drawer2D drawer;
         public override IDrawer Drawer => drawer;
@@ -27,13 +29,14 @@ namespace GameEngine._2D
             Bounds = new Rectangle(0, 0, width, height);
             frame = new GameFrame(0, 0, (int)(width * hscale), (int)(height * vscale));
             Pane = frame.Pane;
-            buffer = new Bitmap(width, height);
-            gfx = Graphics.FromImage(buffer);
-            gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            gfx.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
-            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            buffer = new Bitmap[] { new Bitmap(width, height), new Bitmap(width, height) };
+            gfxs = new Graphics[] { Graphics.FromImage(buffer[0]), Graphics.FromImage(buffer[1]) };
+            //gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+            //gfx.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+            gfxs[0].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            gfxs[1].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            drawer = new Drawer2D(gfx);
+            drawer = new Drawer2D();
 
             ScrollTop = 20;
             ScrollBottom = 20;
@@ -61,6 +64,8 @@ namespace GameEngine._2D
         {
             while (frame.Pane.Drawing) { };
 
+            Graphics gfx = gfxs[buf % 2];
+
             gfx.FillRectangle(Brushes.Magenta, 0, 0, Bounds.Width, Bounds.Height);
 
             gfx.TranslateTransform(-Bounds.X, -Bounds.Y);
@@ -70,11 +75,16 @@ namespace GameEngine._2D
                 gfx.FillRectangle(tileMap.BackgroundColor, 0, 0, tileMap.Width, tileMap.Height);
             }
 
-            location.Draw(Drawer);
+            List<IDescription> descriptions = location.Draw();
+
+            foreach (IDescription description in descriptions)
+            {
+                drawer.Draw(gfx, description);
+            }
 
             gfx.TranslateTransform(Bounds.X, Bounds.Y);
 
-            frame.Pane.Draw(buffer);
+            frame.Pane.Draw(buffer[buf++ % 2]);
         }
 
         private void DrawEntity(Entity entity, Graphics gfx)
@@ -167,39 +177,61 @@ namespace GameEngine._2D
 
     public class Drawer2D : IDrawer
     {
-        private Graphics gfx;
+        private Bitmap tiles;
 
-        public Drawer2D(Graphics gfx)
+        public Drawer2D()
         {
-            this.gfx = gfx;
         }
 
-        public void Draw(Entity entity)
+        public void Draw(object output, IDescription description)
         {
-            Description2D description = entity.Description as Description2D;
+            if (description is TileMap)
+            {
+                Draw(output as Graphics, description as TileMap);
+            }
+            else
+            {
+                Draw(output as Graphics, description as Description2D);
+            }
+        }
+
+        public void Draw(Graphics gfx, Description2D description)
+        {
             if (description != null)
             {
                 gfx.DrawImage(description.Image(), (float)description.X, (float)description.Y);
             }
         }
 
-        public void Draw(Location location)
+        public void RedrawTiles()
         {
-            TileMap description = location.Description as TileMap;
-            if (description.Sprite != null)
+            tiles = null;
+        }
+
+        public void Draw(Graphics gfx, TileMap map)
+        {
+            if (map.Sprite != null)
             {
-                int x = 0;
-                int y = 0;
-                foreach (byte tile in description.Tiles)
+                if (tiles == null)
                 {
-                    gfx.DrawImage(description.Image(tile), x * description.Sprite.Width, y * description.Sprite.Height);
-                    x++;
-                    if (x >= description.Columns)
+                    tiles = new Bitmap(map.Width, map.Height);
+                    Graphics mgfx = Graphics.FromImage(tiles);
+                    mgfx.Clip = new Region(new Rectangle(new Point(), new Size(map.Width, map.Height)));
+                    int x = 0;
+                    int y = 0;
+                    foreach (byte tile in map.Tiles)
                     {
-                        x = 0;
-                        y++;
+                        mgfx.DrawImage(map.Image(tile), x * map.Sprite.Width, y * map.Sprite.Height);
+                        x++;
+                        if (x >= map.Columns)
+                        {
+                            x = 0;
+                            y++;
+                        }
                     }
                 }
+
+                gfx.DrawImage(tiles, 0, 0);
             }
         }
     }

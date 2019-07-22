@@ -7,11 +7,11 @@ namespace GameEngine._2D
     {
         public static Dictionary<string, Sprite> Sprites { get; set; } = new Dictionary<string, Sprite>();
 
-        private string name;
         private Bitmap[] image;
         private int hSubImages;
         private int vSubImages;
         
+        public string Name { get; private set; }
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Width { get; private set; }
@@ -24,7 +24,7 @@ namespace GameEngine._2D
 
         public Sprite(string name, Bitmap bmp, int x, int y)
         {
-            this.name = name;
+            Name = name;
             this.image = new[] { bmp };
             hSubImages = 1;
             vSubImages = 1;

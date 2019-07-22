@@ -3,6 +3,7 @@ using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace GameEngine
@@ -27,12 +28,13 @@ namespace GameEngine
             KeyController controller = new KeyController(CreateKeyMap());
             controller.Hook(view.Pane);
             Engine.Location = Location.Load(@"Maps\map.dat");
-            Sprite sprite = new Sprite("ent1", @"Sprites\untitled.png", 0, 0, 16, 24);
-            Description2D description = new Description2D(sprite, 0, 0);
-            Entity player = new Entity(description);
-            view.Follow(description);
-            player.TickAction = () =>
+            Sprite sprite = new Sprite("ent1", @"Sprites\circle.png", 0, 0, 16, 16);
+            Description2D playerDescription = new Description2D(sprite, 0, 0);
+            Entity player = new Entity(playerDescription);
+            view.Follow(playerDescription);
+            player.TickAction = descr =>
             {
+                Description2D description = descr as Description2D;
                 if(controller[(int)KEYS.UP] == KeyState.HOLD)
                 {
                     description.ChangeCoordsDelta(0, -1);

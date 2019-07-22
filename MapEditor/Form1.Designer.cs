@@ -41,9 +41,12 @@
             this.label5 = new System.Windows.Forms.Label();
             this.bSave = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.tSaveLocation = new System.Windows.Forms.TextBox();
             this.pTilePreview = new System.Windows.Forms.Panel();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
+            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
+            this.bLoad = new System.Windows.Forms.Button();
+            this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // panel1
@@ -51,9 +54,9 @@
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel1.Location = new System.Drawing.Point(12, 12);
+            this.panel1.Location = new System.Drawing.Point(12, 32);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(812, 584);
+            this.panel1.Size = new System.Drawing.Size(794, 548);
             this.panel1.TabIndex = 0;
             this.panel1.SizeChanged += new System.EventHandler(this.panel1_SizeChanged);
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
@@ -79,6 +82,7 @@
             this.tWidth.Size = new System.Drawing.Size(132, 22);
             this.tWidth.TabIndex = 2;
             this.tWidth.Text = "320";
+            this.tWidth.TextChanged += new System.EventHandler(this.tWidth_TextChanged);
             // 
             // tHeight
             // 
@@ -88,6 +92,7 @@
             this.tHeight.Size = new System.Drawing.Size(132, 22);
             this.tHeight.TabIndex = 4;
             this.tHeight.Text = "240";
+            this.tHeight.TextChanged += new System.EventHandler(this.tHeight_TextChanged);
             // 
             // label2
             // 
@@ -126,6 +131,7 @@
             this.tTileWidth.Size = new System.Drawing.Size(132, 22);
             this.tTileWidth.TabIndex = 8;
             this.tTileWidth.Text = "16";
+            this.tTileWidth.TextChanged += new System.EventHandler(this.tTileWidth_TextChanged);
             // 
             // label4
             // 
@@ -145,6 +151,7 @@
             this.tTileHeight.Size = new System.Drawing.Size(132, 22);
             this.tTileHeight.TabIndex = 10;
             this.tTileHeight.Text = "16";
+            this.tTileHeight.TextChanged += new System.EventHandler(this.tTileHeight_TextChanged);
             // 
             // label5
             // 
@@ -167,14 +174,6 @@
             this.bSave.UseVisualStyleBackColor = true;
             this.bSave.Click += new System.EventHandler(this.bSave_Click);
             // 
-            // tSaveLocation
-            // 
-            this.tSaveLocation.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.tSaveLocation.Location = new System.Drawing.Point(830, 545);
-            this.tSaveLocation.Name = "tSaveLocation";
-            this.tSaveLocation.Size = new System.Drawing.Size(132, 22);
-            this.tSaveLocation.TabIndex = 12;
-            // 
             // pTilePreview
             // 
             this.pTilePreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -190,13 +189,48 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // hScrollBar1
+            // 
+            this.hScrollBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hScrollBar1.Location = new System.Drawing.Point(12, 583);
+            this.hScrollBar1.Name = "hScrollBar1";
+            this.hScrollBar1.Size = new System.Drawing.Size(794, 16);
+            this.hScrollBar1.TabIndex = 14;
+            // 
+            // vScrollBar1
+            // 
+            this.vScrollBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.vScrollBar1.Location = new System.Drawing.Point(811, 32);
+            this.vScrollBar1.Name = "vScrollBar1";
+            this.vScrollBar1.Size = new System.Drawing.Size(16, 548);
+            this.vScrollBar1.TabIndex = 15;
+            // 
+            // bLoad
+            // 
+            this.bLoad.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.bLoad.Location = new System.Drawing.Point(887, 544);
+            this.bLoad.Name = "bLoad";
+            this.bLoad.Size = new System.Drawing.Size(75, 23);
+            this.bLoad.TabIndex = 16;
+            this.bLoad.Text = "Load";
+            this.bLoad.UseVisualStyleBackColor = true;
+            this.bLoad.Click += new System.EventHandler(this.bLoad_Click);
+            // 
+            // openFileDialog2
+            // 
+            this.openFileDialog2.FileName = "openFileDialog2";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(974, 608);
+            this.Controls.Add(this.bLoad);
+            this.Controls.Add(this.vScrollBar1);
+            this.Controls.Add(this.hScrollBar1);
             this.Controls.Add(this.pTilePreview);
-            this.Controls.Add(this.tSaveLocation);
             this.Controls.Add(this.bSave);
             this.Controls.Add(this.tTileHeight);
             this.Controls.Add(this.label5);
@@ -232,8 +266,11 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button bSave;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-        private System.Windows.Forms.TextBox tSaveLocation;
         private System.Windows.Forms.Panel pTilePreview;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.HScrollBar hScrollBar1;
+        private System.Windows.Forms.VScrollBar vScrollBar1;
+        private System.Windows.Forms.Button bLoad;
+        private System.Windows.Forms.OpenFileDialog openFileDialog2;
     }
 }

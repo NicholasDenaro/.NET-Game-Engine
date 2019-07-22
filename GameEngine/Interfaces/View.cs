@@ -1,8 +1,4 @@
-﻿using GameEngine._2D;
-using System;
-using System.Drawing;
-
-namespace GameEngine.Interfaces
+﻿namespace GameEngine.Interfaces
 {
     public abstract class View : ITicker
     {
@@ -23,8 +19,6 @@ namespace GameEngine.Interfaces
 
     public interface IDrawer
     {
-        void Draw(Entity entity);
-
-        void Draw(Location location);
+        void Draw(object output, IDescription description);
     }
 }

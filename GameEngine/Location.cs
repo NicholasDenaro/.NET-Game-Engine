@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 
 namespace GameEngine
 {
@@ -41,14 +42,12 @@ namespace GameEngine
             }
         }
 
-        public void Draw(IDrawer drawer)
+        public List<IDescription> Draw()
         {
-            drawer.Draw(this);
-
-            foreach (Entity entity in entities.Values)
-            {
-                drawer.Draw(entity);
-            }
+            var descrs = new List<IDescription>();
+            descrs.Add(Description);
+            descrs.AddRange(entities.Values.Select(entity => entity.Description));
+            return descrs;
         }
 
         public static Location Load(string fname)
@@ -74,7 +73,7 @@ namespace GameEngine
             }
         }
 
-        public static byte[] Save(Location location, string spritePath)
+        public static byte[] Save(Location location)
         {
             using (MemoryStream stream = new MemoryStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
@@ -84,7 +83,7 @@ namespace GameEngine
                 {
                     writer.Write(description.Width);
                     writer.Write(description.Height);
-                    writer.Write(spritePath);
+                    writer.Write($"Sprites/{description.Sprite.Name}.png");
                     writer.Write(description.Sprite.Width);
                     writer.Write(description.Sprite.Height);
                     writer.Write(description.Tiles.Length);

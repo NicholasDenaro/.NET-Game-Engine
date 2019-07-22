@@ -20,11 +20,11 @@ namespace GameEngine
             Description = description;
         }
 
-        public Action TickAction;
+        public Action<IDescription> TickAction;
 
         virtual public void Tick()
         {
-            TickAction?.Invoke();
+            TickAction?.Invoke(Description);
         }
     }
 }

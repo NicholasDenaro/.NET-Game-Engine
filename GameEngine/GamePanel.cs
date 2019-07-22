@@ -43,7 +43,7 @@ namespace GameEngine
             {
                 //Draw = false;
                 Drawing = true;
-                base.OnPaint(e);
+                //base.OnPaint(e);
 
                 Graphics gfx = e.Graphics;
                 gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
