@@ -6,6 +6,9 @@ namespace GameEngine._2D
 {
     public class GameView2D : FollowingView
     {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+
         private GameFrame frame;
         public GamePanel Pane { get; private set; }
         private Graphics[] gfxs;
@@ -22,17 +25,14 @@ namespace GameEngine._2D
         public int ScrollLeft { get; set; }
         public int ScrollRight { get; set; }
 
-        public bool LockViewToLocation { get; set; }
-
         public GameView2D(int width, int height, float hscale, float vscale)
         {
+            SetProcessDPIAware();
             Bounds = new Rectangle(0, 0, width, height);
             frame = new GameFrame(0, 0, (int)(width * hscale), (int)(height * vscale));
             Pane = frame.Pane;
             buffer = new Bitmap[] { new Bitmap(width, height), new Bitmap(width, height) };
             gfxs = new Graphics[] { Graphics.FromImage(buffer[0]), Graphics.FromImage(buffer[1]) };
-            //gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            //gfx.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
             gfxs[0].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             gfxs[1].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
@@ -108,20 +108,25 @@ namespace GameEngine._2D
             gfx.DrawImage(image, x, y);
         }
 
-        public override void Tick()
+        public override void Tick(Location currentLocation)
         {
             Follow();
 
             if (LockViewToLocation)
             {
-                LockFollow();
+                LockFollow(currentLocation);
             }
         }
 
         public void Follow()
         {
-            Rectangle fBounds = new Rectangle(Following.Position, new Size(0, 0));
             Description2D entityDescription = Following as Description2D;
+            if(entityDescription == null)
+            {
+                return;
+            }
+
+            Rectangle fBounds = new Rectangle(Following.Position, new Size(0, 0));
             if (entityDescription != null)
             {
                 fBounds.Width = entityDescription.Sprite?.Width ?? 0;
@@ -147,9 +152,9 @@ namespace GameEngine._2D
             }
         }
 
-        public void LockFollow()
+        public void LockFollow(Location currentLocation)
         {
-            TileMap tileMap = Program.Engine.Location.Description as TileMap;
+            TileMap tileMap = currentLocation.Description as TileMap;
             if (tileMap != null)
             {
                 if (Bounds.X + Bounds.Width > tileMap.Width)

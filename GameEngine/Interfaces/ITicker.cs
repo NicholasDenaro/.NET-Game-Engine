@@ -8,6 +8,6 @@ namespace GameEngine.Interfaces
 {
     public interface ITicker
     {
-        void Tick();
+        void Tick(Location currentLocation);
     }
 }

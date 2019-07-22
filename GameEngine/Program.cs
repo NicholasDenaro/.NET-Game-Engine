@@ -12,12 +12,8 @@ namespace GameEngine
     {
         public static GameEngine Engine { get; private set; }
 
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
-
         static void Main(string[] args)
         {
-            SetProcessDPIAware();
             int width = 240;
             int height = 160;
             Engine = new FixedTickEngine(60);
@@ -32,7 +28,7 @@ namespace GameEngine
             Description2D playerDescription = new Description2D(sprite, 0, 0);
             Entity player = new Entity(playerDescription);
             view.Follow(playerDescription);
-            player.TickAction = descr =>
+            player.TickAction = (currentLocation, descr) =>
             {
                 Description2D description = descr as Description2D;
                 if(controller[(int)KEYS.UP] == KeyState.HOLD)

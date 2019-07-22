@@ -34,11 +34,11 @@ namespace GameEngine
             entities.Remove(id);
         }
 
-        public void Tick()
+        public void Tick(Location currentLocation)
         {
             foreach(Entity entity in entities.Values)
             {
-                entity.Tick();
+                entity.Tick(currentLocation);
             }
         }
 

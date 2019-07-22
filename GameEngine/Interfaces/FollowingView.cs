@@ -6,6 +6,10 @@ namespace GameEngine.Interfaces
     {
         public IFollowable Following { get; private set; }
 
+        public bool LockViewToLocation { get; set; }
+
+        public Location Location { get; internal set; }
+
         public void Follow(IFollowable followable)
         {
             Following = followable;

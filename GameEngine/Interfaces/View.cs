@@ -14,7 +14,7 @@
 
         internal abstract void Draw(Location location);
 
-        public abstract void Tick();
+        public abstract void Tick(Location currentLocation);
     }
 
     public interface IDrawer

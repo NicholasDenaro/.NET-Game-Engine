@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GameEngine
 {
-    internal class FixedTickEngine : GameEngine
+    public class FixedTickEngine : GameEngine
     {
         private int ticksPerSecond;
         private long period;
@@ -36,7 +36,6 @@ namespace GameEngine
                 overwait = sw.ElapsedTicks - wait;
                 sw.Restart();
                 Tick();
-                View.Tick();
                 Draw();
             }
         }

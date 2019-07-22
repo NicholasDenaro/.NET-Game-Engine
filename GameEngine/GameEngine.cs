@@ -8,7 +8,7 @@ namespace GameEngine
 {
     public delegate void TickHandler(object sender, EventArgs e);
 
-    public abstract class GameEngine : ITicker
+    public abstract class GameEngine// : ITicker
     {
         public enum QueueAction { Add, Remove }
 
@@ -95,7 +95,7 @@ namespace GameEngine
                 controller.Input();
             }
             Ticker(this, null);
-            Location.Tick();
+            Location.Tick(Location);
             currentLocation = nextLocation;
 
             if (currentView != nextView)
@@ -104,6 +104,8 @@ namespace GameEngine
                 currentView = nextView;
                 currentView.Open();
             }
+
+            View.Tick(Location);
 
             foreach((QueueAction action, Controller controller) queueAction in controllerQueue)
             {
