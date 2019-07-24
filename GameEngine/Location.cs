@@ -12,6 +12,7 @@ namespace GameEngine
     {
         private Dictionary<Guid,Entity> entities = new Dictionary<Guid, Entity>();
 
+        public IEnumerable<Entity> Entities => entities.Values;
         public IDescription Description { get; set; }
 
         public Location(IDescription description)
@@ -32,6 +33,11 @@ namespace GameEngine
         public void RemoveEntity(Guid id)
         {
             entities.Remove(id);
+        }
+
+        public IEnumerable<T> GetEntities<T>() where T : class, IDescription
+        {
+            return Entities.Where(entity => entity.Description.GetType() == typeof(T)).Select(entity => entity.Description as T);
         }
 
         public void Tick(Location currentLocation)

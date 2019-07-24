@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace GameEngine
 {
-    class KeyController : Controller
+    public class KeyController : Controller
     {
         private Dictionary<Keys, KeyAction> keys = new Dictionary<Keys, KeyAction>();
 
@@ -45,11 +45,11 @@ namespace GameEngine
             }
         }
 
-        public KeyState this[int key]
+        public KeyAction this[int key]
         {
             get
             {
-                return ((KeyAction)Actions[key]).State;
+                return (KeyAction)Actions[key];
             }
         }
 
@@ -86,6 +86,11 @@ namespace GameEngine
         {
             State = KeyState.UP;
             Key = key;
+        }
+
+        public bool IsDown()
+        {
+            return State == KeyState.HOLD || State == KeyState.PRESSED;
         }
     }
 }

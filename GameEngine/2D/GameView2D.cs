@@ -204,7 +204,10 @@ namespace GameEngine._2D
         {
             if (description != null)
             {
-                gfx.DrawImage(description.Image(), (float)description.X, (float)description.Y);
+                if (description.HasImage())
+                {
+                    gfx.DrawImage(description.Image(), (float)description.X, (float)description.Y);
+                }
             }
         }
 

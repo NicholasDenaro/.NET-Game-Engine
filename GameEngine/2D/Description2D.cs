@@ -55,9 +55,14 @@ namespace GameEngine._2D
             return this.Bounds.IntersectsWith(other.Bounds);
         }
 
+        public bool HasImage()
+        {
+            return Sprite != null;
+        }
+
         public Image Image()
         {
-            return Sprite.GetImage(ImageIndex);
+            return Sprite?.GetImage(ImageIndex);
         }
     }
 }

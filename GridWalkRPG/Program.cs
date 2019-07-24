@@ -1,5 +1,6 @@
 ﻿using GameEngine;
 using GameEngine._2D;
+using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,9 +19,35 @@ namespace GridWalkRPG
             int ticks = 0;
             Engine = new FixedTickEngine(60);
             Engine.Ticker = (o, e) => ticks++;
-            Engine.View = new GameView2D(240, 160, 4, 4);
+            GameView2D view = new GameView2D(240, 160, 4, 4);
+            Engine.View = view;
             Engine.Location = Location.Load("Maps/map.dat");
             Engine.Start();
+            KeyController controller = new KeyController(keymap);
+            Engine.AddController(controller);
+            controller.Hook(view.Pane);
+            Entity player = new Entity(new Description2D(new Sprite("circle", "Sprites/circle.png", 16, 16), 48, 48));
+            PlayerActions pActions = new PlayerActions(controller);
+            player.TickAction = pActions.TickAction;
+            Engine.Location.AddEntity(player);
+            view.Follow(player.Description as Description2D);
+
+            TileMap map = Engine.Location.Description as TileMap;
+            for (int x = 0; x < map.Width; x += 16)
+            {
+                for (int y = 0; y < map.Height; y += 16)
+                {
+                    switch (map[x / map.Sprite.Width, y / map.Sprite.Height])
+                    {
+                        case 3:
+                        case 4:
+                        case 19:
+                        case 20:
+                            Engine.Location.AddEntity(new Entity(new WallDescription(x, y, 16, 16)));
+                            break;
+                    }
+                }
+            }
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -34,5 +61,17 @@ namespace GridWalkRPG
                 }
             }
         }
+
+        public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5 }
+
+        public static Dictionary<int, ControllerAction> keymap = new Dictionary<int, ControllerAction>()
+        {
+            { (int)KEYS.UP, new KeyAction(System.Windows.Forms.Keys.Up) },
+            { (int)KEYS.DOWN, new KeyAction(System.Windows.Forms.Keys.Down) },
+            { (int)KEYS.LEFT, new KeyAction(System.Windows.Forms.Keys.Left) },
+            { (int)KEYS.RIGHT, new KeyAction(System.Windows.Forms.Keys.Right) },
+            { (int)KEYS.A, new KeyAction(System.Windows.Forms.Keys.X) },
+            { (int)KEYS.B, new KeyAction(System.Windows.Forms.Keys.Z) },
+        };
     }
 }
