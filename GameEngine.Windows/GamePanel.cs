@@ -1,5 +1,4 @@
 ﻿using GameEngine._2D;
-using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -40,7 +39,7 @@ namespace GameEngine
             Invalidate();
         }
 
-        public void DrawHandle(object sender, Interfaces.View view)
+        public void DrawHandle(object sender, View view)
         {
             GameView2D view2D = view as GameView2D;
             if (view2D != null)

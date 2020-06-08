@@ -1,7 +1,6 @@
 ﻿using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
-using View = GameEngine.Interfaces.View;
 
 namespace GameEngine
 {
@@ -94,7 +93,7 @@ namespace GameEngine
         {
             foreach (Controller controller in controllers)
             {
-                controller.Input();
+                controller.Update();
             }
             Ticker(this, null);
             Location.Tick(Location);

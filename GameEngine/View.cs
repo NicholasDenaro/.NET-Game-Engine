@@ -1,4 +1,6 @@
-﻿namespace GameEngine.Interfaces
+﻿using GameEngine.Interfaces;
+
+namespace GameEngine
 {
     public abstract class View : ITicker
     {

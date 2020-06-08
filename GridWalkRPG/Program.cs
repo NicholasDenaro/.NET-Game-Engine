@@ -1,13 +1,9 @@
 ﻿using GameEngine;
 using GameEngine._2D;
-using GameEngine.Interfaces;
 using GameEngine.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GridWalkRPG
 {
@@ -22,6 +18,10 @@ namespace GridWalkRPG
             Engine.Ticker = (o, e) => ticks++;
 
             GameView2D view = new GameView2D(240, 160);
+            view.ScrollTop = view.Height / 2;
+            view.ScrollBottom = view.Height / 2 - 16;
+            view.ScrollLeft = view.Width / 2;
+            view.ScrollRight = view.Width / 2 - 16;
             Engine.View = view;
             Engine.Location = Location.Load("Maps/map.dat");
             Engine.Start();
@@ -71,14 +71,14 @@ namespace GridWalkRPG
 
         public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5 }
 
-        public static Dictionary<int, ControllerAction> keymap = new Dictionary<int, ControllerAction>()
+        public static Dictionary<int, ActionState> keymap = new Dictionary<int, ActionState>()
         {
-            { (int)KEYS.UP, new KeyAction((int)System.Windows.Forms.Keys.Up) },
-            { (int)KEYS.DOWN, new KeyAction((int)System.Windows.Forms.Keys.Down) },
-            { (int)KEYS.LEFT, new KeyAction((int)System.Windows.Forms.Keys.Left) },
-            { (int)KEYS.RIGHT, new KeyAction((int)System.Windows.Forms.Keys.Right) },
-            { (int)KEYS.A, new KeyAction((int)System.Windows.Forms.Keys.X) },
-            { (int)KEYS.B, new KeyAction((int)System.Windows.Forms.Keys.Z) },
+            { (int)KEYS.UP, new ActionState((int)System.Windows.Forms.Keys.Up) },
+            { (int)KEYS.DOWN, new ActionState((int)System.Windows.Forms.Keys.Down) },
+            { (int)KEYS.LEFT, new ActionState((int)System.Windows.Forms.Keys.Left) },
+            { (int)KEYS.RIGHT, new ActionState((int)System.Windows.Forms.Keys.Right) },
+            { (int)KEYS.A, new ActionState((int)System.Windows.Forms.Keys.X) },
+            { (int)KEYS.B, new ActionState((int)System.Windows.Forms.Keys.Z) },
         };
     }
 }

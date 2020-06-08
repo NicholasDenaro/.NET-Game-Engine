@@ -1,6 +1,7 @@
-﻿using System.Drawing;
+﻿using GameEngine._2D.Interfaces;
+using GameEngine;
 
-namespace GameEngine.Interfaces
+namespace GameEngine._2D
 {
     public abstract class FollowingView : View
     {

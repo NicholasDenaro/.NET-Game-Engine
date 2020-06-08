@@ -13,7 +13,7 @@ namespace MapEditor
         private bool anyChanges;
         private byte tile;
         private GameEngine.Location location;
-        private GameEngine.Interfaces.IDrawer drawer;
+        private GameEngine.IDrawer drawer;
         private bool isMouseDown;
         private Bitmap buffer;
         private Graphics gfx;

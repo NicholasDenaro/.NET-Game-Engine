@@ -1,5 +1,4 @@
-﻿using GameEngine.Interfaces;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace GameEngine._2D
 {

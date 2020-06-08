@@ -20,6 +20,9 @@ namespace GameEngine._2D
         public int ScrollLeft { get; set; }
         public int ScrollRight { get; set; }
 
+        public int Width => Bounds.Width;
+        public int Height => Bounds.Height;
+
         public Bitmap Image
         { 
             get
