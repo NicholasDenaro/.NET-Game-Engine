@@ -14,3 +14,5 @@
 /GridWalkRPG/bin
 /GridWalkRPG/obj
 *.user
+/.vs/GameEngine/v16/Server/sqlite3
+*.suo
