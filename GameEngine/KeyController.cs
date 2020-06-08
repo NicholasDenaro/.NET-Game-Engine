@@ -1,18 +1,11 @@
 ﻿using GameEngine.Interfaces;
 using System.Collections.Generic;
-using System.Windows.Forms;
 
 namespace GameEngine
 {
     public class KeyController : Controller
     {
-        private Dictionary<Keys, KeyAction> keys = new Dictionary<Keys, KeyAction>();
-
-        public void Hook(GamePanel panel)
-        {
-            panel.KeyDown += KeyDown;
-            panel.KeyUp += KeyUp;
-        }
+        private Dictionary<int, KeyAction> keys = new Dictionary<int, KeyAction>();
 
         public KeyController(Dictionary<int, ControllerAction> keymap)
         {
@@ -23,24 +16,24 @@ namespace GameEngine
             }
         }
 
-        public void KeyDown(object sender, KeyEventArgs args)
+        public void KeyDown(int keyCode)
         {
-            if (keys.ContainsKey(args.KeyCode))
+            if (keys.ContainsKey(keyCode))
             {
-                if (keys[args.KeyCode].State != KeyState.HOLD)
+                if (keys[keyCode].State != KeyState.HOLD)
                 {
-                    keys[args.KeyCode].State = KeyState.PRESSED;
+                    keys[keyCode].State = KeyState.PRESSED;
                 }
             }
         }
 
-        public void KeyUp(object sender, KeyEventArgs args)
+        public void KeyUp(int keyCode)
         {
-            if (keys.ContainsKey(args.KeyCode))
+            if (keys.ContainsKey(keyCode))
             {
-                if (keys[args.KeyCode].State != KeyState.UP)
+                if (keys[keyCode].State != KeyState.UP)
                 {
-                    keys[args.KeyCode].State = KeyState.RELEASE;
+                    keys[keyCode].State = KeyState.RELEASE;
                 }
             }
         }
@@ -79,10 +72,10 @@ namespace GameEngine
     public class KeyAction : ControllerAction
     {
         public KeyState State;
-        public Keys Key { get; private set; }
+        public int Key { get; private set; }
         public int Duration { get; internal set; }
 
-        public KeyAction(Keys key)
+        public KeyAction(int key)
         {
             State = KeyState.UP;
             Key = key;

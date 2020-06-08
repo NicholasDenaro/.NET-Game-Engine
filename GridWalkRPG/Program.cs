@@ -1,6 +1,7 @@
 ﻿using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
+using GameEngine.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,13 +20,19 @@ namespace GridWalkRPG
             int ticks = 0;
             Engine = new FixedTickEngine(60);
             Engine.Ticker = (o, e) => ticks++;
-            GameView2D view = new GameView2D(240, 160, 4, 4);
+
+            GameView2D view = new GameView2D(240, 160);
             Engine.View = view;
             Engine.Location = Location.Load("Maps/map.dat");
             Engine.Start();
-            KeyController controller = new KeyController(keymap);
+            GameFrame frame = new GameFrame(Engine, 0, 0, 240, 160);
+            Engine.Drawer += frame.Pane.DrawHandle;
+            frame.Start();
+
+            WindowsKeyController controller = new WindowsKeyController(keymap);
             Engine.AddController(controller);
-            controller.Hook(view.Pane);
+            controller.Hook(frame);
+
             Entity player = new Entity(new Description2D(new Sprite("circle", "Sprites/circle.png", 16, 16), 48, 48));
             PlayerActions pActions = new PlayerActions(controller);
             player.TickAction = pActions.TickAction;
@@ -66,12 +73,12 @@ namespace GridWalkRPG
 
         public static Dictionary<int, ControllerAction> keymap = new Dictionary<int, ControllerAction>()
         {
-            { (int)KEYS.UP, new KeyAction(System.Windows.Forms.Keys.Up) },
-            { (int)KEYS.DOWN, new KeyAction(System.Windows.Forms.Keys.Down) },
-            { (int)KEYS.LEFT, new KeyAction(System.Windows.Forms.Keys.Left) },
-            { (int)KEYS.RIGHT, new KeyAction(System.Windows.Forms.Keys.Right) },
-            { (int)KEYS.A, new KeyAction(System.Windows.Forms.Keys.X) },
-            { (int)KEYS.B, new KeyAction(System.Windows.Forms.Keys.Z) },
+            { (int)KEYS.UP, new KeyAction((int)System.Windows.Forms.Keys.Up) },
+            { (int)KEYS.DOWN, new KeyAction((int)System.Windows.Forms.Keys.Down) },
+            { (int)KEYS.LEFT, new KeyAction((int)System.Windows.Forms.Keys.Left) },
+            { (int)KEYS.RIGHT, new KeyAction((int)System.Windows.Forms.Keys.Right) },
+            { (int)KEYS.A, new KeyAction((int)System.Windows.Forms.Keys.X) },
+            { (int)KEYS.B, new KeyAction((int)System.Windows.Forms.Keys.Z) },
         };
     }
 }

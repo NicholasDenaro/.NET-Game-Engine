@@ -1,6 +1,7 @@
 ﻿using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
+using GameEngine.Windows;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,9 +9,9 @@ namespace GridWalkRPG
 {
     public class PlayerActions
     {
-        private KeyController controller;
+        private WindowsKeyController controller;
 
-        public PlayerActions(KeyController controller)
+        public PlayerActions(WindowsKeyController controller)
         {
             this.controller = controller;
         }

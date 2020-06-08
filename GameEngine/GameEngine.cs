@@ -1,18 +1,20 @@
 ﻿using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using View = GameEngine.Interfaces.View;
 
 namespace GameEngine
 {
     public delegate void TickHandler(object sender, EventArgs e);
+    public delegate void DrawHandler(object sender, View view);
 
     public abstract class GameEngine// : ITicker
     {
         public enum QueueAction { Add, Remove }
 
         public TickHandler Ticker;
+
+        public DrawHandler Drawer;
 
         private Location currentLocation;
         private Location nextLocation;
@@ -45,9 +47,9 @@ namespace GameEngine
                 nextView = value;
                 if (!Active)
                 {
-                    currentView?.Close();
+                    ////currentView?.Close();
                     currentView = nextView;
-                    currentView.Open();
+                    ////currentView.Open();
                 }
             }
         }
@@ -100,9 +102,9 @@ namespace GameEngine
 
             if (currentView != nextView)
             {
-                currentView.Close();
+                ////currentView.Close();
                 currentView = nextView;
-                currentView.Open();
+                ////currentView.Open();
             }
 
             View.Tick(Location);
@@ -136,6 +138,7 @@ namespace GameEngine
         public void Draw()
         {
             View.Draw(Location);
+            Drawer?.Invoke(this, View);
         }
     }
 }

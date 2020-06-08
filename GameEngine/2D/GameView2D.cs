@@ -6,11 +6,6 @@ namespace GameEngine._2D
 {
     public class GameView2D : FollowingView
     {
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
-
-        private GameFrame frame;
-        public GamePanel Pane { get; private set; }
         private Graphics[] gfxs;
         private Bitmap[] buffer;
         private int buf;
@@ -25,12 +20,17 @@ namespace GameEngine._2D
         public int ScrollLeft { get; set; }
         public int ScrollRight { get; set; }
 
-        public GameView2D(int width, int height, float hscale, float vscale)
+        public Bitmap Image
+        { 
+            get
+            {
+                return buffer[buf % 2];
+            }
+        }
+
+        public GameView2D(int width, int height)
         {
-            SetProcessDPIAware();
             Bounds = new Rectangle(0, 0, width, height);
-            frame = new GameFrame(0, 0, (int)(width * hscale), (int)(height * vscale));
-            Pane = frame.Pane;
             buffer = new Bitmap[] { new Bitmap(width, height), new Bitmap(width, height) };
             gfxs = new Graphics[] { Graphics.FromImage(buffer[0]), Graphics.FromImage(buffer[1]) };
             gfxs[0].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
@@ -45,16 +45,6 @@ namespace GameEngine._2D
             LockViewToLocation = true;
         }
 
-        public override void Open()
-        {
-            frame.Start();
-        }
-
-        public override void Close()
-        {
-            frame.Close();
-        }
-
         public void Redraw(Location location)
         {
             Draw(location);
@@ -62,9 +52,7 @@ namespace GameEngine._2D
 
         internal override void Draw(Location location)
         {
-            while (frame.Pane.Drawing) { };
-
-            Graphics gfx = gfxs[buf % 2];
+            Graphics gfx = gfxs[++buf % 2];
 
             gfx.FillRectangle(Brushes.Magenta, 0, 0, Bounds.Width, Bounds.Height);
 
@@ -84,7 +72,7 @@ namespace GameEngine._2D
 
             gfx.TranslateTransform(Bounds.X, Bounds.Y);
 
-            frame.Pane.Draw(buffer[buf++ % 2]);
+            ////frame.Pane.Draw(buffer[buf++ % 2]);
         }
 
         private void DrawEntity(Entity entity, Graphics gfx)

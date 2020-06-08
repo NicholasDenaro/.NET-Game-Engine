@@ -2,17 +2,9 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/GameEngine/v15/Server/sqlite3/storage.ide-wal
-/.vs/GameEngine/v15/Server/sqlite3/storage.ide-shm
-/.vs/GameEngine/v15/Server/sqlite3/storage.ide
-/.vs/GameEngine/v15/Server/sqlite3/db.lock
-/.vs/GameEngine/v15/.suo
-/GameEngine/bin
-/GameEngine/obj
-/MapEditor/bin
-/MapEditor/obj
-/GridWalkRPG/bin
-/GridWalkRPG/obj
+/*/bin
+/*/obj
 *.user
-/.vs/GameEngine/v16/Server/sqlite3
+/.vs
 *.suo
+*.dtbcache

@@ -8,10 +8,6 @@
         {
         }
 
-        public abstract void Open();
-
-        public abstract void Close();
-
         internal abstract void Draw(Location location);
 
         public abstract void Tick(Location currentLocation);
