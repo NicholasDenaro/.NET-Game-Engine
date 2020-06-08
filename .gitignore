@@ -9,7 +9,8 @@
 /.vs/GameEngine/v15/.suo
 /GameEngine/bin
 /GameEngine/obj
-/MapEditor/bin/Debug
-/MapEditor/obj/Debug
-/GridWalkRPG/obj/Debug
-/GridWalkRPG/bin/Debug
+/MapEditor/bin
+/MapEditor/obj
+/GridWalkRPG/bin
+/GridWalkRPG/obj
+*.user
