@@ -4,34 +4,20 @@ using System.Collections.Generic;
 
 namespace GameEngine
 {
-    public delegate void TickHandler(object sender, EventArgs e);
+    public delegate void TickHandler(object sender, GameState state);
     public delegate void DrawHandler(object sender, View view);
 
     public abstract class GameEngine// : ITicker
     {
         public enum QueueAction { Add, Remove }
 
-        public TickHandler Ticker;
+        private List<(QueueAction, Controller)> controllerQueue = new List<(QueueAction, Controller)>();
 
-        public DrawHandler Drawer;
+        public TickHandler TickStart;
+        public TickHandler TickEnd;
 
-        private Location currentLocation;
-        private Location nextLocation;
-        public Location Location
-        {
-            get
-            {
-                return currentLocation;
-            }
-            set
-            {
-                nextLocation = value;
-                if (!Active)
-                {
-                    currentLocation = nextLocation;
-                }
-            }
-        }
+        public DrawHandler DrawStart;
+        public DrawHandler DrawEnd;
 
         private View currentView;
         private View nextView;
@@ -44,35 +30,18 @@ namespace GameEngine
             set
             {
                 nextView = value;
-                if (!Active)
-                {
-                    ////currentView?.Close();
-                    currentView = nextView;
-                    ////currentView.Open();
-                }
             }
         }
 
-        private List<Controller> controllers = new List<Controller>();
-        private List<(QueueAction, Controller)> controllerQueue = new List<(QueueAction, Controller)>();
+        public Location Location => this.state.Location;
 
-        private IFocusable currentFocus;
-        private IFocusable nextFocus;
-        public IFocusable Focus
+        public void SetLocation(Location location)
         {
-            get
-            {
-                return currentFocus;
-            }
-            set
-            {
-                nextFocus = value;
-                if (!Active)
-                {
-                    currentFocus = nextFocus;
-                }
-            }
+            this.state.Location = location;
+            this.state.NextLocation = location;
         }
+
+        private GameState state = new GameState();
 
         public bool Active { get; private set; }
 
@@ -91,53 +60,52 @@ namespace GameEngine
 
         public void Tick()
         {
-            foreach (Controller controller in controllers)
-            {
-                controller.Update();
-            }
-            Ticker(this, null);
-            Location.Tick(Location);
-            currentLocation = nextLocation;
+            // Let all handlers know there is a tick happening
+            TickStart(this, this.state);
 
-            if (currentView != nextView)
+            foreach ((QueueAction action, Controller controller) queueAction in controllerQueue)
             {
-                ////currentView.Close();
-                currentView = nextView;
-                ////currentView.Open();
-            }
-
-            View.Tick(Location);
-
-            foreach((QueueAction action, Controller controller) queueAction in controllerQueue)
-            {
-                switch(queueAction.action)
+                switch (queueAction.action)
                 {
                     case QueueAction.Add:
-                        controllers.Add(queueAction.controller);
+                        this.state.Controllers.Add(queueAction.controller);
                         break;
                     case QueueAction.Remove:
-                        controllers.Remove(queueAction.controller);
+                        this.state.Controllers.Remove(queueAction.controller);
                         break;
                 }
             }
+            controllerQueue.Clear();
+            currentView = nextView;
+            this.state.Location = this.state.NextLocation;
+
+            // Poll the controllers for input this tick
+            foreach (Controller controller in state.Controllers)
+            {
+                controller.Update();
+            }
+
+            // Tick all the things in the location
+            this.state.Location?.Tick();
+
+            TickEnd(this, this.state);
+        }
+
+        public void AddEntity(Entity player)
+        {
+            this.state.Location.AddEntity(player);
         }
 
         public void AddController(Controller controller)
         {
-            if (Active)
-            {
-                controllerQueue.Add((QueueAction.Add, controller));
-            }
-            else
-            {
-                controllers.Add(controller);
-            }
+            controllerQueue.Add((QueueAction.Add, controller));
         }
 
         public void Draw()
         {
-            View.Draw(Location);
-            Drawer?.Invoke(this, View);
+            DrawStart?.Invoke(this, View);
+            View.Draw(state.Location);
+            DrawEnd?.Invoke(this, View);
         }
     }
 }

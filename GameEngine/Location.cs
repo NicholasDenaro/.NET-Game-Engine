@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace GameEngine
 {
-    public class Location : ITicker
+    public class Location
     {
         private Dictionary<Guid,Entity> entities = new Dictionary<Guid, Entity>();
+        private List<Entity> entityAddBuffer = new List<Entity>();
+        private List<Guid> entityRemoveBuffer = new List<Guid>();
 
         public IEnumerable<Entity> Entities => entities.Values;
         public IDescription Description { get; set; }
@@ -21,17 +24,12 @@ namespace GameEngine
 
         public void AddEntity(Entity entity)
         {
-            entities.Add(entity.Id, entity);
-        }
-
-        public void RemoveEntity(Entity entity)
-        {
-            RemoveEntity(entity.Id);
+            entityAddBuffer.Add(entity);
         }
 
         public void RemoveEntity(Guid id)
         {
-            entities.Remove(id);
+            entityRemoveBuffer.Add(id);
         }
 
         public IEnumerable<T> GetEntities<T>() where T : class, IDescription
@@ -39,11 +37,23 @@ namespace GameEngine
             return Entities.Where(entity => entity.Description.GetType() == typeof(T)).Select(entity => entity.Description as T);
         }
 
-        public void Tick(Location currentLocation)
+        public void Tick()
         {
-            foreach(Entity entity in entities.Values)
+            foreach(Entity entity in this.entityAddBuffer)
             {
-                entity.Tick(currentLocation);
+                entities.Add(entity.Id, entity);
+            }
+            this.entityAddBuffer.Clear();
+
+            foreach (Guid id in this.entityRemoveBuffer)
+            {
+                entities.Remove(id);
+            }
+            this.entityRemoveBuffer.Clear();
+
+            foreach (Entity entity in entities.Values)
+            {
+                entity.Tick(this);
             }
         }
 

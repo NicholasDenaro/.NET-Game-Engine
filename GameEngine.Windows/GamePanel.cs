@@ -10,11 +10,10 @@ namespace GameEngine
         private Bitmap[] buffers;
         private byte currentBuffer;
 
-        private GameEngine engine;
         private int width;
         private int height;
 
-        public GamePanel(GameEngine engine, int width, int height)
+        public GamePanel(int width, int height)
         {
             Drawing = false;
             this.width = width * 4;
@@ -33,8 +32,8 @@ namespace GameEngine
             Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            gfx.DrawImage(img, 0, 0, width, height);
-            gfx.DrawRectangle(Pens.Cyan, 0, 0, width, height);
+            gfx.DrawImage(img, 0, 0, width + 2, height + 2);
+            //gfx.DrawRectangle(Pens.Cyan, 0, 0, width - 1, height - 1);
             Drawing = false;
             Invalidate();
         }

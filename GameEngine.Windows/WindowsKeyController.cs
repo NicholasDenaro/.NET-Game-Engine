@@ -5,9 +5,11 @@ namespace GameEngine.Windows
 {
     public class WindowsKeyController : Controller
     {
+        private Dictionary<int, int> keymap;
 
-        public WindowsKeyController(Dictionary<int, ActionState> keymap) : base(keymap)
+        public WindowsKeyController(Dictionary<int, int> keymap) : base(keymap.Values)
         {
+            this.keymap = keymap;
         }
 
         public void Hook(GameFrame frame)
@@ -18,12 +20,18 @@ namespace GameEngine.Windows
 
         private void Frame_KeyUp(object sender, KeyEventArgs e)
         {
-            ActionEnd((int)e.KeyCode);
+            if (keymap.ContainsKey((int)e.KeyCode))
+            {
+                ActionEnd(keymap[(int)e.KeyCode]);
+            }
         }
 
         private void Frame_KeyDown(object sender, KeyEventArgs e)
         {
-            ActionStart((int)e.KeyCode);
+            if (keymap.ContainsKey((int)e.KeyCode))
+            {
+                ActionStart(keymap[(int)e.KeyCode]);
+            }
         }
     }
 }

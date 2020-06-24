@@ -1,39 +1,44 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace GameEngine
 {
     public class Controller
     {
         internal Dictionary<int, ActionState> Actions { get; private set; } = new Dictionary<int, ActionState>();
-        private Dictionary<int, ActionState> keys = new Dictionary<int, ActionState>();
+        private readonly List<(int, HoldState)>[] actionBuffer = new List<(int, HoldState)>[2];
+        private int buff;
+        private List<int> keys;
+        private object Lock = new object();
 
-        public Controller(Dictionary<int, ActionState> keymap)
+        public Controller(IEnumerable<int> keys)
         {
-            Actions = keymap;
-            foreach(KeyValuePair<int, ActionState> kvp in keymap)
-            {
-                keys[((ActionState)kvp.Value).Key] = (ActionState)kvp.Value;
-            }
+            this.keys = keys.ToList();
+            Actions = keys.ToDictionary(key => key, key => new ActionState());
+            buff = 1;
+            actionBuffer[0] = new List<(int, HoldState)>();
+            actionBuffer[1] = new List<(int, HoldState)>();
         }
 
         public void ActionStart(int actionCode)
         {
-            if (keys.ContainsKey(actionCode))
+            if (Actions.ContainsKey(actionCode))
             {
-                if (keys[actionCode].State != HoldState.HOLD)
+                lock(Lock)
                 {
-                    keys[actionCode].State = HoldState.PRESS;
+                    actionBuffer[buff % 2].Add((actionCode,HoldState.PRESS));
                 }
+
             }
         }
 
         public void ActionEnd(int actionCode)
         {
-            if (keys.ContainsKey(actionCode))
+            if (Actions.ContainsKey(actionCode))
             {
-                if (keys[actionCode].State != HoldState.UNHELD)
+                lock (Lock)
                 {
-                    keys[actionCode].State = HoldState.RELEASE;
+                    actionBuffer[buff % 2].Add((actionCode, HoldState.RELEASE));
                 }
             }
         }
@@ -42,43 +47,63 @@ namespace GameEngine
         {
             get
             {
-                return (ActionState)Actions[action];
+                return Actions[action];
             }
         }
 
         public void Update()
         {
-            foreach (KeyValuePair<int, ActionState> kvp in Actions)
+            lock(Lock)
             {
-                ActionState act = (ActionState)kvp.Value;
-                if (act.State == HoldState.PRESS && act.Duration > 1)
+                buff++;
+            }
+
+            ActionState actionstate;
+            foreach (int key in this.keys)
+            {
+                actionstate = Actions[key];
+                if (actionstate.State == HoldState.HOLD || actionstate.State == HoldState.UNHELD)
                 {
-                    keys[((ActionState)kvp.Value).Key].State = HoldState.HOLD;
+                    actionstate.Duration++;
                 }
-                else if (act.State == HoldState.RELEASE && act.Duration > 1)
+                else if(actionstate.State == HoldState.PRESS)
                 {
-                    keys[((ActionState)kvp.Value).Key].State = HoldState.UNHELD;
+                    actionstate.Duration = 0;
+                    actionstate.State = HoldState.HOLD;
                 }
-                else
+                else if (actionstate.State == HoldState.RELEASE)
                 {
-                    act.Duration++;
+                    actionstate.Duration = 0;
+                    actionstate.State = HoldState.UNHELD;
                 }
             }
+
+            foreach ((int key, HoldState state) in actionBuffer[(buff - 1) % 2])
+            {
+                actionstate = Actions[key];
+                if (actionstate.State == HoldState.UNHELD && state == HoldState.PRESS)
+                {
+                    actionstate.State = HoldState.PRESS;
+                }
+                else if (actionstate.State == HoldState.HOLD && state == HoldState.RELEASE)
+                {
+                    actionstate.State = HoldState.RELEASE;
+                }
+            }
+
+            actionBuffer[(buff - 1) % 2].Clear();
         }
     }
     public enum HoldState { PRESS, HOLD, RELEASE, UNHELD }
 
     public class ActionState
     {
-
         public HoldState State;
-        public int Key { get; private set; }
         public int Duration { get; internal set; }
 
-        public ActionState(int key)
+        public ActionState()
         {
             State = HoldState.UNHELD;
-            Key = key;
         }
 
         public bool IsDown()

@@ -55,6 +55,11 @@ namespace GameEngine._2D
 
         internal override void Draw(Location location)
         {
+            if (location == null)
+            {
+                return;
+            }
+
             Graphics gfx = gfxs[++buf % 2];
 
             gfx.FillRectangle(Brushes.Magenta, 0, 0, Bounds.Width, Bounds.Height);
@@ -74,38 +79,15 @@ namespace GameEngine._2D
             }
 
             gfx.TranslateTransform(Bounds.X, Bounds.Y);
-
-            ////frame.Pane.Draw(buffer[buf++ % 2]);
         }
 
-        private void DrawEntity(Entity entity, Graphics gfx)
-        {
-            Description2D description = entity.Description as Description2D;
-            if (description != null)
-            {
-                Image img = description.Image();
-                gfx.DrawImage(img, (float)description.X, (float)description.Y);
-            }
-        }
-
-        private void DrawSprite(Sprite sprite, int index, int x, int y, Graphics gfx)
-        {
-            Image img = sprite.GetImage(index);
-            gfx.DrawImage(img, x, y);
-        }
-
-        private void DrawImage(Image image, int x, int y, Graphics gfx)
-        {
-            gfx.DrawImage(image, x, y);
-        }
-
-        public override void Tick(Location currentLocation)
+        public void Tick(object sender, GameState state)
         {
             Follow();
 
-            if (LockViewToLocation)
+            if (LockViewToLocation && state?.Location != null)
             {
-                LockFollow(currentLocation);
+                LockFollow(state.Location);
             }
         }
 

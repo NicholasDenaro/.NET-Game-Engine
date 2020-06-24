@@ -9,32 +9,39 @@ namespace GameEngine
         private int ticksPerSecond;
         private long period;
 
+        private long tickTime = 0;
+        private long drawTime = 0;
+
         public FixedTickEngine(int tps)
         {
             this.ticksPerSecond = tps;
-            period = (int)TimeSpan.FromSeconds(1).Ticks / ticksPerSecond;
-            Console.WriteLine("period: {0}", period);
+            this.period = (int)TimeSpan.FromSeconds(1).Ticks / ticksPerSecond;
+            Console.WriteLine("period: {0}", this.period);
         }
 
         public override void Control()
         {
-            Task.Run(() => Run());
+            Task.Run(Run);
         }
 
         private void Run()
         {
             Stopwatch sw = Stopwatch.StartNew();
-            long overwait = 0;
-            long wait;
             while (true)
             {
-                wait = period + overwait;
-                while (sw.ElapsedTicks < wait) { };
-                overwait = sw.ElapsedTicks - wait;
+                while (sw.ElapsedTicks < this.period) { };
                 sw.Restart();
                 Tick();
+                this.tickTime = sw.ElapsedTicks;
                 Draw();
+                this.drawTime = sw.ElapsedTicks - tickTime;
+                //Task.Run(Log);
             }
+        }
+
+        private void Log()
+        {
+            Console.WriteLine($"({tickTime:d6}+{drawTime:d6})/{this.period:d6}={(tickTime + drawTime) * 100.0 / (this.period):f2}%");
         }
     }
 }

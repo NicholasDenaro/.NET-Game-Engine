@@ -19,7 +19,7 @@ namespace GameEngine
             Description = description;
         }
 
-        public Action<Location, IDescription> TickAction;
+        public Action<Location, IDescription> TickAction { get; set; }
 
         virtual public void Tick(Location currentLocation)
         {

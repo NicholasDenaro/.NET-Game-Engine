@@ -24,12 +24,12 @@ namespace GameEngine
             }
         }
 
-        public GameFrame(GameEngine engine, int x, int y, int width, int height)
+        public GameFrame(int x, int y, int width, int height)
         {
             rect = new Rectangle(x, y, width, height);
-            GamePanel panel = new GamePanel(engine, width, height);
+            GamePanel panel = new GamePanel( width, height);
             Pane = panel;
-            SetProcessDPIAware();
+            //SetProcessDPIAware();
         }
 
         public void Start()

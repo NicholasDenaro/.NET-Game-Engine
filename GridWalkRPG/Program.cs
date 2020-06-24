@@ -13,20 +13,18 @@ namespace GridWalkRPG
 
         public static void Main(string[] args)
         {
-            int ticks = 0;
             Engine = new FixedTickEngine(60);
-            Engine.Ticker = (o, e) => ticks++;
 
             GameView2D view = new GameView2D(240, 160);
             view.ScrollTop = view.Height / 2;
             view.ScrollBottom = view.Height / 2 - 16;
             view.ScrollLeft = view.Width / 2;
             view.ScrollRight = view.Width / 2 - 16;
+            Engine.TickEnd += view.Tick;
             Engine.View = view;
-            Engine.Location = Location.Load("Maps/map.dat");
-            Engine.Start();
-            GameFrame frame = new GameFrame(Engine, 0, 0, 240, 160);
-            Engine.Drawer += frame.Pane.DrawHandle;
+            Engine.SetLocation(Location.Load("Maps/map.dat"));
+            GameFrame frame = new GameFrame(0, 0, 240, 160);
+            Engine.DrawEnd += frame.Pane.DrawHandle;
             frame.Start();
 
             WindowsKeyController controller = new WindowsKeyController(keymap);
@@ -36,10 +34,12 @@ namespace GridWalkRPG
             Entity player = new Entity(new Description2D(new Sprite("circle", "Sprites/circle.png", 16, 16), 48, 48));
             PlayerActions pActions = new PlayerActions(controller);
             player.TickAction = pActions.TickAction;
-            Engine.Location.AddEntity(player);
+            Engine.AddEntity(player);
             view.Follow(player.Description as Description2D);
 
             TileMap map = Engine.Location.Description as TileMap;
+
+            // This is a hack to make the walls spawn where tree tiles are.
             for (int x = 0; x < map.Width; x += 16)
             {
                 for (int y = 0; y < map.Height; y += 16)
@@ -56,29 +56,73 @@ namespace GridWalkRPG
                 }
             }
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            watchSecond = new Stopwatch();
+            watchSecond.Start();
+            watchTickTime = new Stopwatch();
+
+            Engine.TickEnd += TickInfo;
+            Engine.TickStart += TickTimer;
+            Engine.TickEnd += TickTimer;
+
+            Engine.Start();
+
             while (true)
             {
-                if (sw.ElapsedMilliseconds >= 1000)
+            }
+        }
+
+        private static Stopwatch watchSecond;
+        private static int ticks;
+        public static void TickInfo(object sender, GameState state)
+        {
+            ticks++;
+            if (watchSecond.ElapsedMilliseconds >= 1000)
+            {
+                Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime}");
+                ticks = 0;
+                watchSecond.Restart();
+                minTime = long.MaxValue;
+                maxTime = long.MinValue;
+                totalTime = 0;
+            }
+        }
+
+        private static Stopwatch watchTickTime;
+        private static long minTime;
+        private static long maxTime;
+        private static long totalTime;
+        public static void TickTimer(object sender, GameState state)
+        {
+            if (watchTickTime.IsRunning)
+            {
+                long time = watchTickTime.ElapsedTicks;
+                totalTime += time;
+                if (time < minTime)
                 {
-                    Console.WriteLine("Ticks per Second: {0}", ticks);
-                    ticks = 0;
-                    sw.Restart();
+                    minTime = time;
                 }
+                if (time > maxTime)
+                {
+                    maxTime = time;
+                }
+                watchTickTime.Stop();
+            }
+            else
+            {
+                watchTickTime.Restart();
             }
         }
 
         public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5 }
 
-        public static Dictionary<int, ActionState> keymap = new Dictionary<int, ActionState>()
+        public static Dictionary<int, int> keymap = new Dictionary<int, int>()
         {
-            { (int)KEYS.UP, new ActionState((int)System.Windows.Forms.Keys.Up) },
-            { (int)KEYS.DOWN, new ActionState((int)System.Windows.Forms.Keys.Down) },
-            { (int)KEYS.LEFT, new ActionState((int)System.Windows.Forms.Keys.Left) },
-            { (int)KEYS.RIGHT, new ActionState((int)System.Windows.Forms.Keys.Right) },
-            { (int)KEYS.A, new ActionState((int)System.Windows.Forms.Keys.X) },
-            { (int)KEYS.B, new ActionState((int)System.Windows.Forms.Keys.Z) },
+            { (int)System.Windows.Forms.Keys.Up, (int)KEYS.UP},
+            { (int)System.Windows.Forms.Keys.Down, (int)KEYS.DOWN },
+            { (int)System.Windows.Forms.Keys.Left, (int)KEYS.LEFT },
+            { (int)System.Windows.Forms.Keys.Right, (int)KEYS.RIGHT },
+            { (int)System.Windows.Forms.Keys.X, (int)KEYS.A },
+            { (int)System.Windows.Forms.Keys.Z, (int)KEYS.B },
         };
     }
 }

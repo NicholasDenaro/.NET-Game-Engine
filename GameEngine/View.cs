@@ -2,7 +2,7 @@
 
 namespace GameEngine
 {
-    public abstract class View : ITicker
+    public abstract class View
     {
         public abstract IDrawer Drawer { get; }
 
@@ -11,8 +11,6 @@ namespace GameEngine
         }
 
         internal abstract void Draw(Location location);
-
-        public abstract void Tick(Location currentLocation);
     }
 
     public interface IDrawer
