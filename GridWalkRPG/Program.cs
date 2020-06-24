@@ -22,7 +22,7 @@ namespace GridWalkRPG
             view.ScrollRight = view.Width / 2 - 16;
             Engine.TickEnd += view.Tick;
             Engine.View = view;
-            Engine.SetLocation(Location.Load("Maps/map.dat"));
+            Engine.SetLocation(Location.Load("GridWalkRPG.Maps.map.dat"));
             GameFrame frame = new GameFrame(0, 0, 240, 160);
             Engine.DrawEnd += frame.Pane.DrawHandle;
             frame.Start();
@@ -31,7 +31,7 @@ namespace GridWalkRPG
             Engine.AddController(controller);
             controller.Hook(frame);
 
-            Entity player = new Entity(new Description2D(new Sprite("circle", "Sprites/circle.png", 16, 16), 48, 48));
+            Entity player = new Entity(new Description2D(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48));
             PlayerActions pActions = new PlayerActions(controller);
             player.TickAction = pActions.TickAction;
             Engine.AddEntity(player);

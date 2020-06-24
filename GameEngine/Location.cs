@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace GameEngine
@@ -67,7 +68,8 @@ namespace GameEngine
 
         public static Location Load(string fname)
         {
-            using (FileStream stream = File.OpenRead(fname))
+            Assembly assembly = Assembly.GetCallingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(fname))
             using (BinaryReader reader = new BinaryReader(stream))
             {
                 int width = reader.ReadInt32();

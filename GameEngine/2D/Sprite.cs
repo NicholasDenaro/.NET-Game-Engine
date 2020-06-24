@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Reflection;
 
 namespace GameEngine._2D
 {
@@ -17,14 +19,15 @@ namespace GameEngine._2D
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        public Sprite(string name, string bmpFile, int tileWidth, int tileHeight) : this(name, (Bitmap)Image.FromFile(bmpFile), 0, 0)
+        public Sprite(string name, string bmpFile, int tileWidth, int tileHeight) : this(name, Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{bmpFile.Replace("/", ".")}"), 0, 0)
         {
             SetupSubImages(image[0], tileWidth, tileHeight);
         }
 
-        public Sprite(string name, Bitmap bmp, int x, int y)
+        public Sprite(string name, Stream sbmp, int x, int y)
         {
             Name = name;
+            Bitmap bmp = (Bitmap)Image.FromStream(sbmp);
             this.image = new[] { bmp };
             hSubImages = 1;
             vSubImages = 1;
@@ -33,21 +36,6 @@ namespace GameEngine._2D
             X = x;
             Y = y;
             Sprites.Add(name, this);
-        }
-
-        public Sprite(string name, string bmpFile, int x, int y, int width, int height) : this(name, (Bitmap)Image.FromFile(bmpFile), x, y)
-        {
-            
-        }
-
-        public Sprite(string name, Bitmap bmp, int x, int y, int width, int height, int tileWidth, int tileHeight) : this(name, bmp, x, y)
-        {
-            SetupSubImages(image[0], tileWidth, tileHeight);
-        }
-
-        public Sprite(string name, string bmpFile, int x, int y, int width, int height, int tileWidth, int tileHeight) : this(name, (Bitmap)Image.FromFile(bmpFile), x, y, width, height, tileWidth, tileHeight)
-        {
-
         }
 
         private void SetupSubImages(Bitmap bmp, int tileWidth, int tileHeight)
