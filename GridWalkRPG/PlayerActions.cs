@@ -9,16 +9,22 @@ namespace GridWalkRPG
 {
     public class PlayerActions
     {
-        private WindowsKeyController controller;
+        private int controllerIndex;
 
-        public PlayerActions(WindowsKeyController controller)
+        public PlayerActions(int controllerIndex)
         {
-            this.controller = controller;
+            this.controllerIndex = controllerIndex;
         }
 
         public void TickAction(Location location, IDescription description)
         {
-            Description2D descr = description as Description2D;
+            WindowsKeyController controller = Program.Engine.Controllers[controllerIndex] as WindowsKeyController;
+            if(!controller.IsHooked())
+            {
+                controller.Hook(Program.Frame);
+            }
+
+            DescriptionPlayer descr = description as DescriptionPlayer;
             if (descr == null)
             {
                 return;
@@ -26,42 +32,82 @@ namespace GridWalkRPG
 
             List<WallDescription> walls = location.GetEntities<WallDescription>().ToList();
 
-            if (this.controller[(int)Program.KEYS.UP].IsDown())
+            for (int i = descr.controllerWalkChecks.Count - 1; i >= 0; i--)
             {
-                descr.ChangeCoordsDelta(0, -1);
-                if (IsCollision(walls, descr))
+                int key = descr.controllerWalkChecks[i];
+                if (descr.walkDuration <= 0 && controller[key].IsDown() && controller[key].Duration > 5)
                 {
-                    descr.ChangeCoordsDelta(0, 1);
+                    descr.walkDirection = key;
+                    descr.walkDuration = DescriptionPlayer.maxWalkDuration;
+                    descr.run = controller[(int)Program.KEYS.B].IsDown();
+                    descr.controllerWalkChecks.RemoveAt(i);
+                    descr.controllerWalkChecks.Insert(0, key);
                 }
             }
 
-            if (this.controller[(int)Program.KEYS.DOWN].IsDown())
+            if (descr.walkDuration > 0)
             {
-                descr.ChangeCoordsDelta(0, 1);
-                if (IsCollision(walls, descr))
+                int dist = descr.run ? 2 : 1;
+                descr.ImageIndex = descr.walkDirection * 4 + descr.walkDuration / 8 % 4;
+
+                if(descr.walkDuration % 2 == 1)
+                {
+                }
+                else if (descr.walkDirection == (int)Program.KEYS.UP)
                 {
                     descr.ChangeCoordsDelta(0, -1);
+                    if (IsCollision(walls, descr))
+                    {
+                        descr.walkDuration = 0;
+                        descr.ChangeCoordsDelta(0, 1);
+                    }
                 }
-            }
-
-            if (this.controller[(int)Program.KEYS.LEFT].IsDown())
-            {
-                descr.ChangeCoordsDelta(-1, 0);
-                if (IsCollision(walls, descr))
-                {
-                    descr.ChangeCoordsDelta(1, 0);
-                }
-            }
-
-            if (this.controller[(int)Program.KEYS.RIGHT].IsDown())
-            {
-                descr.ChangeCoordsDelta(1, 0);
-                if (IsCollision(walls, descr))
+                else if (descr.walkDirection == (int)Program.KEYS.LEFT)
                 {
                     descr.ChangeCoordsDelta(-1, 0);
+                    if (IsCollision(walls, descr))
+                    {
+                        descr.walkDuration = 0;
+                        descr.ChangeCoordsDelta(1, 0);
+                    }
                 }
+                else if (descr.walkDirection == (int)Program.KEYS.DOWN)
+                {
+                    descr.ChangeCoordsDelta(0, 1);
+                    if (IsCollision(walls, descr))
+                    {
+                        descr.walkDuration = 0;
+                        descr.ChangeCoordsDelta(0, -1);
+                    }
+                }
+                else if (descr.walkDirection == (int)Program.KEYS.RIGHT)
+                {
+                    descr.ChangeCoordsDelta(1, 0);
+                    if (IsCollision(walls, descr))
+                    {
+                        descr.walkDuration = 0;
+                        descr.ChangeCoordsDelta(-1, 0);
+                    }
+                }
+                descr.walkDuration -= dist;
+            }
+
+            if (controller[(int)Program.KEYS.X].State == HoldState.PRESS)
+            {
+                oldState = descr.Serialize();
+            }
+
+            if (controller[(int)Program.KEYS.Y].State == HoldState.PRESS)
+            {
+                descr.Deserialize(oldState);
+            }
+
+            if (controller[(int)Program.KEYS.RESET].State == HoldState.PRESS)
+            {
+                Program.Engine.Deserialize(Program.states.Peek());
             }
         }
+        private string oldState;
 
         private bool IsCollision(List<WallDescription> walls, Description2D description)
         {

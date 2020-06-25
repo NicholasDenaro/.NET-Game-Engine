@@ -1,6 +1,8 @@
 ﻿using GameEngine._2D.Interfaces;
 using GameEngine.Interfaces;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Text;
 
 namespace GameEngine._2D
 {
@@ -15,6 +17,11 @@ namespace GameEngine._2D
         virtual public Rectangle Bounds => new Rectangle(new Point((int)X, (int)Y), new Size(Width, Height));
 
         public Point Position => new Point((int)X, (int)Y);
+
+        public Description2D()
+        {
+
+        }
 
         public Description2D(Sprite sprite, int x, int y)
         {
@@ -64,6 +71,44 @@ namespace GameEngine._2D
         public Image Image()
         {
             return Sprite?.GetImage(ImageIndex);
+        }
+
+        virtual public string Serialize()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append(X);
+            sb.Append(",");
+            sb.Append(Y);
+            sb.Append(",");
+            sb.Append(Sprite?.Name ?? "<null>");
+            sb.Append(",");
+            sb.Append(Width);
+            sb.Append(",");
+            sb.Append(Height);
+            sb.Append(",");
+            sb.Append(ImageIndex);
+            sb.Append("}");
+            return sb.ToString();
+        }
+
+        virtual public void Deserialize(string state)
+        {
+            List<string> tokens = StringConverter.DeserializeTokens(state);
+
+            this.X = int.Parse(tokens[0]);
+            this.Y = int.Parse(tokens[1]);
+            if (tokens[2] != "<null>")
+            {
+                this.Sprite = Sprite.Sprites[tokens[2]];
+            }
+            else
+            {
+                this.Sprite = null;
+            }
+            this.Width = int.Parse(tokens[3]);
+            this.Height = int.Parse(tokens[4]);
+            this.ImageIndex = int.Parse(tokens[5]);
         }
     }
 }

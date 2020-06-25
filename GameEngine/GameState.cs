@@ -1,28 +1,53 @@
 ﻿using GameEngine.Interfaces;
 using System.Collections.Generic;
-using System.Runtime.Serialization.Json;
-using static GameEngine.GameEngine;
+using System.Linq;
+using System.Text;
 
 namespace GameEngine
 {
-    public class GameState
+    public class GameState : IDescription
     {
         public List<Controller> Controllers { get; internal set; } = new List<Controller>();
 
         public Location Location { get; internal set; }
         public Location NextLocation { get; internal set; }
 
-        public IFocusable Focus { get; internal set; }
-        public IFocusable NextFocus { get; internal set; }
+        ////public IFocusable Focus { get; internal set; }
+        ////public IFocusable NextFocus { get; internal set; }
 
-        public static string Serialize(GameState state)
+        public string Serialize()
         {
-            return "";
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append(StringConverter.Serialize<Controller>(Controllers));
+            sb.Append(",");
+            sb.Append(Location.Serialize());
+            sb.Append(",");
+            sb.Append(NextLocation?.Serialize() ?? "<null>");
+            sb.Append("}");
+            return sb.ToString();
         }
 
-        public static GameState Deserialize(string state)
+        public void Deserialize(string state)
         {
-            return new GameState();
+            List<string> tokens = StringConverter.DeserializeTokens(state);
+
+            Controllers = StringConverter.Deserialize<Controller>(tokens[0], str => null);
+            Location.Deserialize(tokens[1]);
+            if (tokens[2] == "<null>")
+            {
+                NextLocation = null;
+            }
+            else if (NextLocation == null)
+            {
+                NextLocation = new Location();
+                NextLocation.Deserialize(tokens[2]);
+            }
+            else
+            {
+                NextLocation.Deserialize(tokens[2]);
+            }
+
         }
     }
 }

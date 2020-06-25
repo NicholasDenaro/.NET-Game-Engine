@@ -12,6 +12,17 @@ namespace GameEngine
 
         public IDescription Description { get; private set; }
 
+        internal Entity(Guid guid, IDescription description)
+        {
+            this.Id = guid;
+            if(Entities.ContainsKey(Id))
+            {
+                Entities.Remove(Id);
+            }
+            Entities.Add(Id, this);
+            Description = description;
+        }
+
         public Entity(IDescription description)
         {
             this.Id = Guid.NewGuid();

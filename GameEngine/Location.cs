@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace GameEngine
 {
-    public class Location
+    public class Location : IDescription
     {
         private Dictionary<Guid,Entity> entities = new Dictionary<Guid, Entity>();
         private List<Entity> entityAddBuffer = new List<Entity>();
@@ -17,6 +17,11 @@ namespace GameEngine
 
         public IEnumerable<Entity> Entities => entities.Values;
         public IDescription Description { get; set; }
+
+        public Location()
+        {
+
+        }
 
         public Location(IDescription description)
         {
@@ -112,6 +117,31 @@ namespace GameEngine
 
                 return stream.GetBuffer();
             }
+        }
+
+        public string Serialize()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append(StringConverter.Serialize<Guid, IDescription>(entities.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Description)));
+            sb.Append(",");
+            sb.Append(StringConverter.Serialize<IDescription>(entityAddBuffer.Select(e => e.Description)));
+            sb.Append(",");
+            sb.Append(StringConverter.Serialize<Guid>(entityRemoveBuffer));
+            sb.Append(",");
+            sb.Append(Description.Serialize());
+            sb.Append("}");
+            return sb.ToString();
+            //return $"{{{string.Join(",", entities.Select(kvp => $"({kvp.Key},{kvp.Value.Description.Serialize()})"))},[{string.Join(",", entityAddBuffer.Select(e => e.Description.Serialize()))}],[{string.Join(",", entityRemoveBuffer)}],{Description.Serialize()}}}";
+        }
+
+        public void Deserialize(string state)
+        {
+            List<string> tokens = StringConverter.DeserializeTokens(state);
+
+            this.entities = StringConverter.Deserialize<Guid, IDescription>(tokens[0], str => Guid.Parse(str), null).ToDictionary(kvp => kvp.Key, kvp => new Entity(kvp.Key, kvp.Value));
+            this.entityAddBuffer = StringConverter.Deserialize<IDescription>(tokens[1], str => null).Select(idescr => new Entity(idescr)).ToList();
+            this.entityRemoveBuffer = StringConverter.Deserialize<Guid>(tokens[2], str => Guid.Parse(str));
         }
     }
 }

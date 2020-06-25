@@ -1,13 +1,14 @@
 ﻿using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GameEngine
 {
     public delegate void TickHandler(object sender, GameState state);
     public delegate void DrawHandler(object sender, View view);
 
-    public abstract class GameEngine// : ITicker
+    public abstract class GameEngine
     {
         public enum QueueAction { Add, Remove }
 
@@ -35,10 +36,17 @@ namespace GameEngine
 
         public Location Location => this.state.Location;
 
+        public List<Controller> Controllers => this.state.Controllers;
+
+        public int GetControllerIndex(Controller controller)
+        {
+            return this.state.Controllers.IndexOf(controller);
+        }
+
         public void SetLocation(Location location)
         {
             this.state.Location = location;
-            this.state.NextLocation = location;
+            this.state.NextLocation = null;
         }
 
         private GameState state = new GameState();
@@ -77,7 +85,10 @@ namespace GameEngine
             }
             controllerQueue.Clear();
             currentView = nextView;
-            this.state.Location = this.state.NextLocation;
+            if (this.state.NextLocation != null)
+            {
+                this.state.Location = this.state.NextLocation;
+            }
 
             // Poll the controllers for input this tick
             foreach (Controller controller in state.Controllers)
@@ -98,7 +109,14 @@ namespace GameEngine
 
         public void AddController(Controller controller)
         {
-            controllerQueue.Add((QueueAction.Add, controller));
+            if (!Active)
+            {
+                this.state.Controllers.Add(controller);
+            }
+            else
+            {
+                controllerQueue.Add((QueueAction.Add, controller));
+            }
         }
 
         public void Draw()
@@ -106,6 +124,23 @@ namespace GameEngine
             DrawStart?.Invoke(this, View);
             View.Draw(state.Location);
             DrawEnd?.Invoke(this, View);
+        }
+
+        public string Serialize()
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            string str = state.Serialize();
+            sw.Stop();
+            //Console.WriteLine($"{sw.ElapsedTicks} ticks");
+            return str;
+        }
+
+        public void Deserialize(string state)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            this.state.Deserialize(state);
+            sw.Stop();
+            //Console.WriteLine($"{sw.ElapsedTicks} ticks");
         }
     }
 }
