@@ -8,3 +8,4 @@
 /.vs
 *.suo
 *.dtbcache
+/AnimationTransitionExample/Properties/PublishProfiles/FolderProfile.pubxml

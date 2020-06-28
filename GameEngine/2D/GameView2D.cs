@@ -23,6 +23,8 @@ namespace GameEngine._2D
         public int Width => Bounds.Width;
         public int Height => Bounds.Height;
 
+        private SolidBrush backgroundColor;
+
         public Bitmap Image
         { 
             get
@@ -31,7 +33,7 @@ namespace GameEngine._2D
             }
         }
 
-        public GameView2D(int width, int height)
+        public GameView2D(int width, int height, Color bgColor)
         {
             Bounds = new Rectangle(0, 0, width, height);
             buffer = new Bitmap[] { new Bitmap(width, height), new Bitmap(width, height) };
@@ -46,6 +48,7 @@ namespace GameEngine._2D
             ScrollLeft = 20;
             ScrollRight = 20;
             LockViewToLocation = true;
+            backgroundColor = new SolidBrush(bgColor);
         }
 
         public void Redraw(Location location)
@@ -62,7 +65,7 @@ namespace GameEngine._2D
 
             Graphics gfx = gfxs[++buf % 2];
 
-            gfx.FillRectangle(Brushes.Magenta, 0, 0, Bounds.Width, Bounds.Height);
+            gfx.FillRectangle(backgroundColor, 0, 0, Bounds.Width, Bounds.Height);
 
             gfx.TranslateTransform(-Bounds.X, -Bounds.Y);
             TileMap tileMap = location.Description as TileMap;

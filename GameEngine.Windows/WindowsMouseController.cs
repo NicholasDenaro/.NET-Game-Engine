@@ -10,8 +10,6 @@ namespace GameEngine.Windows
         private Dictionary<int, int> keymap;
         private bool hooked = false;
 
-        private GameFrame frame;
-
         public WindowsMouseController() : base()
         {
 
@@ -24,11 +22,13 @@ namespace GameEngine.Windows
 
         public void Hook(GameFrame frame)
         {
-            this.frame = frame;
-            frame.Pane.MouseDown += Frame_KeyDown;
-            frame.Pane.MouseUp += Frame_KeyUp;
-            frame.Pane.MouseMove += Frame_KeyInfo;
+            frame.Pane.HookMouse(Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
             hooked = true;
+        }
+
+        public bool IsHooked()
+        {
+            return hooked;
         }
 
         private void Frame_KeyUp(object sender, MouseEventArgs e)

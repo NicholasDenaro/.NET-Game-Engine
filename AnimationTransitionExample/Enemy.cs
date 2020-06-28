@@ -7,6 +7,9 @@ namespace AnimationTransitionExample
 {
     public class Enemy : Description2D
     {
+        private Bitmap bmp;
+        private Graphics gfx;
+
         public Enemy(int x, int y) : base(Sprite.Sprites["enemy"], x, y, 16, 16)
         {
         }
@@ -25,12 +28,13 @@ namespace AnimationTransitionExample
 
         public Bitmap Draw()
         {
-            Bitmap bmp = new Bitmap(this.Width, this.Height);
-
-            using (Graphics gfx = Graphics.FromImage(bmp))
+            if (bmp == null)
             {
-                gfx.FillEllipse(Brushes.Yellow, 0, 0, bmp.Width, bmp.Height);
+                bmp = new Bitmap(this.Width, this.Height);
+                gfx = Graphics.FromImage(bmp);
             }
+
+            gfx.FillEllipse(Brushes.Yellow, 0, 0, bmp.Width, bmp.Height);
 
             return bmp;
         }

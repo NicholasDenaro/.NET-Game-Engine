@@ -6,6 +6,9 @@ namespace AnimationTransitionExample
 {
     public class Marker : Description2D
     {
+        private Bitmap bmp;
+        private Graphics gfx;
+
         public Marker(int x, int y) : base(Sprite.Sprites["marker"], x, y, 8, 8)
         {
 
@@ -20,13 +23,14 @@ namespace AnimationTransitionExample
 
         public Bitmap Draw()
         {
-            Bitmap bmp = new Bitmap(this.Width, this.Height);
-
-            using (Graphics gfx = Graphics.FromImage(bmp))
+            if (bmp == null)
             {
-                gfx.DrawLine(Pens.Black, 0, 0, bmp.Width, bmp.Height);
-                gfx.DrawLine(Pens.Black, bmp.Width, 0, 0, bmp.Height);
+                bmp = new Bitmap(this.Width, this.Height);
+                gfx = Graphics.FromImage(bmp);
             }
+
+            gfx.DrawLine(Pens.Black, 1, 1, bmp.Width, bmp.Height);
+            gfx.DrawLine(Pens.Black, bmp.Width, 0, 0, bmp.Height);
 
             return bmp;
         }

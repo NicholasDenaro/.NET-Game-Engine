@@ -1,5 +1,6 @@
 ﻿using GameEngine._2D.Interfaces;
 using GameEngine.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -75,6 +76,11 @@ namespace GameEngine._2D
         public Image Image()
         {
             return DrawAction?.Invoke() ?? Sprite?.GetImage(ImageIndex);
+        }
+
+        public double Distance(Description2D other)
+        {
+            return Math.Sqrt((X - other.X) * (X - other.X) + (Y - other.Y) * (Y - other.Y));
         }
 
         virtual public string Serialize()

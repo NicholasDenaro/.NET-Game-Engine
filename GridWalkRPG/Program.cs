@@ -4,6 +4,7 @@ using GameEngine.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace GridWalkRPG
 {
@@ -17,7 +18,7 @@ namespace GridWalkRPG
         {
             Engine = new FixedTickEngine(60);
 
-            GameView2D view = new GameView2D(240, 160);
+            GameView2D view = new GameView2D(240, 160, Color.Magenta);
             view.ScrollTop = view.Height / 2;
             view.ScrollBottom = view.Height / 2 - 16;
             view.ScrollLeft = view.Width / 2;
@@ -25,7 +26,7 @@ namespace GridWalkRPG
             Engine.TickEnd += view.Tick;
             Engine.View = view;
             Engine.SetLocation(Location.Load("GridWalkRPG.Maps.map.dat"));
-            Frame = new GameFrame(0, 0, 240, 160);
+            Frame = new GameFrame(0, 0, 240, 160, 4, 4);
             Engine.DrawEnd += Frame.Pane.DrawHandle;
             Frame.Start();
 

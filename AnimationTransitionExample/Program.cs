@@ -2,23 +2,25 @@
 using GameEngine._2D;
 using GameEngine.Windows;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace AnimationTransitionExample
 {
 
     public class Program
     {
+        public const int TPS = 30;
         public const int SCREENWIDTH = 160;
         public const int SCREENHEIGHT = 144;
 
         public static GameEngine.GameEngine Engine { get; private set; }
         public static void Main(string[] args)
         {
-            Engine = new FixedTickEngine(30);
-            GameView2D view = new GameView2D(SCREENWIDTH, SCREENHEIGHT);
+            Engine = new FixedTickEngine(TPS);
+            GameView2D view = new GameView2D(SCREENWIDTH, SCREENHEIGHT, Color.DarkSlateGray);
             Engine.View = view;
 
-            GameFrame frame = new GameFrame(0, 0, 160, 144);
+            GameFrame frame = new GameFrame(0, 0, 160, 144, 4, 4);
             frame.Start();
             Engine.DrawEnd += frame.Pane.DrawHandle;
 
@@ -32,6 +34,35 @@ namespace AnimationTransitionExample
             WindowsMouseController mouseController = new WindowsMouseController(mouseMap);
             mouseController.Hook(frame);
             Engine.AddController(mouseController);
+
+            Animation move = new Animation("move", -1, null, Player.Move, null);
+
+            Animation swordSwing1 = new Animation("sword1", 1 * TPS / 1, null, null, d2d =>
+            {
+                Player p = d2d as Player;
+                if (p != null)
+                {
+                    Enemy e2d = p.Target;
+                }
+            });
+
+            Animation swordSwing2 = new Animation("sword2", 1 * TPS / 2, null, null, d2d =>
+            {
+                Player p = d2d as Player;
+                if (p != null)
+                {
+                    Enemy e2d = p.Target;
+                }
+            });
+
+            Animation swordSwing3 = new Animation("sword3", 1 * TPS / 1, null, null, d2d =>
+            {
+                Player p = d2d as Player;
+                if (p != null)
+                {
+                    Enemy e2d = p.Target;
+                }
+            });
 
             new Sprite("marker", 4, 4);
             Entity marker = Marker.Create(new Marker(0, 0));

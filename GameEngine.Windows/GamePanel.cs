@@ -9,20 +9,31 @@ namespace GameEngine
         public bool Drawing { get; private set; }
         private Bitmap[] buffers;
         private byte currentBuffer;
+        private int xScale;
+        private int yScale;
 
-        private int width;
-        private int height;
-
-        public GamePanel(int width, int height)
+        public GamePanel(int width, int height, int xScale, int yScale)
         {
             Drawing = false;
-            this.width = width;
-            this.height = height;
-            this.Width = this.width;
-            this.Height = this.height;
+            this.xScale = xScale;
+            this.yScale = yScale;
+            this.Width = width * xScale;
+            this.Height = height * yScale;
             currentBuffer = 0;
-            buffers = new Bitmap[] { new Bitmap(this.width, this.height), new Bitmap(this.width, this.height) };
+            buffers = new Bitmap[] { new Bitmap(this.Width, this.Height), new Bitmap(this.Width, this.Height) };
             this.DoubleBuffered = true;
+        }
+
+        public void HookMouse(MouseEventHandler mouseInfo, MouseEventHandler mouseDown, MouseEventHandler mouseUp)
+        {
+            this.MouseMove += (s, e) => mouseInfo(s, ScaleEvent(e));
+            this.MouseDown += (s, e) => mouseDown(s, ScaleEvent(e));
+            this.MouseUp += (s, e) => mouseUp(s, ScaleEvent(e));
+        }
+
+        public MouseEventArgs ScaleEvent(MouseEventArgs e)
+        {
+            return new MouseEventArgs(e.Button, e.Clicks, e.X / xScale, e.Y / yScale, e.Delta);
         }
 
         public void Draw(Bitmap img)
@@ -32,7 +43,8 @@ namespace GameEngine
             Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            gfx.DrawImage(img, 0, 0, width + 2, height + 2);
+            //gfx.DrawImage(img, 0, 0, this.Width + 2, this.Height + 2);
+            gfx.DrawImage(img, 1, 1, this.Width, this.Height);
             //gfx.DrawRectangle(Pens.Cyan, 0, 0, width - 1, height - 1);
             Drawing = false;
             Invalidate();
@@ -49,7 +61,7 @@ namespace GameEngine
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.DrawImage(buffers[currentBuffer % 2], 0, 0, width, height);
+            e.Graphics.DrawImage(buffers[currentBuffer % 2], 0, 0, this.Width, this.Height);
         }
     }
 }
