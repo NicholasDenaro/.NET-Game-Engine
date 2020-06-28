@@ -16,8 +16,8 @@ namespace GameEngine
         public GamePanel(int width, int height)
         {
             Drawing = false;
-            this.width = width * 4;
-            this.height = height * 4;
+            this.width = width;
+            this.height = height;
             this.Width = this.width;
             this.Height = this.height;
             currentBuffer = 0;

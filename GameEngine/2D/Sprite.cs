@@ -38,6 +38,19 @@ namespace GameEngine._2D
             Sprites.Add(name, this);
         }
 
+        public Sprite(string name, int x, int y)
+        {
+            Name = name;
+            this.image = new Bitmap[] { };
+            hSubImages = 1;
+            vSubImages = 1;
+            Width = 0;
+            Height = 0;
+            X = x;
+            Y = y;
+            Sprites.Add(name, this);
+        }
+
         private void SetupSubImages(Bitmap bmp, int tileWidth, int tileHeight)
         {
             Width = tileWidth;

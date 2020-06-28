@@ -69,7 +69,7 @@ namespace GameEngine
         public void Tick()
         {
             // Let all handlers know there is a tick happening
-            TickStart(this, this.state);
+            TickStart?.Invoke(this, this.state);
 
             foreach ((QueueAction action, Controller controller) queueAction in controllerQueue)
             {
@@ -99,12 +99,12 @@ namespace GameEngine
             // Tick all the things in the location
             this.state.Location?.Tick();
 
-            TickEnd(this, this.state);
+            TickEnd?.Invoke(this, this.state);
         }
 
-        public void AddEntity(Entity player)
+        public void AddEntity(Entity entity)
         {
-            this.state.Location.AddEntity(player);
+            this.state.Location.AddEntity(entity);
         }
 
         public void AddController(Controller controller)

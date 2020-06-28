@@ -23,25 +23,37 @@ namespace GameEngine
             Actions = keys.ToDictionary(key => key, key => new ActionState());
         }
 
-        public void ActionStart(int actionCode)
-        {
-            if (Actions.ContainsKey(actionCode))
-            {
-                lock(Lock)
-                {
-                    actionBuffer.Next().Add(new PendingAction(actionCode, HoldState.PRESS));
-                }
-
-            }
-        }
-
-        public void ActionEnd(int actionCode)
+        public void ActionInfo(int actionCode, IControllerActionInfo info)
         {
             if (Actions.ContainsKey(actionCode))
             {
                 lock (Lock)
                 {
-                    actionBuffer.Next().Add(new PendingAction(actionCode, HoldState.RELEASE));
+                    actionBuffer.Next().Add(new PendingAction(actionCode, HoldState.INFO, info));
+                }
+
+            }
+        }
+
+        public void ActionStart(int actionCode, IControllerActionInfo info)
+        {
+            if (Actions.ContainsKey(actionCode))
+            {
+                lock(Lock)
+                {
+                    actionBuffer.Next().Add(new PendingAction(actionCode, HoldState.PRESS, info));
+                }
+
+            }
+        }
+
+        public void ActionEnd(int actionCode, IControllerActionInfo info)
+        {
+            if (Actions.ContainsKey(actionCode))
+            {
+                lock (Lock)
+                {
+                    actionBuffer.Next().Add(new PendingAction(actionCode, HoldState.RELEASE, info));
                 }
             }
         }
@@ -86,13 +98,19 @@ namespace GameEngine
             foreach (PendingAction pa in next)
             {
                 actionstate = Actions[pa.ActionCode];
-                if (actionstate.State == HoldState.UNHELD && pa.State == HoldState.PRESS)
+                if (pa.State == HoldState.INFO)
+                {
+                    actionstate.Info = pa.Info;
+                }
+                else if (actionstate.State == HoldState.UNHELD && pa.State == HoldState.PRESS)
                 {
                     actionstate.State = HoldState.PRESS;
+                    actionstate.Info = pa.Info;
                 }
                 else if (actionstate.State == HoldState.HOLD && pa.State == HoldState.RELEASE)
                 {
                     actionstate.State = HoldState.RELEASE;
+                    actionstate.Info = pa.Info;
                 }
             }
 
@@ -126,22 +144,35 @@ namespace GameEngine
             Actions = StringConverter.Deserialize<int, ActionState>(tokens[1], str => int.Parse(str), str => { ActionState acts = new ActionState(); acts.Deserialize(str); return acts; });
         }
     }
-    public enum HoldState { PRESS, HOLD, RELEASE, UNHELD }
+    public enum HoldState { PRESS, HOLD, RELEASE, UNHELD, INFO }
+
+    public interface IControllerActionInfo
+    {
+
+    }
+
+    public class ControllerActionInfoEmpty
+    {
+
+    }
 
     public class PendingAction : IDescription
     {
         public int ActionCode { get; private set; }
         public HoldState State { get; private set; }
 
+        public IControllerActionInfo Info { get; private set; }
+
         public PendingAction()
         {
 
         }
 
-        public PendingAction(int actionCode, HoldState state)
+        public PendingAction(int actionCode, HoldState state, IControllerActionInfo info)
         {
             this.ActionCode = actionCode;
             this.State = state;
+            this.Info = info;
         }
 
         public string Serialize()
@@ -161,6 +192,8 @@ namespace GameEngine
     {
         public HoldState State;
         public int Duration { get; internal set; }
+
+        public IControllerActionInfo Info { get; internal set; }
 
         public ActionState()
         {

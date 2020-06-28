@@ -35,7 +35,7 @@ namespace GameEngine.Windows
         {
             if (keymap.ContainsKey((int)e.KeyCode))
             {
-                ActionEnd(keymap[(int)e.KeyCode]);
+                ActionEnd(keymap[(int)e.KeyCode], null);
             }
         }
 
@@ -43,7 +43,7 @@ namespace GameEngine.Windows
         {
             if (keymap.ContainsKey((int)e.KeyCode))
             {
-                ActionStart(keymap[(int)e.KeyCode]);
+                ActionStart(keymap[(int)e.KeyCode], null);
             }
         }
 

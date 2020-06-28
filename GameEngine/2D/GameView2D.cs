@@ -179,7 +179,7 @@ namespace GameEngine._2D
             {
                 if (description.HasImage())
                 {
-                    gfx.DrawImage(description.Image(), (float)description.X, (float)description.Y);
+                    gfx.DrawImage(description.Image(), (float)description.X - (description?.Sprite.X ?? 0), (float)description.Y - (description?.Sprite.Y ?? 0));
                 }
             }
         }

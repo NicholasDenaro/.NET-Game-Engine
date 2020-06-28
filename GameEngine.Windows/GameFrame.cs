@@ -39,8 +39,8 @@ namespace GameEngine
                 this.StartPosition = FormStartPosition.CenterScreen;
                 this.FormBorderStyle = FormBorderStyle.None;
                 this.AutoScaleMode = AutoScaleMode.Dpi;
-                this.Width = rect.Width * 4;
-                this.Height = rect.Height * 4;
+                this.Width = rect.Width;
+                this.Height = rect.Height;
                 this.Controls.Add(this.Pane);
                 Task.Run(() => Application.Run(this));
             }

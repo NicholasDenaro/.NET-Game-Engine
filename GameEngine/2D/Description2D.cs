@@ -18,6 +18,10 @@ namespace GameEngine._2D
 
         public Point Position => new Point((int)X, (int)Y);
 
+        public delegate Bitmap DirectDraw();
+
+        public DirectDraw DrawAction;
+
         public Description2D()
         {
 
@@ -65,12 +69,12 @@ namespace GameEngine._2D
 
         public bool HasImage()
         {
-            return Sprite != null;
+            return Sprite != null || DrawAction != null;
         }
 
         public Image Image()
         {
-            return Sprite?.GetImage(ImageIndex);
+            return DrawAction?.Invoke() ?? Sprite?.GetImage(ImageIndex);
         }
 
         virtual public string Serialize()
