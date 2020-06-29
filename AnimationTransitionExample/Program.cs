@@ -35,34 +35,21 @@ namespace AnimationTransitionExample
             mouseController.Hook(frame);
             Engine.AddController(mouseController);
 
-            Animation move = new Animation("move", -1, null, Player.Move, null);
+            new Animation("move", -1, null, LivingEntity.Move, null);
+            new Animation("playermove", -1, null, Player.PlayerMove, null);
 
-            Animation swordSwing1 = new Animation("sword1", 1 * TPS / 1, null, null, d2d =>
-            {
-                Player p = d2d as Player;
-                if (p != null)
-                {
-                    Enemy e2d = p.Target;
-                }
-            });
+            new Animation("sword1", 24, null, Player.Swing, d2d => Player.Strike(d2d, false, 40));
+            new Animation("-sword1", 6, null, Player.BackSwing, Player.BackSwing);
 
-            Animation swordSwing2 = new Animation("sword2", 1 * TPS / 2, null, null, d2d =>
-            {
-                Player p = d2d as Player;
-                if (p != null)
-                {
-                    Enemy e2d = p.Target;
-                }
-            });
+            new Animation("sword2", 12, null, Player.Swing, d2d => Player.Strike(d2d, false, 40));
+            new Animation("-sword2", 3, null, Player.BackSwing, Player.BackSwing);
 
-            Animation swordSwing3 = new Animation("sword3", 1 * TPS / 1, null, null, d2d =>
-            {
-                Player p = d2d as Player;
-                if (p != null)
-                {
-                    Enemy e2d = p.Target;
-                }
-            });
+            new Animation("sword3", 24, null, Player.Swing, d2d => Player.Strike(d2d, true, 80));
+            new Animation("-sword3", 6, null, Player.BackSwing, Player.BackSwing);
+
+            new Animation("knockback", 15, null, LivingEntity.KnockBack, null);
+            new Animation("slideback", 15, null, LivingEntity.SlideBack, null);
+            new Animation("getup", 15, null, null, LivingEntity.GetUp);
 
             new Sprite("marker", 4, 4);
             Entity marker = Marker.Create(new Marker(0, 0));

@@ -38,6 +38,9 @@ namespace AnimationTransitionExample
 
             Enemy enemy = Program.Engine.Location.GetEntities<Enemy>().First();
 
+            gfx.FillRectangle(Brushes.White, new Rectangle(enemy.Position.X - 10, enemy.Position.Y - 20, 20, 4));
+            gfx.FillRectangle(Brushes.MediumPurple, new Rectangle(enemy.Position.X - 9, enemy.Position.Y - 19, 18 * enemy.balance / 100, 2));
+
             if (Program.Engine.Controllers[keyController][(int)Actions.ALT].IsDown())
             {
                 gfx.DrawEllipse(Pens.Cyan, (float)enemy.X - enemy.Sprite.X - 2, (float)enemy.Y - enemy.Sprite.Y - 2, enemy.Width + 4, enemy.Height + 4);

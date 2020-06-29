@@ -9,13 +9,11 @@ using System.Linq;
 
 namespace AnimationTransitionExample
 {
-    public class Player : Description2D
+    public class Player : LivingEntity
     {
         private int keyController;
         private int mouseController;
 
-        private Stack<AnimationChain> animations;
-        private Enemy target;
         private int swingAni;
         public const int swingChainTime = 15;
         public const int swingChainLength = 3;
@@ -25,8 +23,6 @@ namespace AnimationTransitionExample
         private Graphics gfx;
 
         private Point attackPosition;
-
-        public Enemy Target => target;
 
         public Player(int x, int y, int keyController, int mouseController) : base(Sprite.Sprites["player"], x, y, 16, 16)
         {
@@ -98,31 +94,32 @@ namespace AnimationTransitionExample
                     p.Y = (int)enemy.Y;
                     markerD.SetCoords(p.X, p.Y);
 
-                    if (animations.Any() && animations.Peek().Peek().Name == "move")
+                    if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
                     {
                         animations.Pop();
                     }
 
                     target = enemy;
                     animations.Push(new AnimationChain(
+                        AnimationManager.Instance[$"-sword{swingAni + 1}"],
                         AnimationManager.Instance[$"sword{swingAni + 1}"],
-                        AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(enemy) < 20)));
+                        AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(enemy) < 20 && !enemy.IsBeingKnockedBack())));
                 }
                 else
                 {
-                    if (animations.Any() && animations.Peek().Peek().Name == "move")
+                    if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
                     {
                         animations.Pop();
                     }
                     markerD.SetCoords(p.X, p.Y);
                     animations.Push(new AnimationChain(
-                        AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(markerD) < 1)));
+                        AnimationManager.Instance["playermove"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(markerD) < 1)));
                     swingAni = 0;
                 }
             }
         }
 
-        public static void Move(IDescription d)
+        public static void PlayerMove(IDescription d)
         {
             Player player = d as Player;
             if (player == null)
@@ -134,6 +131,46 @@ namespace AnimationTransitionExample
 
             double dir = Math.Atan2(markerD.Y - player.Y, markerD.X - player.X);
             player.ChangeCoordsDelta(Math.Cos(dir), Math.Sin(dir));
+        }
+
+        public static void Swing(IDescription d)
+        {
+            Player player = d as Player;
+            if (player == null)
+            {
+                return;
+            }
+
+            double t = AnimationFrame(player, 0, 0.8);
+            double x = t * 2 * Math.PI;
+            double dist = -x * Math.Sin(x);
+            double angle = Math.Atan2(player.target.Y - player.Y, player.target.X - player.X);
+            player.SetCoords(player.attackPosition.X + Math.Cos(angle) * dist, player.attackPosition.Y + Math.Sin(angle) * dist);
+        }
+
+        public static void BackSwing(IDescription d)
+        {
+            Player player = d as Player;
+            if (player == null)
+            {
+                return;
+            }
+
+            double t = AnimationFrame(player, 0.8, 1.05);
+            double x = t * 2 * Math.PI;
+            double dist = -x * Math.Sin(x);
+            double angle = Math.Atan2(player.target.Y - player.Y, player.target.X - player.X);
+            player.SetCoords(player.attackPosition.X + Math.Cos(angle) * dist, player.attackPosition.Y + Math.Sin(angle) * dist);
+        }
+
+        public static void Strike(IDescription d, bool finisher, int balance)
+        {
+            Player p = d as Player;
+            if (p != null)
+            {
+                LivingEntity le = p.Target;
+                le.Hit(p, finisher, balance);
+            }
         }
 
         public Bitmap Draw()
@@ -152,26 +189,14 @@ namespace AnimationTransitionExample
             if (animations.Any() && animations.Peek().Peek().Name == "sword1")
             {
                 brush = Brushes.Aquamarine;
-                double t = (animations.Peek().Peek().Duration - animations.Peek().Peek().TicksLeft()) * 1.0 / (animations.Peek().Peek().Duration - 1) * 2 * Math.PI;
-                double dist = (-t * Math.Sin(t));
-                double angle = Math.Atan2(target.Y - this.Y, target.X - this.X);
-                this.SetCoords(this.attackPosition.X + Math.Cos(angle) * dist, this.attackPosition.Y + Math.Sin(angle) * dist);
             }
             if (animations.Any() && animations.Peek().Peek().Name == "sword2")
             {
                 brush = Brushes.Chartreuse;
-                double t = (animations.Peek().Peek().Duration - animations.Peek().Peek().TicksLeft()) * 1.0 / (animations.Peek().Peek().Duration - 1) * 2 * Math.PI;
-                double dist = (-t * Math.Sin(t));
-                double angle = Math.Atan2(target.Y - this.Y, target.X - this.X);
-                this.SetCoords(this.attackPosition.X + Math.Cos(angle) * dist, this.attackPosition.Y + Math.Sin(angle) * dist);
             }
             if (animations.Any() && animations.Peek().Peek().Name == "sword3")
             {
                 brush = Brushes.Teal;
-                double t = (animations.Peek().Peek().Duration - animations.Peek().Peek().TicksLeft()) * 1.0 / (animations.Peek().Peek().Duration - 1) * 2 * Math.PI;
-                double dist = (-t * Math.Sin(t));
-                double angle = Math.Atan2(target.Y - this.Y, target.X - this.X);
-                this.SetCoords(this.attackPosition.X + Math.Cos(angle) * dist, this.attackPosition.Y + Math.Sin(angle) * dist);
             }
             if (animations.Any() && animations.Peek().Peek().Name == "move")
             {
