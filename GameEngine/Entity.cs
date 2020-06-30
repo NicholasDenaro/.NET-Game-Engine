@@ -30,11 +30,11 @@ namespace GameEngine
             Description = description;
         }
 
-        public Action<Location, IDescription> TickAction { get; set; }
+        public Action<Location, Entity> TickAction { get; set; }
 
         virtual public void Tick(Location currentLocation)
         {
-            TickAction?.Invoke(currentLocation, Description);
+            TickAction?.Invoke(currentLocation, this);
         }
     }
 }

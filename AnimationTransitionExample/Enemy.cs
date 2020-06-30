@@ -1,7 +1,8 @@
-﻿using GameEngine;
+﻿using AnimationTransitionExample.Animations;
+using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
-using System.Collections.Generic;
+using System;
 using System.Drawing;
 using System.Linq;
 
@@ -14,7 +15,7 @@ namespace AnimationTransitionExample
 
         public Enemy(int x, int y) : base(Sprite.Sprites["enemy"], x, y, 16, 16)
         {
-            animations = new Stack<AnimationChain>();
+            combo = new AttackCombo(3, 5);
         }
 
         public static Entity Create(Enemy enemy)
@@ -25,29 +26,66 @@ namespace AnimationTransitionExample
             return entity;
         }
 
-        public void Tick(Location location, IDescription description)
+        public new void Tick(Location location, Entity entity)
         {
-            if (animations.Any())
+            if (base.Tick(location, entity))
             {
-                if (animations.Peek().Tick(this))
-                {
-                    animations.Peek().Pop();
-                    if (!animations.Peek().Any())
-                    {
-                        animations.Pop();
-                    }
-                }
-
-                if (animations.Any() && !animations.Peek().Peek().IsInterruptable())
-                {
-                    return;
-                }
+                return;
             }
 
-            if (balance < 100)
+            if (target != null)
             {
-                balance++;
+                animations.Push(new AnimationChain(
+                    AnimationManager.Instance[$"-bite{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                    AnimationManager.Instance[$"bite{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                    AnimationManager.Instance["move"].MakeInterruptable()
+                        .Trigger(pd => this.Distance(this.target) < 20 && !this.IsBeingKnockedBack())));
             }
+        }
+
+        public static void Bite(IDescription d)
+        {
+            Enemy enemy = d as Enemy;
+            if (enemy == null)
+            {
+                return;
+            }
+
+            double t = AnimationFrame(enemy, 0, 0.8);
+            double x = t * 2 * Math.PI;
+            double dist = -x * Math.Sin(x);
+            double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
+            enemy.SetCoords(enemy.attackPosition.X + Math.Cos(angle) * dist, enemy.attackPosition.Y + Math.Sin(angle) * dist);
+        }
+
+        public static void FastBite(IDescription d)
+        {
+            Enemy enemy = d as Enemy;
+            if (enemy == null)
+            {
+                return;
+            }
+
+            double t = AnimationFrame(enemy, 0.5, 0.8);
+            double x = t * 2 * Math.PI;
+            double dist = -x * Math.Sin(x);
+            double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
+            enemy.SetCoords(enemy.attackPosition.X + Math.Cos(angle) * dist, enemy.attackPosition.Y + Math.Sin(angle) * dist);
+        }
+
+        public static void BiteRecovery(IDescription d)
+        {
+            Enemy enemy = d as Enemy;
+            if (enemy == null)
+            {
+                return;
+            }
+
+            double t = AnimationFrame(enemy, 0.8, 1.05);
+            double x = t * 2 * Math.PI;
+            double dist = -x * Math.Sin(x);
+            double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
+            enemy.SetCoords(enemy.attackPosition.X + Math.Cos(angle) * dist, enemy.attackPosition.Y + Math.Sin(angle) * dist);
         }
 
         public Bitmap Draw()
@@ -60,17 +98,43 @@ namespace AnimationTransitionExample
 
             Brush brush = Brushes.Yellow;
 
-            if (flashFrames-- > 0)
+            if (animations.Any() && animations.Peek().Peek() is AttackAnimation)
             {
-                brush = Brushes.LightYellow;
+                if (combo.Attack == 0)
+                {
+                    brush = Brushes.Aquamarine;
+                }
+                if (combo.Attack == 1)
+                {
+                    brush = Brushes.Chartreuse;
+                }
+                if (combo.Attack == 2)
+                {
+                    brush = Brushes.Teal;
+                }
             }
-
-            if (animations.Any())
+            else if (animations.Any())
             {
                 brush = Brushes.Orange;
             }
 
+            if (animations.Any() && animations.Peek().Peek().Name == "slideback")
+            {
+                brush = Brushes.DarkOrange;
+            }
+
+            if (animations.Any() && animations.Peek().Peek().Name == "knockback")
+            {
+                brush = Brushes.SaddleBrown;
+            }
+
+            if (stun > 0)
+            {
+                brush = Brushes.LightYellow;
+            }
+
             gfx.FillEllipse(brush, 0, 0, bmp.Width, bmp.Height);
+            gfx.DrawString("E", new Font("courier new", 10), Brushes.Navy, 2, 2);
 
             return bmp;
         }

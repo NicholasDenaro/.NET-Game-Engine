@@ -40,7 +40,7 @@ namespace GameEngine
 
         public IEnumerable<T> GetEntities<T>() where T : class, IDescription
         {
-            return Entities.Where(entity => entity.Description.GetType() == typeof(T)).Select(entity => entity.Description as T);
+            return Entities.Where(entity => entity.Description.GetType() == typeof(T) || typeof(T).IsAssignableFrom(entity.Description.GetType())).Select(entity => entity.Description as T);
         }
 
         public void Tick()

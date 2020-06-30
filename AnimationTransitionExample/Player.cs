@@ -1,4 +1,5 @@
-﻿using GameEngine;
+﻿using AnimationTransitionExample.Animations;
+using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
 using GameEngine.Windows;
@@ -14,22 +15,14 @@ namespace AnimationTransitionExample
         private int keyController;
         private int mouseController;
 
-        private int swingAni;
-        public const int swingChainTime = 15;
-        public const int swingChainLength = 3;
-        private int swingChainCooldown = swingChainTime;
-
         private Bitmap bmp;
         private Graphics gfx;
-
-        private Point attackPosition;
 
         public Player(int x, int y, int keyController, int mouseController) : base(Sprite.Sprites["player"], x, y, 16, 16)
         {
             this.keyController = keyController;
             this.mouseController = mouseController;
-            animations = new Stack<AnimationChain>();
-            swingAni = 0;
+            combo = new AttackCombo(3, 15);
         }
 
         public static Entity Create(Player player)
@@ -40,44 +33,11 @@ namespace AnimationTransitionExample
             return entity;
         }
 
-        public void Tick(Location location, IDescription description)
+        public new void Tick(Location location, Entity entity)
         {
-            if (animations.Any())
+            if (base.Tick(location, entity))
             {
-                if (animations.Peek().Tick(this))
-                {
-                    if (animations.Peek().Pop().Name.StartsWith("sword"))
-                    {
-                        swingAni++;
-                        swingAni = swingAni % swingChainLength;
-                        swingChainCooldown = swingChainTime;
-                    }
-
-                    if (!animations.Peek().Any())
-                    {
-                        animations.Pop();
-                    }
-                    else if (animations.Peek().Peek().Name.StartsWith("sword"))
-                    {
-                        this.attackPosition = this.Position;
-                    }
-                }
-
-                if (animations.Any() && !animations.Peek().Peek().IsInterruptable())
-                {
-                    return;
-                }
-            }
-            else
-            {
-                if (swingChainCooldown > 0)
-                {
-                    swingChainCooldown--;
-                }
-                else
-                {
-                    swingAni = 0;
-                }
+                return;
             }
 
             Marker markerD = Program.Engine.Location.GetEntities<Marker>().First();
@@ -87,23 +47,26 @@ namespace AnimationTransitionExample
                 MouseControllerInfo mci = Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
                 Point p = new Point(mci.X, mci.Y);
 
-                if (Program.Engine.Controllers[keyController][(int)Actions.ALT].IsDown())
+                if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].IsDown())
                 {
-                    Enemy enemy = Program.Engine.Location.GetEntities<Enemy>().First();
-                    p.X = (int)enemy.X;
-                    p.Y = (int)enemy.Y;
-                    markerD.SetCoords(p.X, p.Y);
-
-                    if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                    Enemy enemy = Program.Engine.Location.GetEntities<Enemy>().FirstOrDefault();
+                    if (enemy != null)
                     {
-                        animations.Pop();
-                    }
+                        p.X = (int)enemy.X;
+                        p.Y = (int)enemy.Y;
+                        markerD.SetCoords(p.X, p.Y);
 
-                    target = enemy;
-                    animations.Push(new AnimationChain(
-                        AnimationManager.Instance[$"-sword{swingAni + 1}"],
-                        AnimationManager.Instance[$"sword{swingAni + 1}"],
-                        AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(enemy) < 20 && !enemy.IsBeingKnockedBack())));
+                        if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                        {
+                            animations.Pop();
+                        }
+
+                        target = enemy;
+                        animations.Push(new AnimationChain(
+                            AnimationManager.Instance[$"-sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                            AnimationManager.Instance[$"sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                            AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(enemy) < 20 && !enemy.IsBeingKnockedBack())));
+                    }
                 }
                 else
                 {
@@ -114,7 +77,7 @@ namespace AnimationTransitionExample
                     markerD.SetCoords(p.X, p.Y);
                     animations.Push(new AnimationChain(
                         AnimationManager.Instance["playermove"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(markerD) < 1)));
-                    swingAni = 0;
+                    combo.Reset();
                 }
             }
         }
@@ -163,16 +126,6 @@ namespace AnimationTransitionExample
             player.SetCoords(player.attackPosition.X + Math.Cos(angle) * dist, player.attackPosition.Y + Math.Sin(angle) * dist);
         }
 
-        public static void Strike(IDescription d, bool finisher, int balance)
-        {
-            Player p = d as Player;
-            if (p != null)
-            {
-                LivingEntity le = p.Target;
-                le.Hit(p, finisher, balance);
-            }
-        }
-
         public Bitmap Draw()
         {
             if (bmp == null)
@@ -182,28 +135,36 @@ namespace AnimationTransitionExample
             }
 
             Brush brush = Brushes.Black;
-            if (swingChainCooldown > 0)
+            if (combo.CanChain())
             {
                 brush = Brushes.Aqua;
             }
-            if (animations.Any() && animations.Peek().Peek().Name == "sword1")
+            if (animations.Any() && animations.Peek().Peek() is AttackAnimation)
             {
-                brush = Brushes.Aquamarine;
-            }
-            if (animations.Any() && animations.Peek().Peek().Name == "sword2")
-            {
-                brush = Brushes.Chartreuse;
-            }
-            if (animations.Any() && animations.Peek().Peek().Name == "sword3")
-            {
-                brush = Brushes.Teal;
+                if (combo.Attack == 0)
+                {
+                    brush = Brushes.Aquamarine;
+                }
+                if (combo.Attack == 1)
+                {
+                    brush = Brushes.Chartreuse;
+                }
+                if (combo.Attack == 2)
+                {
+                    brush = Brushes.Teal;
+                }
             }
             if (animations.Any() && animations.Peek().Peek().Name == "move")
             {
                 brush = Brushes.Bisque;
             }
+            if (stun > 0)
+            {
+                brush = Brushes.LightYellow;
+            }
 
             gfx.FillEllipse(brush, 0, 0, bmp.Width, bmp.Height);
+            gfx.DrawString("P", new Font("courier new", 10), Brushes.White, 2, 2);
 
             return bmp;
         }

@@ -51,6 +51,7 @@ namespace GameEngine
     public class Animation
     {
         public delegate bool TriggerDelegate(IDescription description);
+        public delegate void FirstDelegate(IDescription description);
         public delegate void TickDelegate(IDescription description);
         public delegate void FinalDelegate(IDescription description);
 
@@ -60,36 +61,55 @@ namespace GameEngine
         private int time;
 
         private bool interruptable;
+        private bool pausing;
 
         private TriggerDelegate trigger;
 
         private TickDelegate onTick;
 
+        private FirstDelegate onFirst;
+
         private FinalDelegate onFinal;
-        public Animation(string name, int duration, TriggerDelegate trigger, TickDelegate tick, FinalDelegate final)
+        public Animation(string name, int duration, TriggerDelegate trigger = null, FirstDelegate first = null, TickDelegate tick = null, FinalDelegate final = null)
         {
             Name = name;
             Duration = duration;
             AnimationManager.Instance.Add(this);
             this.trigger = trigger;
+            this.onFirst = first;
             onTick = tick;
             onFinal = final;
         }
 
-        private Animation()
+        protected Animation()
         {
         }
 
-        public Animation CreateNew()
+        protected virtual Animation CreateNew(Animation ani)
         {
-            Animation ani = new Animation();
             ani.Name = Name;
             ani.Duration = Duration;
             ani.time = Duration;
             ani.trigger = trigger;
+            ani.onFirst = onFirst;
             ani.onTick = onTick;
             ani.onFinal = onFinal;
             return ani;
+        }
+
+        public virtual Animation CreateNew()
+        {
+            Animation ani = new Animation();
+            return CreateNew(ani);
+        }
+
+        public void Reset()
+        {
+            this.time = Duration;
+        }
+        public void Kill()
+        {
+            this.time = 0;
         }
 
         public Animation Trigger(TriggerDelegate trigger)
@@ -104,9 +124,20 @@ namespace GameEngine
             return this;
         }
 
+        public Animation MakePausing()
+        {
+            this.pausing = true;
+            return this;
+        }
+
         public bool IsInterruptable()
         {
             return this.interruptable;
+        }
+
+        public bool IsPausing()
+        {
+            return this.pausing;
         }
 
         public int TicksLeft()
@@ -127,6 +158,10 @@ namespace GameEngine
             }
             else if (IsStarted() || (trigger?.Invoke(description) ?? true))
             {
+                if (time == Duration)
+                {
+                    onFirst?.Invoke(description);
+                }
                 if (time > 1)
                 {
                     onTick?.Invoke(description);

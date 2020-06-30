@@ -16,7 +16,7 @@ namespace GridWalkRPG
             this.controllerIndex = controllerIndex;
         }
 
-        public void TickAction(Location location, IDescription description)
+        public void TickAction(Location location, Entity entity)
         {
             WindowsKeyController controller = Program.Engine.Controllers[controllerIndex] as WindowsKeyController;
             if(!controller.IsHooked())
@@ -24,7 +24,7 @@ namespace GridWalkRPG
                 controller.Hook(Program.Frame);
             }
 
-            DescriptionPlayer descr = description as DescriptionPlayer;
+            DescriptionPlayer descr = entity.Description as DescriptionPlayer;
             if (descr == null)
             {
                 return;
