@@ -6,7 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Text;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace AnimationTransitionExample
 {
@@ -22,6 +26,8 @@ namespace AnimationTransitionExample
         public static long tps;
 
         public const int scale = 4;
+
+        public static readonly PrivateFontCollection FontCollection = new PrivateFontCollection();
 
         public static GameEngine.GameEngine Engine { get; private set; }
         public static void Main(string[] args)
@@ -48,6 +54,8 @@ namespace AnimationTransitionExample
             SetupAnimations();
 
             SetupSprites();
+
+            SetupSkills();
 
             Entity marker = Marker.Create(new Marker(0, 0));
             Engine.AddEntity(marker);
@@ -122,6 +130,9 @@ namespace AnimationTransitionExample
             new Sprite("enemy2", "Sprites/monster_03.png", 16, 16, 8, 16);
 
             new Sprite("hud", 0, 0);
+
+            //http://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=102
+            AddFont("Sprites/BetterPixels.ttf");
         }
 
         private static void SetupAnimations()
@@ -145,7 +156,7 @@ namespace AnimationTransitionExample
                 tick: Player.Swing,
                 final: d2d => LivingEntity.Strike(d2d, false, 40, 20));
 
-            new Animation(
+            new AttackAnimation(
                 "-sword1",
                 6,
                 tick: Player.BackSwing,
@@ -158,7 +169,7 @@ namespace AnimationTransitionExample
                 tick: Player.Swing,
                 final: d2d => LivingEntity.Strike(d2d, false, 40, 15));
 
-            new Animation(
+            new AttackAnimation(
                 "-sword2",
                 3,
                 tick: Player.BackSwing,
@@ -166,14 +177,14 @@ namespace AnimationTransitionExample
 
             new AttackAnimation(
                 "sword3",
-                24,
+                20,
                 first: LivingEntity.StartAttack,
                 tick: Player.Swing,
                 final: d2d => LivingEntity.Strike(d2d, true, 80, 30));
 
-            new Animation(
+            new AttackAnimation(
                 "-sword3",
-                6,
+                15,
                 tick: Player.BackSwing,
                 final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
@@ -194,12 +205,12 @@ namespace AnimationTransitionExample
 
             new AttackAnimation(
                 "bite1",
-                30,
+                10,
                 first: LivingEntity.StartAttack,
                 tick: Enemy.Bite,
                 final: d2d => LivingEntity.Strike(d2d, false, 40, 5));
 
-            new Animation(
+            new AttackAnimation(
                 "-bite1",
                 8,
                 tick: Enemy.BiteRecovery,
@@ -207,12 +218,12 @@ namespace AnimationTransitionExample
 
             new AttackAnimation(
                 "bite2",
-                12,
+                10,
                 first: LivingEntity.StartAttack,
                 tick: Enemy.FastBite,
                 final: d2d => LivingEntity.Strike(d2d, false, 40, 2));
 
-            new Animation(
+            new AttackAnimation(
                 "-bite2",
                 3,
                 tick: Enemy.BiteRecovery,
@@ -220,16 +231,36 @@ namespace AnimationTransitionExample
 
             new AttackAnimation(
                 "bite3",
-                12,
+                30,
                 first: LivingEntity.StartAttack,
                 tick: Enemy.FastBite,
                 final: d2d => LivingEntity.Strike(d2d, false, 40, 2));
 
-            new Animation(
+            new AttackAnimation(
                 "-bite3",
                 15,
                 tick: Enemy.BiteRecovery,
                 final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+        }
+
+        public static void AddFont(string fullFileName)
+        {
+            using (Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{fullFileName.Replace("/", ".")}"))
+            {
+                byte[] b = new byte[stream.Length];
+                stream.Read(b, 0, b.Length);
+
+                var handle = GCHandle.Alloc(b, GCHandleType.Pinned);
+                IntPtr pointer = handle.AddrOfPinnedObject();
+                try
+                {
+                    FontCollection.AddMemoryFont(pointer, b.Length);
+                }
+                finally
+                {
+                    handle.Free();
+                }
+            }
         }
     }
 

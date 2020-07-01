@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AnimationTransitionExample
+﻿namespace AnimationTransitionExample
 {
     public class AttackCombo
     {
@@ -24,20 +18,19 @@ namespace AnimationTransitionExample
 
         public bool CanChain()
         {
-            return attackAnimation < attackChainLength;
+            return attackAnimation < attackChainLength - 1;
         }
 
         public void Advance()
         {
             started = true;
             attackAnimation++;
-            attackAnimation = attackAnimation % attackChainLength;
             attackChainCooldown = attackGraceTime;
         }
 
         public bool Tick()
         {
-            if (CanChain())
+            if (attackChainCooldown > 0)
             {
                 attackChainCooldown--;
                 return false;

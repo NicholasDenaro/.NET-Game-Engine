@@ -15,7 +15,7 @@ namespace AnimationTransitionExample
 
         public Enemy(int x, int y) : base(Sprite.Sprites["enemy2"], x, y, 16, 16)
         {
-            combo = new AttackCombo(3, 5);
+            combo = new AttackCombo(3, 30);
             walkCycle = 2;
         }
 
@@ -52,13 +52,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double scale = enemy.Distance(enemy.target) / 5;
-            double t = AnimationFrame(enemy, 0, 0.8);
-            double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x) * scale;
-            double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
-            enemy.DrawOffsetX = Math.Cos(angle) * dist;
-            enemy.DrawOffsetY = Math.Sin(angle) * dist;
+            AnimationDistance(enemy, 0, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.target.Distance(enemy) - 8) / 5);
         }
 
         public static void FastBite(IDescription d)
@@ -69,13 +63,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double scale = enemy.Distance(enemy.target) / 5;
-            double t = AnimationFrame(enemy, 0.5, 0.8);
-            double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x) * scale;
-            double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
-            enemy.DrawOffsetX = Math.Cos(angle) * dist;
-            enemy.DrawOffsetY = Math.Sin(angle) * dist;
+            AnimationDistance(enemy, 0.5, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.target.Distance(enemy) - 8) / 5);
         }
 
         public static void BiteRecovery(IDescription d)
@@ -86,13 +74,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double scale = enemy.Distance(enemy.target) / 5;
-            double t = AnimationFrame(enemy, 0.8, 1.05);
-            double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x) * scale;
-            double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
-            enemy.DrawOffsetX = Math.Cos(angle) * dist;
-            enemy.DrawOffsetY = Math.Sin(angle) * dist;
+            AnimationDistance(enemy, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.target.Distance(enemy) - 8) / 5);
         }
 
         public Bitmap Draw()
@@ -146,8 +128,6 @@ namespace AnimationTransitionExample
             if (color != Color.Black)
             {
                 color = Color.FromArgb(255 / 2, color);
-                //Brush br = new SolidBrush(color);
-                //gfx.FillRectangle(br, 0, 0, bmp.Width, bmp.Height);
                 for (int i = 0; i < bmp.Width; i++)
                 {
                     for (int j = 0; j < bmp.Height; j++)
@@ -157,7 +137,6 @@ namespace AnimationTransitionExample
                         bmp.SetPixel(i, j, n);
                     }
                 }
-                //gfx.DrawString("E", new Font("courier new", 10), Brushes.Navy, 2, 2);
             }
 
             return bmp;

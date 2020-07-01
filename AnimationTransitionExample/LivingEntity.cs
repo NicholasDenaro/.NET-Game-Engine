@@ -47,7 +47,7 @@ namespace AnimationTransitionExample
                 balance++;
             }
 
-            if (combo.IsStarted() && (animations.Any() && !(animations.Peek().Peek() is AttackAnimation) || !animations.Any()) && combo.Tick())
+            if (combo.IsStarted() && ((animations.Any() && !(animations.Peek().Peek() is AttackAnimation)) || !animations.Any()) && combo.Tick())
             {
                 combo.Reset();
             }
@@ -81,7 +81,6 @@ namespace AnimationTransitionExample
 
             if (health <= 0)
             {
-                ////location.RemoveEntity(entity.Id);
                 return true;
             }
 
@@ -191,6 +190,10 @@ namespace AnimationTransitionExample
             {
                 le.combo.Advance();
             }
+            else
+            {
+                le.combo.Reset();
+            }
         }
 
         public static void ResetToAttackPosition(IDescription d)
@@ -271,6 +274,15 @@ namespace AnimationTransitionExample
             double duration = le.animations.Peek().Peek().Duration;
 
             return start + (duration - ticksLeft) * 1.0 / duration * (cutoff - start);
+        }
+
+        public static void AnimationDistance(LivingEntity le, double start, double end, Func<double, double, double> distFunc, double scale)
+        {
+            double t = AnimationFrame(le, start, end);
+            double dist = distFunc(t, scale);
+            double angle = Math.Atan2(le.target.Y - le.Y, le.target.X - le.X);
+            le.DrawOffsetX = Math.Cos(angle) * dist;
+            le.DrawOffsetY = Math.Sin(angle) * dist;
         }
     }
 }

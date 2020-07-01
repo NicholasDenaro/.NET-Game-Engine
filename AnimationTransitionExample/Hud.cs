@@ -71,15 +71,17 @@ namespace AnimationTransitionExample
 
             gfx.ScaleTransform((float)0.25, (float)0.25);
 
+            Font f = new Font(Program.FontCollection.Families[0], 18);
+
             gfx.FillRectangle(Brushes.Black, 0, 0, Width, 52);
-            gfx.DrawString($"{Program.tickTime}", new Font("courier new", 12), Brushes.White, new Point(0, 0));
-            gfx.DrawString($"{Program.drawTime}", new Font("courier new", 12), Brushes.White, new Point(0, 16));
-            gfx.DrawString($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks/Program.TPS):##}%", new Font("courier new", 12), Brushes.White, new Point(0, 32));
+            gfx.DrawString($"{Program.tickTime}", f, Brushes.White, new Point(0, 0));
+            gfx.DrawString($"{Program.drawTime}", f, Brushes.White, new Point(0, 16));
+            gfx.DrawString($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks/Program.TPS):##}%", f, Brushes.White, new Point(0, 32));
 
             gfx.FillRectangle(Brushes.Black, 0, Height - 52, Width, 52);
-            gfx.DrawString($"{moveKey} click to move", new Font("courier new", 12), Brushes.White, new Point(0, Height - 52));
-            gfx.DrawString($"Hold {targetKey} to target", new Font("courier new", 12), Brushes.White, new Point(0, Height - 36));
-            gfx.DrawString($"{targetKey} + {moveKey} click to attack", new Font("courier new", 12), Brushes.White, new Point(0, Height - 20));
+            gfx.DrawString($"{moveKey} click to move", f, Brushes.White, new Point(0, Height - 52));
+            gfx.DrawString($"Hold {targetKey} to target", f, Brushes.White, new Point(0, Height - 36));
+            gfx.DrawString($"{targetKey} + {moveKey} click to attack", f, Brushes.White, new Point(0, Height - 20));
 
             return bmp;
         }

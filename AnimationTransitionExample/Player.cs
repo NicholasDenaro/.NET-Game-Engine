@@ -139,13 +139,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double scale = player.target.Distance(player) / 5;
-            double t = AnimationFrame(player, 0, 0.8);
-            double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x) * scale;
-            double angle = Math.Atan2(player.target.Y - player.Y, player.target.X - player.X);
-            player.DrawOffsetX = Math.Cos(angle) * dist;
-            player.DrawOffsetY = Math.Sin(angle) * dist;
+            AnimationDistance(player, 0, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.target.Distance(player) - 8) / 5);
         }
 
         public static void BackSwing(IDescription d)
@@ -156,13 +150,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double scale = player.target.Distance(player) / 5;
-            double t = AnimationFrame(player, 0.8, 1.05);
-            double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x) * scale;
-            double angle = Math.Atan2(player.target.Y - player.Y, player.target.X - player.X);
-            player.DrawOffsetX = Math.Cos(angle) * dist;
-            player.DrawOffsetY = Math.Sin(angle) * dist;
+            AnimationDistance(player, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.target.Distance(player) - 8) / 5);
         }
 
         public Bitmap Draw()
@@ -217,8 +205,6 @@ namespace AnimationTransitionExample
             if (color != Color.Black)
             {
                 color = Color.FromArgb(255 / 2, color);
-                //Brush br = new SolidBrush(color);
-                //gfx.FillRectangle(br, 0, 0, bmp.Width, bmp.Height);
                 for (int i = 0; i < bmp.Width; i++)
                 {
                     for (int j = 0; j < bmp.Height; j++)
@@ -228,7 +214,6 @@ namespace AnimationTransitionExample
                         bmp.SetPixel(i, j, n);
                     }
                 }
-                //gfx.DrawString("P", new Font("courier new", 10), Brushes.White, 2, 2);
             }
 
             return bmp;
