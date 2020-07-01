@@ -30,6 +30,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Sprites\monster_03.png" />
+    <None Remove="Sprites\player.png" />
+    <None Remove="Sprites\TileMap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Sprites\monster_03.png" />
+    <EmbeddedResource Include="Sprites\player.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sprites\TileMap.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System" />
     
     <Reference Include="System.Core" />

@@ -36,7 +36,7 @@ namespace GameEngine
             return new MouseEventArgs(e.Button, e.Clicks, e.X / xScale, e.Y / yScale, e.Delta);
         }
 
-        public void Draw(Bitmap img)
+        public void Draw(Bitmap img, Bitmap overlay)
         {
             Drawing = true;
 
@@ -45,6 +45,7 @@ namespace GameEngine
 
             //gfx.DrawImage(img, 0, 0, this.Width + 2, this.Height + 2);
             gfx.DrawImage(img, 1, 1, this.Width, this.Height);
+            gfx.DrawImage(overlay, 1, 1, overlay.Width, overlay.Height);
             //gfx.DrawRectangle(Pens.Cyan, 0, 0, width - 1, height - 1);
             Drawing = false;
             Invalidate();
@@ -55,7 +56,7 @@ namespace GameEngine
             GameView2D view2D = view as GameView2D;
             if (view2D != null)
             {
-                Draw(view2D.Image);
+                Draw(view2D.Image, view2D.Overlay);
             }
         }
 

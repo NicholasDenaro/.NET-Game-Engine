@@ -18,7 +18,7 @@ namespace GridWalkRPG
         {
             Engine = new FixedTickEngine(60);
 
-            GameView2D view = new GameView2D(240, 160, Color.Magenta);
+            GameView2D view = new GameView2D(240, 160, 4, 4, Color.Magenta);
             view.ScrollTop = view.Height / 2;
             view.ScrollBottom = view.Height / 2 - 16;
             view.ScrollLeft = view.Width / 2;

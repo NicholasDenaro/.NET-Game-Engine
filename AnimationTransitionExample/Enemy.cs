@@ -13,9 +13,10 @@ namespace AnimationTransitionExample
         private Bitmap bmp;
         private Graphics gfx;
 
-        public Enemy(int x, int y) : base(Sprite.Sprites["enemy"], x, y, 16, 16)
+        public Enemy(int x, int y) : base(Sprite.Sprites["enemy2"], x, y, 16, 16)
         {
             combo = new AttackCombo(3, 5);
+            walkCycle = 2;
         }
 
         public static Entity Create(Enemy enemy)
@@ -38,7 +39,7 @@ namespace AnimationTransitionExample
                 animations.Push(new AnimationChain(
                     AnimationManager.Instance[$"-bite{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
                     AnimationManager.Instance[$"bite{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                    AnimationManager.Instance["move"].MakeInterruptable()
+                    AnimationManager.Instance["move"].MakeInterruptable().MakePausing()
                         .Trigger(pd => this.Distance(this.target) < 20 && !this.IsBeingKnockedBack())));
             }
         }
@@ -51,11 +52,13 @@ namespace AnimationTransitionExample
                 return;
             }
 
+            double scale = enemy.Distance(enemy.target) / 5;
             double t = AnimationFrame(enemy, 0, 0.8);
             double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x);
+            double dist = -x * Math.Sin(x) * scale;
             double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
-            enemy.SetCoords(enemy.attackPosition.X + Math.Cos(angle) * dist, enemy.attackPosition.Y + Math.Sin(angle) * dist);
+            enemy.DrawOffsetX = Math.Cos(angle) * dist;
+            enemy.DrawOffsetY = Math.Sin(angle) * dist;
         }
 
         public static void FastBite(IDescription d)
@@ -66,11 +69,13 @@ namespace AnimationTransitionExample
                 return;
             }
 
+            double scale = enemy.Distance(enemy.target) / 5;
             double t = AnimationFrame(enemy, 0.5, 0.8);
             double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x);
+            double dist = -x * Math.Sin(x) * scale;
             double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
-            enemy.SetCoords(enemy.attackPosition.X + Math.Cos(angle) * dist, enemy.attackPosition.Y + Math.Sin(angle) * dist);
+            enemy.DrawOffsetX = Math.Cos(angle) * dist;
+            enemy.DrawOffsetY = Math.Sin(angle) * dist;
         }
 
         public static void BiteRecovery(IDescription d)
@@ -81,11 +86,13 @@ namespace AnimationTransitionExample
                 return;
             }
 
+            double scale = enemy.Distance(enemy.target) / 5;
             double t = AnimationFrame(enemy, 0.8, 1.05);
             double x = t * 2 * Math.PI;
-            double dist = -x * Math.Sin(x);
+            double dist = -x * Math.Sin(x) * scale;
             double angle = Math.Atan2(enemy.target.Y - enemy.Y, enemy.target.X - enemy.X);
-            enemy.SetCoords(enemy.attackPosition.X + Math.Cos(angle) * dist, enemy.attackPosition.Y + Math.Sin(angle) * dist);
+            enemy.DrawOffsetX = Math.Cos(angle) * dist;
+            enemy.DrawOffsetY = Math.Sin(angle) * dist;
         }
 
         public Bitmap Draw()
@@ -96,45 +103,62 @@ namespace AnimationTransitionExample
                 gfx = Graphics.FromImage(bmp);
             }
 
-            Brush brush = Brushes.Yellow;
+            gfx.Clear(Color.Transparent);
+            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), 0, 0);
+            Color color = Color.Black;
 
             if (animations.Any() && animations.Peek().Peek() is AttackAnimation)
             {
                 if (combo.Attack == 0)
                 {
-                    brush = Brushes.Aquamarine;
+                    color = Color.Aquamarine;
                 }
                 if (combo.Attack == 1)
                 {
-                    brush = Brushes.Chartreuse;
+                    color = Color.Chartreuse;
                 }
                 if (combo.Attack == 2)
                 {
-                    brush = Brushes.Teal;
+                    color = Color.Teal;
                 }
-            }
-            else if (animations.Any())
-            {
-                brush = Brushes.Orange;
             }
 
             if (animations.Any() && animations.Peek().Peek().Name == "slideback")
             {
-                brush = Brushes.DarkOrange;
+                color = Color.DarkOrange;
             }
 
             if (animations.Any() && animations.Peek().Peek().Name == "knockback")
             {
-                brush = Brushes.SaddleBrown;
+                color = Color.SaddleBrown;
             }
 
             if (stun > 0)
             {
-                brush = Brushes.LightYellow;
+                color = Color.LightYellow;
             }
 
-            gfx.FillEllipse(brush, 0, 0, bmp.Width, bmp.Height);
-            gfx.DrawString("E", new Font("courier new", 10), Brushes.Navy, 2, 2);
+            if (IsDead())
+            {
+                color = Color.DarkViolet;
+            }
+
+            if (color != Color.Black)
+            {
+                color = Color.FromArgb(255 / 2, color);
+                //Brush br = new SolidBrush(color);
+                //gfx.FillRectangle(br, 0, 0, bmp.Width, bmp.Height);
+                for (int i = 0; i < bmp.Width; i++)
+                {
+                    for (int j = 0; j < bmp.Height; j++)
+                    {
+                        Color c = bmp.GetPixel(i, j);
+                        Color n = Color.FromArgb(c.A, (c.R + color.R) / 2, (c.G + color.G) / 2, (c.B + color.B) / 2);
+                        bmp.SetPixel(i, j, n);
+                    }
+                }
+                //gfx.DrawString("E", new Font("courier new", 10), Brushes.Navy, 2, 2);
+            }
 
             return bmp;
         }

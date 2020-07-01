@@ -151,6 +151,7 @@ namespace GameEngine
             {
                 if (trigger(description))
                 {
+                    onFinal?.Invoke(description);
                     return true;
                 }
 

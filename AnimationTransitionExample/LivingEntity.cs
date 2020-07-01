@@ -19,10 +19,15 @@ namespace AnimationTransitionExample
         protected int stun;
         private Point knockbackFrom;
         protected AttackCombo combo;
-        protected Point attackPosition;
 
         protected LivingEntity target;
         public LivingEntity Target => target;
+
+        public CombatSkill combatSkill;
+
+        protected int direction;
+        private double walkIndex = 0;
+        protected int walkCycle;
 
         public LivingEntity(Sprite sprite, int x, int y, int w, int h) : base(sprite, x, y, w, h)
         {
@@ -30,17 +35,14 @@ namespace AnimationTransitionExample
             balance = 100;
             knockbackFrom = Point.Empty;
             animations = new Stack<AnimationChain>();
+            this.onMove += LivingEntity.WalkIndexing;
         }
 
         public bool Tick(Location location, Entity entity)
         {
-            if (health <= 0)
-            {
-                location.RemoveEntity(entity.Id);
-                return true;
-            }
+            ImageIndex = direction + ((int)walkIndex % walkCycle);
 
-            if (balance < 100 && (!animations.Any() || !animations.Peek().Peek().Name.Contains("back")))
+            if (!IsDead() && balance < 100 && (!animations.Any() || !animations.Peek().Peek().Name.Contains("back")))
             {
                 balance++;
             }
@@ -77,7 +79,35 @@ namespace AnimationTransitionExample
                 }
             }
 
+            if (health <= 0)
+            {
+                ////location.RemoveEntity(entity.Id);
+                return true;
+            }
+
             return false;
+        }
+
+        public static void WalkIndexing(Description2D d2d)
+        {
+            LivingEntity le = d2d as LivingEntity;
+            if(le == null)
+            {
+                return;
+            }
+
+            le.walkIndex += 0.25;
+        }
+
+        public static void EndMove(IDescription d)
+        {
+            LivingEntity le = d as LivingEntity;
+            if (le == null)
+            {
+                return;
+            }
+
+            le.walkIndex = 0;
         }
 
         public void Hit(Description2D hitter, bool finisher, int balanceDiff, int damage)
@@ -88,21 +118,29 @@ namespace AnimationTransitionExample
             }
 
             stun = 15;
+            DrawOffsetX = 0;
+            DrawOffsetY = 0;
             if (animations.Any() && animations.Peek().Peek().IsInterruptable())
             {
                 animations.Pop();
+                combo.Reset();
             }
 
             health -= damage;
             balance -= balanceDiff;
-            if (balance <= 0)
+            if (balance <= 0 || IsDead())
             {
                 if (animations.Any())
                 {
                     animations.Pop();
                 }
-                animations.Push(new AnimationChain(AnimationManager.Instance["getup"].MakeInterruptable().MakePausing()));
-                animations.Push(new AnimationChain(AnimationManager.Instance[finisher ? "knockback" : "slideback"].MakeInterruptable().MakePausing()));
+
+                if (!IsDead())
+                {
+                    animations.Push(new AnimationChain(AnimationManager.Instance["getup"].MakeInterruptable().MakePausing()));
+                }
+
+                animations.Push(new AnimationChain(AnimationManager.Instance[finisher || IsDead() ? "knockback" : "slideback"].MakeInterruptable().MakePausing()));
                 knockbackFrom = hitter.Position;
                 stun = 0;
             }
@@ -116,8 +154,20 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double dir = Math.Atan2(le.Target.Y - le.Y, le.Target.X - le.X);
+            double dir = le.Direction(le.target);
+            WalkDirection(le, dir);
             le.ChangeCoordsDelta(Math.Cos(dir), Math.Sin(dir));
+        }
+
+        public static void WalkDirection(LivingEntity le, double direction)
+        {
+            double imgDir = -direction;
+            if (imgDir < 0)
+            {
+                imgDir += Math.PI * 2;
+            }
+
+            le.direction = (int)((imgDir + Math.PI / 4) / (Math.PI / 2) + 3) * 4;
         }
 
         public static void StartAttack(IDescription d)
@@ -127,8 +177,6 @@ namespace AnimationTransitionExample
             {
                 return;
             }
-
-            le.attackPosition = le.Position;
         }
 
         public static void Combo(IDescription d)
@@ -143,6 +191,17 @@ namespace AnimationTransitionExample
             {
                 le.combo.Advance();
             }
+        }
+
+        public static void ResetToAttackPosition(IDescription d)
+        {
+            LivingEntity le = d as LivingEntity;
+            if (le == null)
+            {
+                return;
+            }
+            le.DrawOffsetX = 0;
+            le.DrawOffsetY = 0;
         }
 
         public static void Strike(IDescription d, bool finisher, int balance, int damage)
@@ -160,6 +219,11 @@ namespace AnimationTransitionExample
             return animations.Any() ? animations.Peek().Peek().Name == "knockback" || animations.Peek().Peek().Name == "slideback" : false;
         }
 
+        public bool IsDead()
+        {
+            return health <= 0;
+        }
+
         public static void KnockBack(IDescription description)
         {
             LivingEntity le = description as LivingEntity;
@@ -170,6 +234,8 @@ namespace AnimationTransitionExample
 
             double direction = Math.Atan2(le.Y - le.knockbackFrom.Y, le.X - le.knockbackFrom.X);
             le.ChangeCoordsDelta(Math.Cos(direction) * 4, Math.Sin(direction) * 4);
+            le.DrawOffsetX = 0;
+            le.DrawOffsetY = 0;
         }
 
         public static void SlideBack(IDescription description)
@@ -182,6 +248,8 @@ namespace AnimationTransitionExample
 
             double direction = Math.Atan2(le.Y - le.knockbackFrom.Y, le.X - le.knockbackFrom.X);
             le.ChangeCoordsDelta(Math.Cos(direction) * 4, Math.Sin(direction) * 4);
+            le.DrawOffsetX = 0;
+            le.DrawOffsetY = 0;
         }
 
         public static void GetUp(IDescription description)
@@ -193,6 +261,8 @@ namespace AnimationTransitionExample
             }
 
             le.balance = 100;
+            le.DrawOffsetX = 0;
+            le.DrawOffsetY = 0;
         }
 
         public static double AnimationFrame(LivingEntity le, double start, double cutoff)

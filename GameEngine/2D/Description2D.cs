@@ -9,15 +9,25 @@ namespace GameEngine._2D
 {
     public class Description2D : IDescription, IFollowable
     {
+        public delegate void MovementTrigger(Description2D d2d);
+
         public double X { get; private set; }
         public double Y { get; private set; }
+
+        public double DrawOffsetX { get; protected set; }
+        public double DrawOffsetY { get; protected set; }
+
         public Sprite Sprite { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
         public int ImageIndex { get; set; }
         virtual public Rectangle Bounds => new Rectangle(new Point((int)X, (int)Y), new Size(Width, Height));
 
+        protected MovementTrigger onMove;
+
         public Point Position => new Point((int)X, (int)Y);
+
+        public bool DrawInOverlay { get; protected set; }
 
         public delegate Bitmap DirectDraw();
 
@@ -58,7 +68,7 @@ namespace GameEngine._2D
 
         public void SetCoords(double x, double y)
         {
-            // Listener here?
+            onMove?.Invoke(this);
             this.X = x;
             this.Y = y;
         }
@@ -81,6 +91,16 @@ namespace GameEngine._2D
         public double Distance(Description2D other)
         {
             return Math.Sqrt((X - other.X) * (X - other.X) + (Y - other.Y) * (Y - other.Y));
+        }
+
+        public double Distance(double x, double y)
+        {
+            return Math.Sqrt((X - x) * (X - x) + (Y - y) * (Y - y));
+        }
+
+        public double Direction(Description2D other)
+        {
+            return Math.Atan2(other.Y - Y, other.X - X);
         }
 
         virtual public string Serialize()

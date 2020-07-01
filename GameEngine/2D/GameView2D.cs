@@ -6,8 +6,10 @@ namespace GameEngine._2D
 {
     public class GameView2D : FollowingView
     {
-        private Graphics[] gfxs;
+        private Graphics[] gfxsbuffer;
+        private Graphics[] gfxsoverlay;
         private Bitmap[] buffer;
+        private Bitmap[] overlay;
         private int buf;
 
         private Drawer2D drawer;
@@ -33,13 +35,23 @@ namespace GameEngine._2D
             }
         }
 
-        public GameView2D(int width, int height, Color bgColor)
+        public Bitmap Overlay
+        {
+            get
+            {
+                return overlay[buf % 2];
+            }
+        }
+
+        public GameView2D(int width, int height, int xScale, int yScale, Color bgColor)
         {
             Bounds = new Rectangle(0, 0, width, height);
             buffer = new Bitmap[] { new Bitmap(width, height), new Bitmap(width, height) };
-            gfxs = new Graphics[] { Graphics.FromImage(buffer[0]), Graphics.FromImage(buffer[1]) };
-            gfxs[0].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            gfxs[1].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            overlay = new Bitmap[] { new Bitmap(width * xScale, height * yScale), new Bitmap(width * xScale, height * yScale) };
+            gfxsbuffer = new Graphics[] { Graphics.FromImage(buffer[0]), Graphics.FromImage(buffer[1]) };
+            gfxsoverlay = new Graphics[] { Graphics.FromImage(overlay[0]), Graphics.FromImage(overlay[1]) };
+            gfxsbuffer[0].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            gfxsbuffer[1].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
             drawer = new Drawer2D();
 
@@ -63,7 +75,10 @@ namespace GameEngine._2D
                 return;
             }
 
-            Graphics gfx = gfxs[++buf % 2];
+            buf++;
+            Graphics gfx = gfxsbuffer[buf % 2];
+            Graphics gfxOverlay = gfxsoverlay[buf % 2];
+            gfxOverlay.Clear(Color.Transparent);
 
             gfx.FillRectangle(backgroundColor, 0, 0, Bounds.Width, Bounds.Height);
 
@@ -78,7 +93,7 @@ namespace GameEngine._2D
 
             foreach (IDescription description in descriptions)
             {
-                drawer.Draw(gfx, description);
+                drawer.Draw(new Graphics[] { gfx, gfxOverlay }, description);
             }
 
             gfx.TranslateTransform(Bounds.X, Bounds.Y);
@@ -168,11 +183,13 @@ namespace GameEngine._2D
         {
             if (description is TileMap)
             {
-                Draw(output as Graphics, description as TileMap);
+                Draw((output as Graphics[])[0], description as TileMap);
             }
             else
             {
-                Draw(output as Graphics, description as Description2D);
+                Description2D d2d = description as Description2D;
+                Graphics gfx = (output as Graphics[])[d2d.DrawInOverlay ? 1 : 0];
+                Draw(gfx, d2d);
             }
         }
 
@@ -182,7 +199,7 @@ namespace GameEngine._2D
             {
                 if (description.HasImage())
                 {
-                    gfx.DrawImage(description.Image(), (float)description.X - (description?.Sprite.X ?? 0), (float)description.Y - (description?.Sprite.Y ?? 0));
+                    gfx.DrawImage(description.Image(), (float)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (float)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0));
                 }
             }
         }

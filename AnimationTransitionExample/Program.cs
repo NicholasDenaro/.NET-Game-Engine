@@ -2,7 +2,9 @@
 using GameEngine;
 using GameEngine._2D;
 using GameEngine.Windows;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 
@@ -15,14 +17,20 @@ namespace AnimationTransitionExample
         public const int SCREENWIDTH = 160;
         public const int SCREENHEIGHT = 144;
 
+        public static long tickTime;
+        public static long drawTime;
+        public static long tps;
+
+        public const int scale = 4;
+
         public static GameEngine.GameEngine Engine { get; private set; }
         public static void Main(string[] args)
         {
             Engine = new FixedTickEngine(TPS);
-            GameView2D view = new GameView2D(SCREENWIDTH, SCREENHEIGHT, Color.DarkSlateGray);
+            GameView2D view = new GameView2D(SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray);
             Engine.View = view;
 
-            GameFrame frame = new GameFrame(0, 0, 160, 144, 4, 4);
+            GameFrame frame = new GameFrame(0, 0, 160, 144, scale, scale);
             frame.Start();
             Engine.DrawEnd += frame.Pane.DrawHandle;
 
@@ -44,14 +52,39 @@ namespace AnimationTransitionExample
             Entity marker = Marker.Create(new Marker(0, 0));
             Engine.AddEntity(marker);
 
-            Entity enemy = Enemy.Create(new Enemy(64, 64));
-            Engine.AddEntity(enemy);
+            Random r = new Random(0);
+            for (int i = 0; i < 5; i++)
+            {
+                Entity enemy = Enemy.Create(new Enemy(r.Next(8, SCREENWIDTH - 8), r.Next(8, SCREENHEIGHT - 8)));
+                Engine.AddEntity(enemy);
+            }
 
             Entity player = Player.Create(new Player(50, 50, Engine.GetControllerIndex(keyController), Engine.GetControllerIndex(mouseController)));
             Engine.AddEntity(player);
 
-            Entity hud = Hud.Create(new Hud(Engine.GetControllerIndex(keyController), Engine.GetControllerIndex(mouseController), SCREENWIDTH, SCREENHEIGHT));
+            Entity hud = Hud.Create(new Hud(Engine.GetControllerIndex(keyController), Engine.GetControllerIndex(mouseController), SCREENWIDTH * scale, SCREENHEIGHT * scale));
             Engine.AddEntity(hud);
+
+            Stopwatch swTick = new Stopwatch();
+            Engine.TickStart += (e, o) => swTick.Restart();
+            Engine.TickEnd += (e, o) => { swTick.Stop(); ; tickTime = swTick.ElapsedTicks; };
+
+            Stopwatch swDraw = new Stopwatch();
+            Engine.DrawStart += (e, o) => swDraw.Restart();
+            Engine.DrawEnd += (e, o) => { swDraw.Stop(); drawTime = swDraw.ElapsedTicks; };
+
+            int ticks = 0;
+            Stopwatch tpsWatch = Stopwatch.StartNew();
+            Engine.TickStart += (e, o) => ticks++;
+            Engine.TickEnd += (e, o) => 
+            {
+                if (tpsWatch.ElapsedMilliseconds >= 1000)
+                {
+                    tpsWatch.Restart();
+                    tps = ticks;
+                    ticks = 0;
+                }
+            };
 
             Engine.Start();
 
@@ -69,6 +102,14 @@ namespace AnimationTransitionExample
             { System.Windows.Forms.MouseButtons.None, Actions.MOUSEINFO },
         };
 
+        private static void SetupSkills()
+        {
+            new CombatSkill("Heavy", (loc, descr) => true);
+            new CombatSkill("Block", (loc, descr) => true);
+            new CombatSkill("Counter", (loc, descr) => true);
+            new CombatSkill("Ranged", (loc, descr) => true);
+        }
+
         private static void SetupSprites()
         {
             new Sprite("marker", 4, 4);
@@ -76,6 +117,9 @@ namespace AnimationTransitionExample
             new Sprite("enemy", 8, 8);
 
             new Sprite("player", 8, 8);
+
+            new Sprite("player2", "Sprites/player.png", 16, 16, 8, 16);
+            new Sprite("enemy2", "Sprites/monster_03.png", 16, 16, 8, 16);
 
             new Sprite("hud", 0, 0);
         }
@@ -85,12 +129,14 @@ namespace AnimationTransitionExample
             new Animation(
                 "move",
                 -1,
-                tick: LivingEntity.Move);
+                tick: LivingEntity.Move,
+                final: LivingEntity.EndMove);
 
             new Animation(
                 "playermove",
                 -1,
-                tick: Player.PlayerMove);
+                tick: Player.PlayerMove,
+                final: LivingEntity.EndMove);
 
             new AttackAnimation(
                 "sword1",
@@ -103,7 +149,7 @@ namespace AnimationTransitionExample
                 "-sword1",
                 6,
                 tick: Player.BackSwing,
-                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); });
+                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "sword2",
@@ -116,7 +162,7 @@ namespace AnimationTransitionExample
                 "-sword2",
                 3,
                 tick: Player.BackSwing,
-                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); });
+                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "sword3",
@@ -129,7 +175,7 @@ namespace AnimationTransitionExample
                 "-sword3",
                 6,
                 tick: Player.BackSwing,
-                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); });
+                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new Animation(
                 "knockback",
@@ -157,7 +203,7 @@ namespace AnimationTransitionExample
                 "-bite1",
                 8,
                 tick: Enemy.BiteRecovery,
-                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); });
+                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "bite2",
@@ -170,7 +216,7 @@ namespace AnimationTransitionExample
                 "-bite2",
                 3,
                 tick: Enemy.BiteRecovery,
-                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); });
+                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "bite3",
@@ -183,9 +229,9 @@ namespace AnimationTransitionExample
                 "-bite3",
                 15,
                 tick: Enemy.BiteRecovery,
-                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); });
+                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
         }
     }
 
-    public enum Actions { UP = 0, DOWN = 1, LEFT = 2 , RIGHT = 3, MOVE = 4, TARGET = 5, MOUSEINFO = 6 };
+    public enum Actions { UP = 0, DOWN = 1, LEFT = 2 , RIGHT = 3, MOVE = 4, TARGET = 5, MOUSEINFO = 6, HOTBAR1 = 7, HOTBAR2 = 8, HOTBAR3 = 9, HOTBAR4 = 10 };
 }
