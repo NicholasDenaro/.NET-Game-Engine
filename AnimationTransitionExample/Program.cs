@@ -117,10 +117,29 @@ namespace AnimationTransitionExample
 
         private static void SetupSkills()
         {
-            new CombatSkill("heavy", new SkillIcon(13, 3), LivingEntity.HeavyAttack, false);
-            new CombatSkill("block", new SkillIcon(5, 4), (l, d) => false, false);
-            new CombatSkill("counter", new SkillIcon(10, 10), (l, d) => false, false);
-            new CombatSkill("ranged", new SkillIcon(3, 4), (l, d) => false, false);
+            new CombatSkill(
+                "heavy",
+                new SkillIcon(13, 3),
+                LivingEntity.HeavyAttack,
+                false);
+
+            new CombatSkill(
+                "block",
+                new SkillIcon(5, 4),
+                (l, d) => false,
+                false);
+
+            new CombatSkill(
+                "counter",
+                new SkillIcon(10, 10),
+                (l, d) => false,
+                false);
+
+            new CombatSkill(
+                "ranged",
+                new SkillIcon(3, 4),
+                (l, d) => false,
+                false);
         }
 
         private static void SetupSprites()
@@ -137,6 +156,8 @@ namespace AnimationTransitionExample
             new Sprite("hud", 0, 0);
 
             new Sprite("skills", "Sprites/skills.png", 16, 16);
+
+            new Sprite("window", "Sprites/_sheet_window_20.png", 16, 16);
 
             //http://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=102
             AddFont("Sprites/BetterPixels.ttf");
@@ -262,9 +283,14 @@ namespace AnimationTransitionExample
                 tick: Player.HeavyBackAnimation,
                 final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
-            new AttackAnimation(
+            new Animation(
                 "blocked",
                 30);
+
+            new Animation(
+                "activateskill",
+                30,
+                final: LivingEntity.ActivateSkill);
         }
 
         public static void AddFont(string fullFileName)

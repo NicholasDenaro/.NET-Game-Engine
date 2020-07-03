@@ -49,10 +49,18 @@ namespace AnimationTransitionExample
 
             Player player = Program.Engine.Location.GetEntities<Player>().FirstOrDefault();
 
-            if (player.CombatSkill != null)
+            Skill skill = player.PreppedSkill ?? player.ActiveSkill;
+            if (skill != null)
             {
-                gfx.DrawImage(player.CombatSkill.Icon.Image(), (int)player.X - 2, (int)player.Y - 24);
+                float scale = 1;
+                if (skill == player.PreppedSkill)
+                {
+                    scale = (AnimationManager.Instance["activateskill"].Duration - player.SkillActivationTime) * 1.0f / AnimationManager.Instance["activateskill"].Duration / 2 + 0.6f;
+                }
+                gfx.DrawImage(skill.Icon.Image(), (int)player.X - 2, (int)player.Y - 24, 8 * scale,  8 * scale);
             }
+
+            gfx.DrawImage(player.Hotbar.Image(), 0, bmp.Height / 4 - 16 * 2);
 
             LivingEntity le = player.LockTarget;
 

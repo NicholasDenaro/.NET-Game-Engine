@@ -2,10 +2,11 @@
 using GameEngine._2D;
 using GameEngine.Interfaces;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace AnimationTransitionExample
 {
-    public class Skill
+    public class Skill : HotbarAction
     {
         public delegate bool SkillAction(Location location, IDescription description);
 
@@ -15,14 +16,14 @@ namespace AnimationTransitionExample
 
         public SkillIcon Icon { get; private set; }
 
-        public SkillAction Action { get; private set; }
+        public SkillAction SAction { get; private set; }
 
         public bool CanMove { get; private set; }
 
         public Skill(string name, SkillIcon icon, SkillAction action, bool canMove)
         {
             this.Name = name;
-            this.Action = action;
+            this.SAction = action;
             this.Icon = icon;
             this.CanMove = canMove;
             SkillManager.Instance.Add(this);
@@ -32,11 +33,16 @@ namespace AnimationTransitionExample
         {
         }
 
+        public void Action(LivingEntity entity)
+        {
+            entity.SetPreppedSkill(this);
+        }
+
         protected virtual Skill CreateNew(Skill skill)
         {
             skill.Name = Name;
             skill.Icon = Icon;
-            skill.Action = Action;
+            skill.SAction = SAction;
             skill.CanMove = CanMove;
 
             return skill;
@@ -46,6 +52,11 @@ namespace AnimationTransitionExample
         {
             Skill skill = new Skill();
             return CreateNew(skill);
+        }
+
+        public Image Image()
+        {
+            return Icon.Image();
         }
     }
 

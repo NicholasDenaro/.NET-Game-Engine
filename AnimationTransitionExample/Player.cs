@@ -19,11 +19,24 @@ namespace AnimationTransitionExample
 
         public LivingEntity LockTarget { get; private set; }
 
+        public Hotbar Hotbar { get; private set; }
+
         public Player(int x, int y, int keyController, int mouseController) : base(Sprite.Sprites["player2"], x, y, 16, 16)
         {
             this.keyController = keyController;
             this.mouseController = mouseController;
             combo = new AttackCombo(3, 15);
+            ////Hotbar = new Hotbar(
+            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["heavy"].CreateNew(),
+            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["block"].CreateNew(),
+            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["counter"].CreateNew(),
+            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["ranged"].CreateNew());
+            Hotbar = new Hotbar(
+                SkillManager.Instance["heavy"],
+                SkillManager.Instance["block"],
+                SkillManager.Instance["counter"],
+                SkillManager.Instance["ranged"]
+                );
             walkCycle = 4;
         }
 
@@ -76,31 +89,36 @@ namespace AnimationTransitionExample
                 LockTarget = null;
             }
 
-            if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR1].State == HoldState.PRESS)
+            for (int i = (int)Actions.HOTBAR1; i <= (int)Actions.HOTBAR4; i++)
             {
-                base.CombatSkill = (CombatSkill)SkillManager.Instance["heavy"].CreateNew();
-            }
-            else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR2].State == HoldState.PRESS)
-            {
-                base.CombatSkill = (CombatSkill)SkillManager.Instance["block"].CreateNew();
-            }
-            else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR3].State == HoldState.PRESS)
-            {
-                base.CombatSkill = (CombatSkill)SkillManager.Instance["counter"].CreateNew();
-
-                if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                if (Program.Engine.Controllers[keyController][i].State == HoldState.PRESS)
                 {
-                    animations.Pop();
+                    this.PreppedSkill = null;
+                    this.ActiveSkill = null;
+                    Hotbar.Execute(i - (int)Actions.HOTBAR1, this);
                 }
             }
-            else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR4].State == HoldState.PRESS)
-            {
-                base.CombatSkill = (CombatSkill)SkillManager.Instance["ranged"].CreateNew();
-            }
+
+            ////if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR1].State == HoldState.PRESS)
+            ////{
+            ////    Hotbar.Execute(0, this);
+            ////}
+            ////else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR2].State == HoldState.PRESS)
+            ////{
+            ////    Hotbar.Execute(1, this);
+            ////}
+            ////else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR3].State == HoldState.PRESS)
+            ////{
+            ////    Hotbar.Execute(2, this);
+            ////}
+            ////else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR4].State == HoldState.PRESS)
+            ////{
+            ////    Hotbar.Execute(3, this);
+            ////}
 
             if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsDown())
             {
-                base.CombatSkill = null;
+                base.ActiveSkill = null;
             }
 
             if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsDown())
@@ -123,7 +141,7 @@ namespace AnimationTransitionExample
 
                         target = LockTarget;
 
-                        if (CombatSkill == null)
+                        if (ActiveSkill == null)
                         {
                             animations.Push(new AnimationChain(
                                 AnimationManager.Instance[$"-sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
@@ -132,7 +150,7 @@ namespace AnimationTransitionExample
                         }
                         else
                         {
-                            CombatSkill.Action(location, this);
+                            ActiveSkill.SAction(location, this);
                         }
                     }
                 }
@@ -165,11 +183,12 @@ namespace AnimationTransitionExample
 
             double scale = 1;
 
-            if (player.CombatSkill?.Name == "block")
+            Skill skill = player.PreppedSkill ?? player.ActiveSkill;
+            if (skill?.Name == "block")
             {
                 scale = 0.5;
             }
-            else if (player.CombatSkill?.Name == "counter")
+            else if (skill?.Name == "counter")
             {
                 scale = 0;
             }

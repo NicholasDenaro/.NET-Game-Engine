@@ -23,7 +23,12 @@ namespace AnimationTransitionExample
         protected LivingEntity target;
         public LivingEntity Target => target;
 
-        public CombatSkill CombatSkill { get; protected set; }
+
+        private Animation skillActivation;
+        public Skill PreppedSkill { get; protected set; }
+        public Skill ActiveSkill { get; protected set; }
+
+        public int SkillActivationTime => skillActivation.TicksLeft();
 
         protected int direction;
         private double walkIndex = 0;
@@ -36,6 +41,7 @@ namespace AnimationTransitionExample
             knockbackFrom = Point.Empty;
             animations = new AnimationStack();
             this.onMove += LivingEntity.WalkIndexing;
+            skillActivation = AnimationManager.Instance["activateskill"].CreateNew();
         }
 
         public bool Tick(Location location, Entity entity)
@@ -55,6 +61,11 @@ namespace AnimationTransitionExample
             if (stun > 0)
             {
                 stun--;
+            }
+
+            if (PreppedSkill != null)
+            {
+                skillActivation.Tick(this);
             }
 
             if (animations.Any())
@@ -92,6 +103,24 @@ namespace AnimationTransitionExample
             return false;
         }
 
+        public void SetPreppedSkill(Skill skill)
+        {
+            this.skillActivation = AnimationManager.Instance["activateskill"].CreateNew();
+            this.PreppedSkill = skill;
+        }
+
+        public static void ActivateSkill(IDescription d)
+        {
+            LivingEntity le = d as LivingEntity;
+            if (le == null)
+            {
+                return;
+            }
+
+            le.ActiveSkill = le.PreppedSkill;
+            le.PreppedSkill = null;
+        }
+
         public static void WalkIndexing(Description2D d2d)
         {
             LivingEntity le = d2d as LivingEntity;
@@ -122,27 +151,29 @@ namespace AnimationTransitionExample
             }
 
             LivingEntity leHitter = hitter as LivingEntity;
-            if (leHitter != null && CombatSkill != null)
+            if (leHitter != null && ActiveSkill != null)
             {
-                if (CombatSkill.Name == "block")
+                if (ActiveSkill.Name == "block")
                 {
                     if (balanceDiff != 100)
                     {
-                        CombatSkill = null;
+                        ActiveSkill = null;
                         health -= damage;
                         leHitter.animations.Queue(new AnimationChain(AnimationManager.Instance["blocked"].MakeInterruptable().MakePausing()));
 
                         return;
                     }
                 }
-                else if (CombatSkill.Name == "counter")
+                else if (ActiveSkill.Name == "counter")
                 {
                     leHitter.Hit(this, true, 100, damage);
-                    CombatSkill = null;
+                    ActiveSkill = null;
                     return;
                 }
             }
 
+            this.PreppedSkill = null;
+            this.skillActivation.Reset();
             stun = 15;
             DrawOffsetX = 0;
             DrawOffsetY = 0;
@@ -152,7 +183,7 @@ namespace AnimationTransitionExample
                 combo.Reset();
             }
 
-            CombatSkill = null;
+            ActiveSkill = null;
             health -= damage;
             balance -= balanceDiff;
             if (balance <= 0 || IsDead())
@@ -244,7 +275,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            le.CombatSkill = null;
+            le.ActiveSkill = null;
         }
 
         public static void Strike(IDescription d, bool finisher, int balance, int damage)
@@ -306,6 +337,11 @@ namespace AnimationTransitionExample
             le.balance = 100;
             le.DrawOffsetX = 0;
             le.DrawOffsetY = 0;
+        }
+
+        public static void DoSkill(LivingEntity livingEntity, Skill skill)
+        {
+            livingEntity.ActiveSkill = skill;
         }
 
         public static bool HeavyAttack(Location location, IDescription description)

@@ -35,6 +35,7 @@
     <None Remove="Sprites\player.png" />
     <None Remove="Sprites\skills.png" />
     <None Remove="Sprites\TileMap.png" />
+    <None Remove="Sprites\_sheet_window_20.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Sprites\BetterPixels.ttf" />
@@ -46,6 +47,7 @@
     <EmbeddedResource Include="Sprites\TileMap.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sprites\_sheet_window_20.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
