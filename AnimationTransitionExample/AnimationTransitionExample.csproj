@@ -33,6 +33,7 @@
     <None Remove="Sprites\BetterPixels.ttf" />
     <None Remove="Sprites\monster_03.png" />
     <None Remove="Sprites\player.png" />
+    <None Remove="Sprites\skills.png" />
     <None Remove="Sprites\TileMap.png" />
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +42,7 @@
     <EmbeddedResource Include="Sprites\player.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sprites\skills.png" />
     <EmbeddedResource Include="Sprites\TileMap.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>

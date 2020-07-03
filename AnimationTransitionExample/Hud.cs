@@ -36,6 +36,7 @@ namespace AnimationTransitionExample
                 gfx = Graphics.FromImage(bmp);
             }
             gfx.Clear(Color.Transparent);
+            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
             gfx.ScaleTransform(4, 4);
             foreach (LivingEntity e in Program.Engine.Location.GetEntities<LivingEntity>())
@@ -47,6 +48,12 @@ namespace AnimationTransitionExample
             }
 
             Player player = Program.Engine.Location.GetEntities<Player>().FirstOrDefault();
+
+            if (player.CombatSkill != null)
+            {
+                gfx.DrawImage(player.CombatSkill.Icon.Image(), (int)player.X - 2, (int)player.Y - 24);
+            }
+
             LivingEntity le = player.LockTarget;
 
             if (le != null && Program.Engine.Controllers[keyController][(int)Actions.TARGET].IsDown())

@@ -29,8 +29,8 @@ namespace AnimationTransitionExample
                 gfx = Graphics.FromImage(bmp);
             }
 
-            gfx.DrawLine(Pens.Black, 1, 1, bmp.Width, bmp.Height);
-            gfx.DrawLine(Pens.Black, bmp.Width, 0, 0, bmp.Height);
+            gfx.DrawLine(Pens.Black, 1, 1, bmp.Width - 2, bmp.Height - 2);
+            gfx.DrawLine(Pens.Black, bmp.Width - 2, 1, 1, bmp.Height - 2);
 
             return bmp;
         }

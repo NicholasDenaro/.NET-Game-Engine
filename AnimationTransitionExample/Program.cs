@@ -102,20 +102,25 @@ namespace AnimationTransitionExample
         public static Dictionary<System.Windows.Forms.Keys, Actions> keyMap = new Dictionary<System.Windows.Forms.Keys, Actions>()
         {
             { System.Windows.Forms.Keys.Z, Actions.TARGET },
+            { System.Windows.Forms.Keys.A, Actions.HOTBAR1 },
+            { System.Windows.Forms.Keys.S, Actions.HOTBAR2 },
+            { System.Windows.Forms.Keys.D, Actions.HOTBAR3 },
+            { System.Windows.Forms.Keys.F, Actions.HOTBAR4 },
         };
 
         public static Dictionary<System.Windows.Forms.MouseButtons, Actions> mouseMap = new Dictionary<System.Windows.Forms.MouseButtons, Actions>()
         {
             { System.Windows.Forms.MouseButtons.Left, Actions.MOVE },
             { System.Windows.Forms.MouseButtons.None, Actions.MOUSEINFO },
+            { System.Windows.Forms.MouseButtons.Right, Actions.CANCEL },
         };
 
         private static void SetupSkills()
         {
-            new CombatSkill("Heavy", (loc, descr) => true);
-            new CombatSkill("Block", (loc, descr) => true);
-            new CombatSkill("Counter", (loc, descr) => true);
-            new CombatSkill("Ranged", (loc, descr) => true);
+            new CombatSkill("heavy", new SkillIcon(13, 3), LivingEntity.HeavyAttack, false);
+            new CombatSkill("block", new SkillIcon(5, 4), (l, d) => false, false);
+            new CombatSkill("counter", new SkillIcon(10, 10), (l, d) => false, false);
+            new CombatSkill("ranged", new SkillIcon(3, 4), (l, d) => false, false);
         }
 
         private static void SetupSprites()
@@ -130,6 +135,8 @@ namespace AnimationTransitionExample
             new Sprite("enemy2", "Sprites/monster_03.png", 16, 16, 8, 16);
 
             new Sprite("hud", 0, 0);
+
+            new Sprite("skills", "Sprites/skills.png", 16, 16);
 
             //http://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=102
             AddFont("Sprites/BetterPixels.ttf");
@@ -160,7 +167,7 @@ namespace AnimationTransitionExample
                 "-sword1",
                 6,
                 tick: Player.BackSwing,
-                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "sword2",
@@ -173,7 +180,7 @@ namespace AnimationTransitionExample
                 "-sword2",
                 3,
                 tick: Player.BackSwing,
-                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "sword3",
@@ -186,7 +193,7 @@ namespace AnimationTransitionExample
                 "-sword3",
                 15,
                 tick: Player.BackSwing,
-                final: d2d => { Player.BackSwing(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new Animation(
                 "knockback",
@@ -214,7 +221,7 @@ namespace AnimationTransitionExample
                 "-bite1",
                 8,
                 tick: Enemy.BiteRecovery,
-                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "bite2",
@@ -227,7 +234,7 @@ namespace AnimationTransitionExample
                 "-bite2",
                 3,
                 tick: Enemy.BiteRecovery,
-                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
 
             new AttackAnimation(
                 "bite3",
@@ -240,7 +247,24 @@ namespace AnimationTransitionExample
                 "-bite3",
                 15,
                 tick: Enemy.BiteRecovery,
-                final: d2d => { Enemy.BiteRecovery(d2d); LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+
+            new AttackAnimation(
+                "heavy",
+                24,
+                first: LivingEntity.StartAttack,
+                tick: LivingEntity.HeavyAnimation,
+                final: d2d => { LivingEntity.Strike(d2d, true, 100, 50); LivingEntity.CombatSkillEnd(d2d); });
+
+            new AttackAnimation(
+                "-heavy",
+                6,
+                tick: Player.HeavyBackAnimation,
+                final: d2d => { LivingEntity.Combo(d2d); LivingEntity.ResetToAttackPosition(d2d); });
+
+            new AttackAnimation(
+                "blocked",
+                30);
         }
 
         public static void AddFont(string fullFileName)
@@ -264,5 +288,5 @@ namespace AnimationTransitionExample
         }
     }
 
-    public enum Actions { UP = 0, DOWN = 1, LEFT = 2 , RIGHT = 3, MOVE = 4, TARGET = 5, MOUSEINFO = 6, HOTBAR1 = 7, HOTBAR2 = 8, HOTBAR3 = 9, HOTBAR4 = 10 };
+    public enum Actions { UP = 0, DOWN = 1, LEFT = 2 , RIGHT = 3, MOVE = 4, TARGET = 5, MOUSEINFO = 6, HOTBAR1 = 7, HOTBAR2 = 8, HOTBAR3 = 9, HOTBAR4 = 10, CANCEL = 11 };
 }

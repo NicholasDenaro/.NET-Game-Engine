@@ -1,5 +1,7 @@
 ﻿using GameEngine.Interfaces;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GameEngine
 {
@@ -45,6 +47,43 @@ namespace GameEngine
         public bool Tick(IDescription description)
         {
             return Peek().Tick(description);
+        }
+    }
+
+    public class AnimationStack
+    {
+        private List<AnimationChain> animations;
+
+        public AnimationStack()
+        {
+            animations = new List<AnimationChain>();
+        }
+
+        public void Push(AnimationChain chain)
+        {
+            animations.Insert(0, chain);
+        }
+
+        public AnimationChain Peek()
+        {
+            return animations[0];
+        }
+
+        public AnimationChain Pop()
+        {
+            AnimationChain chain = animations[0];
+            animations.RemoveAt(0);
+            return chain;
+        }
+
+        public void Queue(AnimationChain chain)
+        {
+            animations.Add(chain);
+        }
+
+        public bool Any(Func<AnimationChain, bool> predicate = null)
+        {
+            return animations.Any(predicate ?? (ac => true));
         }
     }
 

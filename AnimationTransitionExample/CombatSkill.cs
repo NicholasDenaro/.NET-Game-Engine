@@ -2,8 +2,19 @@
 {
     public class CombatSkill : Skill
     {
-        public CombatSkill(string name, SkillAction action) : base(name, action)
+        protected CombatSkill() : base()
         {
+
+        }
+
+        public CombatSkill(string name, SkillIcon icon, SkillAction action, bool canMove) : base(name, icon, action, canMove)
+        {
+        }
+
+        public override Skill CreateNew()
+        {
+            CombatSkill skill = new CombatSkill();
+            return (CombatSkill)base.CreateNew(skill);
         }
     }
 }

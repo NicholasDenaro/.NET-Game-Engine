@@ -76,6 +76,33 @@ namespace AnimationTransitionExample
                 LockTarget = null;
             }
 
+            if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR1].State == HoldState.PRESS)
+            {
+                base.CombatSkill = (CombatSkill)SkillManager.Instance["heavy"].CreateNew();
+            }
+            else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR2].State == HoldState.PRESS)
+            {
+                base.CombatSkill = (CombatSkill)SkillManager.Instance["block"].CreateNew();
+            }
+            else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR3].State == HoldState.PRESS)
+            {
+                base.CombatSkill = (CombatSkill)SkillManager.Instance["counter"].CreateNew();
+
+                if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                {
+                    animations.Pop();
+                }
+            }
+            else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR4].State == HoldState.PRESS)
+            {
+                base.CombatSkill = (CombatSkill)SkillManager.Instance["ranged"].CreateNew();
+            }
+
+            if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsDown())
+            {
+                base.CombatSkill = null;
+            }
+
             if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsDown())
             {
                 mci = Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
@@ -95,10 +122,18 @@ namespace AnimationTransitionExample
                         }
 
                         target = LockTarget;
-                        animations.Push(new AnimationChain(
-                            AnimationManager.Instance[$"-sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                            AnimationManager.Instance[$"sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                            AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(target) < 20 && !target.IsBeingKnockedBack())));
+
+                        if (CombatSkill == null)
+                        {
+                            animations.Push(new AnimationChain(
+                                AnimationManager.Instance[$"-sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                                AnimationManager.Instance[$"sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                                AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(target) < 20 && !target.IsBeingKnockedBack())));
+                        }
+                        else
+                        {
+                            CombatSkill.Action(location, this);
+                        }
                     }
                 }
                 else
@@ -127,8 +162,19 @@ namespace AnimationTransitionExample
 
             double dir = player.Direction(markerD);
             WalkDirection(player, dir);
-            
-            player.ChangeCoordsDelta(Math.Cos(dir), Math.Sin(dir));
+
+            double scale = 1;
+
+            if (player.CombatSkill?.Name == "block")
+            {
+                scale = 0.5;
+            }
+            else if (player.CombatSkill?.Name == "counter")
+            {
+                scale = 0;
+            }
+
+            player.ChangeCoordsDelta(Math.Cos(dir) * scale, Math.Sin(dir) * scale);
         }
 
         public static void Swing(IDescription d)

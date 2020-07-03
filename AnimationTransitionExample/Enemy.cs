@@ -115,7 +115,7 @@ namespace AnimationTransitionExample
                 color = Color.SaddleBrown;
             }
 
-            if (stun > 0)
+            if (stun > 0 || animations.Any() && animations.Peek().Peek().Name == "blocked")
             {
                 color = Color.LightYellow;
             }

@@ -19,6 +19,9 @@ namespace GameEngine._2D
         public int Width { get; private set; }
         public int Height { get; private set; }
 
+        public int HImages => hSubImages;
+        public int VImages => vSubImages;
+
         public Sprite(string name, string bmpFile, int tileWidth, int tileHeight, int x = 0, int y = 0) : this(name, Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{bmpFile.Replace("/", ".")}"), x, y)
         {
             SetupSubImages(image[0], tileWidth, tileHeight);

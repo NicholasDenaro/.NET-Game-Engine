@@ -1,6 +1,6 @@
 ﻿using GameEngine;
+using GameEngine._2D;
 using GameEngine.Interfaces;
-using System;
 using System.Collections.Generic;
 
 namespace AnimationTransitionExample
@@ -13,12 +13,18 @@ namespace AnimationTransitionExample
 
         public string Name { get; private set; }
 
+        public SkillIcon Icon { get; private set; }
+
         public SkillAction Action { get; private set; }
 
-        public Skill(string name, SkillAction action)
+        public bool CanMove { get; private set; }
+
+        public Skill(string name, SkillIcon icon, SkillAction action, bool canMove)
         {
             this.Name = name;
             this.Action = action;
+            this.Icon = icon;
+            this.CanMove = canMove;
             SkillManager.Instance.Add(this);
         }
 
@@ -29,7 +35,9 @@ namespace AnimationTransitionExample
         protected virtual Skill CreateNew(Skill skill)
         {
             skill.Name = Name;
+            skill.Icon = Icon;
             skill.Action = Action;
+            skill.CanMove = CanMove;
 
             return skill;
         }
@@ -38,6 +46,15 @@ namespace AnimationTransitionExample
         {
             Skill skill = new Skill();
             return CreateNew(skill);
+        }
+    }
+
+    public class SkillIcon : Description2D
+    {
+        public SkillIcon(int xIndex, int yIndex)
+        {
+            Sprite sprite = Sprite.Sprites["skills"];
+            this.DrawAction = () => sprite.GetImage(yIndex * sprite.HImages + xIndex);
         }
     }
 
