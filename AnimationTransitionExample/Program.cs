@@ -52,11 +52,23 @@ namespace AnimationTransitionExample
             keyController.Hook(frame);
             Engine.AddController(keyController);
 
-            WindowsMouseController mouseController = new WindowsMouseController(mouseMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value));
+            WindowsMouseController mouseController = new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value));
             mouseController.Hook(frame);
             Engine.AddController(mouseController);
 
-            Engine.TickEnd += (s, o) => { keyController.Hook(frame); mouseController.Hook(frame); };
+            TickHandler th = null;
+            th = (s, o) =>
+            {
+                keyController.Hook(frame);
+                mouseController.Hook(frame);
+
+                if (keyController.IsHooked() && mouseController.IsHooked())
+                {
+                    Engine.TickEnd -= th;
+                }
+            };
+
+            Engine.TickEnd += th;
 
             SetupAnimations();
 
@@ -91,7 +103,7 @@ namespace AnimationTransitionExample
             int ticks = 0;
             Stopwatch tpsWatch = Stopwatch.StartNew();
             Engine.TickStart += (e, o) => ticks++;
-            Engine.TickEnd += (e, o) => 
+            Engine.TickEnd += (e, o) =>
             {
                 if (tpsWatch.ElapsedMilliseconds >= 1000)
                 {
@@ -122,6 +134,11 @@ namespace AnimationTransitionExample
             { System.Windows.Forms.MouseButtons.None, Actions.MOUSEINFO },
             { System.Windows.Forms.MouseButtons.Right, Actions.CANCEL },
         };
+
+        public static int Convert(System.Windows.Forms.MouseButtons key)
+        {
+            return (int)key;
+        }
 #endif
 
 #if netcoreapp31
@@ -134,12 +151,16 @@ namespace AnimationTransitionExample
             { Avalonia.Input.Key.F, Actions.HOTBAR4 },
         };
 
-        public static Dictionary<int, Actions> mouseMap = new Dictionary<int, Actions>()
+        public static Dictionary<Avalonia.Input.PointerUpdateKind, Actions> mouseMap = new Dictionary<Avalonia.Input.PointerUpdateKind, Actions>()
         {
-            { GamePanel.Key(Avalonia.Input.PointerUpdateKind.LeftButtonPressed), Actions.MOVE },
-            { GamePanel.Key(Avalonia.Input.PointerUpdateKind.Other), Actions.MOUSEINFO },
-            { GamePanel.Key(Avalonia.Input.PointerUpdateKind.RightButtonPressed), Actions.CANCEL },
+            { Avalonia.Input.PointerUpdateKind.LeftButtonPressed, Actions.MOVE },
+            { Avalonia.Input.PointerUpdateKind.Other, Actions.MOUSEINFO },
+            { Avalonia.Input.PointerUpdateKind.RightButtonPressed, Actions.CANCEL },
         };
+        public static int Convert(Avalonia.Input.PointerUpdateKind key)
+        {
+            return GamePanel.Key(key);
+        }
 #endif
 
         private static void SetupSkills()

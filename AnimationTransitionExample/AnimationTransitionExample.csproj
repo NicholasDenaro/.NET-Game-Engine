@@ -8,7 +8,7 @@
     <AssemblyName>AnimationTransitionExample</AssemblyName>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net48;netcoreapp3.1</TargetFrameworks>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -57,11 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'" Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
     <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'" Include="..\GameEngine.Windows\GameEngine.UI.WinForms.csproj" />
+    <ProjectReference Include="..\GameEngine.UI\GameEngine.UI.csproj" />
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>
  </Project>

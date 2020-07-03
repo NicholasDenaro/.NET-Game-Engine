@@ -38,6 +38,7 @@ namespace GameEngine.UI.AvaloniaUI
         {
             if (!started)
             {
+                started = true;
                 Task.Run(() =>
                 {
                     int i = AppBuilder.Configure<Application>().UsePlatformDetect().UseReactiveUI().AfterSetup(ab =>
