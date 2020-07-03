@@ -1,4 +1,5 @@
 ﻿using Avalonia.Input;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -56,7 +57,18 @@ namespace GameEngine.UI.AvaloniaUI
         {
             if (keymap.ContainsKey(e.Button))
             {
-                ActionInfo(keymap[e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
+                if (this[keymap[GamePanel.Key(PointerUpdateKind.LeftButtonPressed)]].IsDown())
+                {
+                    ActionInfo(keymap[GamePanel.Key(PointerUpdateKind.LeftButtonPressed)], new MouseControllerInfo(new Point(e.X, e.Y)));
+                }
+                else if (this[keymap[GamePanel.Key(PointerUpdateKind.RightButtonPressed)]].IsDown())
+                {
+                    ActionInfo(keymap[GamePanel.Key(PointerUpdateKind.RightButtonPressed)], new MouseControllerInfo(new Point(e.X, e.Y)));
+                }
+                else
+                {
+                    ActionInfo(keymap[e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
+                }
             }
         }
 

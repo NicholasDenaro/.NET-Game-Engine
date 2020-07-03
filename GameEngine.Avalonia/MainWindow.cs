@@ -12,7 +12,7 @@ namespace GameEngine.UI.AvaloniaUI
             this.panel = panel;
             this.VisualChildren.Add(this.panel);
             this.CanResize = false;
-            this.Closing += (e, o) => Environment.Exit(-1);
+            this.Closing += (s, o) => Environment.Exit(-1);
         }
     }
 }

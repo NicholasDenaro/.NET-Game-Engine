@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -8,9 +9,6 @@ namespace GameEngine.UI.AvaloniaUI
 {
     public class GameFrame
     {
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
-
         private bool started = false;
         private Rectangle rect;
 
@@ -45,11 +43,10 @@ namespace GameEngine.UI.AvaloniaUI
                     int i = AppBuilder.Configure<Application>().UsePlatformDetect().UseReactiveUI().AfterSetup(ab =>
                     {
                         window = new MainWindow(Pane);
+                        window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                         window.Position = new Avalonia.PixelPoint(rect.X, rect.Y);
                         window.Width = rect.Width;
                         window.Height = rect.Height;
-                        //window.Renderer.DrawDirtyRects = true;
-                        //window.Renderer.DrawFps = true;
                         window.Show();
                     }).StartWithClassicDesktopLifetime(new string[] { });
                 });
