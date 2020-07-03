@@ -9,12 +9,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapEditor", "MapEditor\MapE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GridWalkRPGExample", "GridWalkRPG\GridWalkRPGExample.csproj", "{A4136326-3AFD-48B5-8268-2DF32A644505}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.Windows", "GameEngine.Windows\GameEngine.Windows.csproj", "{CB3D60F2-EFF0-473D-BFEE-49D3F7259B39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.UI.WinForms", "GameEngine.Windows\GameEngine.UI.WinForms.csproj", "{CB3D60F2-EFF0-473D-BFEE-49D3F7259B39}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4889EB77-DED0-4491-A508-F031EF1A956A} = {4889EB77-DED0-4491-A508-F031EF1A956A}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimationTransitionExample", "AnimationTransitionExample\AnimationTransitionExample.csproj", "{4DC4A52A-9D81-41A8-9E74-8367D749DAF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimationTransitionExample", "AnimationTransitionExample\AnimationTransitionExample.csproj", "{4DC4A52A-9D81-41A8-9E74-8367D749DAF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine.UI.AvaloniaUI", "GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj", "{0268266C-3197-46B0-A3EE-5590F37519EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine.UI", "GameEngine.UI\GameEngine.UI.csproj", "{BE3A6A57-29D0-471D-AB7E-6770530EF08F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +46,14 @@ Global
 		{4DC4A52A-9D81-41A8-9E74-8367D749DAF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DC4A52A-9D81-41A8-9E74-8367D749DAF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DC4A52A-9D81-41A8-9E74-8367D749DAF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0268266C-3197-46B0-A3EE-5590F37519EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0268266C-3197-46B0-A3EE-5590F37519EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0268266C-3197-46B0-A3EE-5590F37519EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0268266C-3197-46B0-A3EE-5590F37519EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE3A6A57-29D0-471D-AB7E-6770530EF08F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE3A6A57-29D0-471D-AB7E-6770530EF08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE3A6A57-29D0-471D-AB7E-6770530EF08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE3A6A57-29D0-471D-AB7E-6770530EF08F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

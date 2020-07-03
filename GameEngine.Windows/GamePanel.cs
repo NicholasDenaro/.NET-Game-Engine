@@ -1,8 +1,9 @@
 ﻿using GameEngine._2D;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace GameEngine
+namespace GameEngine.UI.WinForms
 {
     public class GamePanel : Panel
     {
@@ -20,20 +21,25 @@ namespace GameEngine
             this.Width = width * xScale;
             this.Height = height * yScale;
             currentBuffer = 0;
-            buffers = new Bitmap[] { new Bitmap(this.Width, this.Height), new Bitmap(this.Width, this.Height) };
+            buffers = new Bitmap[] { BitmapExtensions.CreateBitmap(this.Width, this.Height), BitmapExtensions.CreateBitmap(this.Width, this.Height) };
             this.DoubleBuffered = true;
         }
 
-        public void HookMouse(MouseEventHandler mouseInfo, MouseEventHandler mouseDown, MouseEventHandler mouseUp)
+        public void HookMouse(GameFrame frame, EventHandler<MouseEventArgs> mouseInfo, EventHandler<MouseEventArgs> mouseDown, EventHandler<MouseEventArgs> mouseUp)
         {
-            this.MouseMove += (s, e) => mouseInfo(s, ScaleEvent(e));
-            this.MouseDown += (s, e) => mouseDown(s, ScaleEvent(e));
-            this.MouseUp += (s, e) => mouseUp(s, ScaleEvent(e));
+            this.MouseMove += (s, e) => mouseInfo(s, ScaleEvent(Convert(e)));
+            this.MouseDown += (s, e) => mouseDown(s, ScaleEvent(Convert(e)));
+            this.MouseUp += (s, e) => mouseUp(s, ScaleEvent(Convert(e)));
+        }
+
+        public MouseEventArgs Convert(System.Windows.Forms.MouseEventArgs mea)
+        {
+            return new MouseEventArgs((int)mea.Button, mea.Clicks, mea.X, mea.Y, mea.Delta);
         }
 
         public MouseEventArgs ScaleEvent(MouseEventArgs e)
         {
-            return new MouseEventArgs(e.Button, e.Clicks, e.X / xScale, e.Y / yScale, e.Delta);
+            return new MouseEventArgs(e.Button, e.Clicks, e.X / xScale, e.Y / yScale, e.Wheel);
         }
 
         public void Draw(Bitmap img, Bitmap overlay)

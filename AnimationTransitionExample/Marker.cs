@@ -25,7 +25,7 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = new Bitmap(this.Width, this.Height);
+                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
                 gfx = Graphics.FromImage(bmp);
             }
 

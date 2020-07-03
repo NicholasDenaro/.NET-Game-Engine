@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Avalonia.Input;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
-namespace GameEngine.UI.WinForms
+namespace GameEngine.UI.AvaloniaUI
 {
     public class WindowsMouseController : Controller
     {
@@ -20,7 +22,12 @@ namespace GameEngine.UI.WinForms
 
         public void Hook(GameFrame frame)
         {
-            frame.Pane.HookMouse(frame, Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
+            if (frame.window == null)
+            {
+                return;
+            }
+
+            frame.Pane.HookMouse(Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
             hooked = true;
         }
 
@@ -31,25 +38,25 @@ namespace GameEngine.UI.WinForms
 
         private void Frame_KeyUp(object sender, MouseEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Button))
+            if (keymap.ContainsKey(e.Button))
             {
-                ActionEnd(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionEnd(keymap[e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
             }
         }
 
         private void Frame_KeyDown(object sender, MouseEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Button))
+            if (keymap.ContainsKey(e.Button))
             {
-                ActionStart(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionStart(keymap[e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
             }
         }
 
         private void Frame_KeyInfo(object sender, MouseEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Button))
+            if (keymap.ContainsKey(e.Button))
             {
-                ActionInfo(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionInfo(keymap[e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
             }
         }
 

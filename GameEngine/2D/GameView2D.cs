@@ -46,8 +46,8 @@ namespace GameEngine._2D
         public GameView2D(int width, int height, int xScale, int yScale, Color bgColor)
         {
             Bounds = new Rectangle(0, 0, width, height);
-            buffer = new Bitmap[] { new Bitmap(width, height), new Bitmap(width, height) };
-            overlay = new Bitmap[] { new Bitmap(width * xScale, height * yScale), new Bitmap(width * xScale, height * yScale) };
+            buffer = new Bitmap[] { BitmapExtensions.CreateBitmap(width, height), BitmapExtensions.CreateBitmap(width, height) };
+            overlay = new Bitmap[] { BitmapExtensions.CreateBitmap(width * xScale, height * yScale), BitmapExtensions.CreateBitmap(width * xScale, height * yScale) };
             gfxsbuffer = new Graphics[] { Graphics.FromImage(buffer[0]), Graphics.FromImage(buffer[1]) };
             gfxsoverlay = new Graphics[] { Graphics.FromImage(overlay[0]), Graphics.FromImage(overlay[1]) };
             gfxsbuffer[0].InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
@@ -215,7 +215,7 @@ namespace GameEngine._2D
             {
                 if (tiles == null)
                 {
-                    tiles = new Bitmap(map.Width, map.Height);
+                    tiles = BitmapExtensions.CreateBitmap(map.Width, map.Height);
                     Graphics mgfx = Graphics.FromImage(tiles);
                     mgfx.Clip = new Region(new Rectangle(new Point(), new Size(map.Width, map.Height)));
                     int x = 0;

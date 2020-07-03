@@ -30,7 +30,7 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = new Bitmap(actions.Length * 16, 16);
+                bmp = BitmapExtensions.CreateBitmap(actions.Length * 16, 16);
                 gfx = Graphics.FromImage(bmp);
             }
 

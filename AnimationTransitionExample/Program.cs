@@ -1,7 +1,12 @@
 ﻿using AnimationTransitionExample.Animations;
 using GameEngine;
 using GameEngine._2D;
-using GameEngine.Windows;
+#if netcoreapp31
+using GameEngine.UI.AvaloniaUI;
+#endif
+#if net48
+using GameEngine.UI.WinForms;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,6 +56,8 @@ namespace AnimationTransitionExample
             mouseController.Hook(frame);
             Engine.AddController(mouseController);
 
+            Engine.TickEnd += (s, o) => { keyController.Hook(frame); mouseController.Hook(frame); };
+
             SetupAnimations();
 
             SetupSprites();
@@ -99,6 +106,7 @@ namespace AnimationTransitionExample
             while (true) { };
         }
 
+#if net48
         public static Dictionary<System.Windows.Forms.Keys, Actions> keyMap = new Dictionary<System.Windows.Forms.Keys, Actions>()
         {
             { System.Windows.Forms.Keys.Z, Actions.TARGET },
@@ -114,6 +122,25 @@ namespace AnimationTransitionExample
             { System.Windows.Forms.MouseButtons.None, Actions.MOUSEINFO },
             { System.Windows.Forms.MouseButtons.Right, Actions.CANCEL },
         };
+#endif
+
+#if netcoreapp31
+        public static Dictionary<Avalonia.Input.Key, Actions> keyMap = new Dictionary<Avalonia.Input.Key, Actions>()
+        {
+            { Avalonia.Input.Key.Z, Actions.TARGET },
+            { Avalonia.Input.Key.A, Actions.HOTBAR1 },
+            { Avalonia.Input.Key.S, Actions.HOTBAR2 },
+            { Avalonia.Input.Key.D, Actions.HOTBAR3 },
+            { Avalonia.Input.Key.F, Actions.HOTBAR4 },
+        };
+
+        public static Dictionary<int, Actions> mouseMap = new Dictionary<int, Actions>()
+        {
+            { GamePanel.Key(Avalonia.Input.PointerUpdateKind.LeftButtonPressed), Actions.MOVE },
+            { GamePanel.Key(Avalonia.Input.PointerUpdateKind.Other), Actions.MOUSEINFO },
+            { GamePanel.Key(Avalonia.Input.PointerUpdateKind.RightButtonPressed), Actions.CANCEL },
+        };
+#endif
 
         private static void SetupSkills()
         {

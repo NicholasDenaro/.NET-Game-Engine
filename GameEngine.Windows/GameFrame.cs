@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GameEngine
+namespace GameEngine.UI.WinForms
 {
     public class GameFrame : Form
     {

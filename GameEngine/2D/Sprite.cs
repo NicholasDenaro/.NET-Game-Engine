@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -7,6 +8,18 @@ namespace GameEngine._2D
 {
     public class Sprite
     {
+        public static readonly float dpiX;
+        public static readonly float dpiY;
+
+        static Sprite()
+        {
+            using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                dpiX = graphics.DpiX;
+                dpiY = graphics.DpiY;
+            }
+        }
+
         public static Dictionary<string, Sprite> Sprites { get; set; } = new Dictionary<string, Sprite>();
 
         private Bitmap[] image;
@@ -30,7 +43,7 @@ namespace GameEngine._2D
         public Sprite(string name, Stream sbmp, int x, int y)
         {
             Name = name;
-            Bitmap bmp = (Bitmap)Image.FromStream(sbmp);
+            Bitmap bmp = BitmapExtensions.CreateBitmap(sbmp);
             this.image = new[] { bmp };
             hSubImages = 1;
             vSubImages = 1;

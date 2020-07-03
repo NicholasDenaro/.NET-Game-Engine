@@ -60,7 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GameEngine.Windows\GameEngine.Windows.csproj" />
+    <ProjectReference Include="..\GameEngine.Windows\GameEngine.UI.WinForms.csproj" />
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>
 </Project>

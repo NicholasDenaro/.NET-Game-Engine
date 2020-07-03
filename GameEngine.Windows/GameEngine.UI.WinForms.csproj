@@ -4,8 +4,8 @@
     <ProjectGuid>{CB3D60F2-EFF0-473D-BFEE-49D3F7259B39}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GameEngine.Windows</RootNamespace>
-    <AssemblyName>GameEngine.Windows</AssemblyName>
+    <RootNamespace>GameEngine.WinForms</RootNamespace>
+    <AssemblyName>GameEngine.WinForms</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -43,6 +43,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GameEngine.UI\GameEngine.UI.csproj" />
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>
 </Project>

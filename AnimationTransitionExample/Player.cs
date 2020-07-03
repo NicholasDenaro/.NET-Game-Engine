@@ -2,7 +2,7 @@
 using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
-using GameEngine.Windows;
+using GameEngine.UI;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -222,7 +222,7 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = new Bitmap(this.Width, this.Height);
+                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
                 gfx = Graphics.FromImage(bmp);
             }
 

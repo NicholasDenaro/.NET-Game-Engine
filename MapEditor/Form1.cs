@@ -23,7 +23,7 @@ namespace MapEditor
             InitializeComponent();
             this.anyChanges = false;
             tile = 0;
-            this.buffer = new Bitmap(this.Width, this.Height);
+            this.buffer = BitmapExtensions.CreateBitmap(this.Width, this.Height);
             this.gfx = Graphics.FromImage(buffer);
             this.drawer = new Drawer2D();
             this.location = new GameEngine.Location(new TileMap(null, int.Parse(this.tWidth.Text), int.Parse(this.tHeight.Text)));

@@ -1,6 +1,6 @@
 ﻿using GameEngine;
 using GameEngine._2D;
-using GameEngine.Windows;
+using GameEngine.UI;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -32,7 +32,7 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = new Bitmap(this.Width, this.Height);
+                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
                 gfx = Graphics.FromImage(bmp);
             }
             gfx.Clear(Color.Transparent);
@@ -88,8 +88,11 @@ namespace AnimationTransitionExample
 
             Font f = new Font(Program.FontCollection.Families[0], 18);
 
+            MouseControllerInfo movepmci = (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
+            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
+
             gfx.FillRectangle(Brushes.Black, 0, 0, Width, 52);
-            gfx.DrawString($"{Program.tickTime}", f, Brushes.White, new Point(0, 0));
+            gfx.DrawString($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", f, Brushes.White, new Point(0, 0));
             gfx.DrawString($"{Program.drawTime}", f, Brushes.White, new Point(0, 16));
             gfx.DrawString($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks/Program.TPS):##}%", f, Brushes.White, new Point(0, 32));
 

@@ -2,7 +2,7 @@
 using System.Text;
 using System.Windows.Forms;
 
-namespace GameEngine.Windows
+namespace GameEngine.UI.WinForms
 {
     public class WindowsKeyController : Controller
     {

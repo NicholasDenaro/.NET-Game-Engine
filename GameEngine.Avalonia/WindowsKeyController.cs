@@ -1,26 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using GameEngine.UI.AvaloniaUI;
+using System.Collections.Generic;
 using System.Text;
 
-namespace GameEngine.UI.WinForms
+namespace GameEngine.UI.AvaloniaUI
 {
-    public class WindowsMouseController : Controller
+    public class WindowsKeyController : Controller
     {
         private Dictionary<int, int> keymap;
         private bool hooked = false;
 
-        public WindowsMouseController() : base()
+        public WindowsKeyController() : base()
         {
 
         }
 
-        public WindowsMouseController(Dictionary<int, int> keymap) : base(keymap.Values)
+        public WindowsKeyController(Dictionary<int, int> keymap) : base(keymap.Values)
         {
             this.keymap = keymap;
         }
 
         public void Hook(GameFrame frame)
         {
-            frame.Pane.HookMouse(frame, Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
+            if (frame.window == null)
+            {
+                return;
+            }
+
+            frame.window.KeyDown += Frame_KeyDown;
+            frame.window.KeyUp += Frame_KeyUp;
             hooked = true;
         }
 
@@ -29,27 +36,19 @@ namespace GameEngine.UI.WinForms
             return hooked;
         }
 
-        private void Frame_KeyUp(object sender, MouseEventArgs e)
+        private void Frame_KeyUp(object sender, Avalonia.Input.KeyEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Button))
+            if (keymap.ContainsKey((int)e.Key))
             {
-                ActionEnd(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionEnd(keymap[(int)e.Key], null);
             }
         }
 
-        private void Frame_KeyDown(object sender, MouseEventArgs e)
+        private void Frame_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Button))
+            if (keymap.ContainsKey((int)e.Key))
             {
-                ActionStart(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
-            }
-        }
-
-        private void Frame_KeyInfo(object sender, MouseEventArgs e)
-        {
-            if (keymap.ContainsKey((int)e.Button))
-            {
-                ActionInfo(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionStart(keymap[(int)e.Key], null);
             }
         }
 
