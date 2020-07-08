@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using System.Drawing;
 using System.Threading.Tasks;

@@ -7,6 +7,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading;
 using Bitmap = System.Drawing.Bitmap;
 
 namespace GameEngine.UI.AvaloniaUI
@@ -19,6 +20,7 @@ namespace GameEngine.UI.AvaloniaUI
         private int xScale;
         private int yScale;
         private GameFrame frame;
+        Semaphore sem = new Semaphore(1, 1);
 
         public GamePanel(GameFrame frame, int width, int height, int xScale, int yScale)
         {
@@ -95,13 +97,20 @@ namespace GameEngine.UI.AvaloniaUI
 
             gfx.DrawImage(img, 1, 1, (int)this.Width, (int)this.Height);
             gfx.DrawImage(overlay, 1, 1, overlay.Width, overlay.Height);
-            Drawing = false;
             if (frame.window != null)
             {
-                lock (this)
+                if (sem.WaitOne())
                 {
-                    frame.Pane.InvalidateVisual();
-                    frame.window.Renderer.Paint(new Rect(0, 0, this.Width, this.Height));
+                    try
+                    {
+                        frame.Pane.InvalidateVisual();
+                        frame.window.Renderer.Paint(new Rect(0, 0, this.Width, this.Height));
+                    }
+                    finally
+                    {
+                        sem.Release();
+                        Drawing = false;
+                    }
                 }
             }
         }
@@ -117,17 +126,29 @@ namespace GameEngine.UI.AvaloniaUI
 
         public override void Render(DrawingContext context)
         {
-            lock (this)
-            {
-                base.Render(context);
-                Bitmap bufferBmp = buffers[currentBuffer % 2];
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    bufferBmp.Save(stream, ImageFormat.Bmp);
+            bool selfDraw = Drawing;
 
-                    stream.Position = 0;
-                    Avalonia.Media.Imaging.Bitmap bmp = new Avalonia.Media.Imaging.Bitmap(stream);
-                    context.DrawImage(bmp, 1, new Avalonia.Rect(0, 0, bufferBmp.Width, bufferBmp.Height), new Avalonia.Rect(0, 0, bufferBmp.Width, bufferBmp.Height));
+            if (selfDraw || sem.WaitOne())
+            {
+                try
+                {
+                    base.Render(context);
+                    Bitmap bufferBmp = buffers[currentBuffer % 2];
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        bufferBmp.Save(stream, ImageFormat.Bmp);
+
+                        stream.Position = 0;
+                        Avalonia.Media.Imaging.Bitmap bmp = new Avalonia.Media.Imaging.Bitmap(stream);
+                        context.DrawImage(bmp, 1, new Avalonia.Rect(0, 0, bufferBmp.Width, bufferBmp.Height), new Avalonia.Rect(0, 0, bufferBmp.Width, bufferBmp.Height));
+                    }
+                }
+                finally
+                {
+                    if (!selfDraw)
+                    {
+                        sem.Release();
+                    }
                 }
             }
         }

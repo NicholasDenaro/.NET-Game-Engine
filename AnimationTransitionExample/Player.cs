@@ -26,16 +26,16 @@ namespace AnimationTransitionExample
             this.keyController = keyController;
             this.mouseController = mouseController;
             combo = new AttackCombo(3, 15);
-            ////Hotbar = new Hotbar(
-            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["heavy"].CreateNew(),
-            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["block"].CreateNew(),
-            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["counter"].CreateNew(),
-            ////    le => ((Player)le).ActiveSkill = (CombatSkill)SkillManager.Instance["ranged"].CreateNew());
+            SkillBook = new SkillBook(
+                SkillManager.Instance["heavy"].CreateNew(),
+                SkillManager.Instance["block"].CreateNew(),
+                SkillManager.Instance["counter"].CreateNew(),
+                SkillManager.Instance["ranged"].CreateNew());
             Hotbar = new Hotbar(
-                SkillManager.Instance["heavy"],
-                SkillManager.Instance["block"],
-                SkillManager.Instance["counter"],
-                SkillManager.Instance["ranged"]
+                SkillBook["heavy"],
+                SkillBook["block"],
+                SkillBook["counter"],
+                SkillBook["ranged"]
                 );
             walkCycle = 4;
         }
@@ -57,32 +57,9 @@ namespace AnimationTransitionExample
 
             Marker markerD = Program.Engine.Location.GetEntities<Marker>().First();
 
-            MouseControllerInfo mci = Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
             if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].State == HoldState.PRESS)
             {
-                Enemy nearest = null;
-                LockTarget = Program.Engine.Location.GetEntities<Enemy>().Where(
-                    e =>
-                    {
-                        if (e.IsDead())
-                        {
-                            return false;
-                        }
-
-                        if (nearest == null)
-                        {
-                            nearest = e;
-                            return true;
-                        }
-
-                        if (e.Distance(mci.X, mci.Y) < nearest.Distance(mci.X, mci.Y))
-                        {
-                            nearest = e;
-                            return true;
-                        }
-
-                        return false;
-                    }).Last();
+                LockTarget = GetLivingEntityNearestMouse(location);
             }
             else if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].State == HoldState.RELEASE)
             {
@@ -93,32 +70,60 @@ namespace AnimationTransitionExample
             {
                 if (Program.Engine.Controllers[keyController][i].State == HoldState.PRESS)
                 {
-                    this.PreppedSkill = null;
-                    this.ActiveSkill = null;
-                    Hotbar.Execute(i - (int)Actions.HOTBAR1, this);
+                    Skill skill = Hotbar[i - (int)Actions.HOTBAR1] as Skill;
+                    if (skill != null && skill.CooldownTime == 0)
+                    {
+                        stamina -= skill.Stamina;
+                        this.PreppedSkill = null;
+                        this.ActiveSkill = null;
+                        Hotbar.Execute(i - (int)Actions.HOTBAR1, this);
+                    }
                 }
             }
 
-            ////if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR1].State == HoldState.PRESS)
-            ////{
-            ////    Hotbar.Execute(0, this);
-            ////}
-            ////else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR2].State == HoldState.PRESS)
-            ////{
-            ////    Hotbar.Execute(1, this);
-            ////}
-            ////else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR3].State == HoldState.PRESS)
-            ////{
-            ////    Hotbar.Execute(2, this);
-            ////}
-            ////else if (Program.Engine.Controllers[keyController][(int)Actions.HOTBAR4].State == HoldState.PRESS)
-            ////{
-            ////    Hotbar.Execute(3, this);
-            ////}
+            MouseControllerInfo mci;
+            MouseControllerInfo info = Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
+            
 
             if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsDown())
             {
-                base.ActiveSkill = null;
+                if (info.X > X - 4 && info.X < X + 4 && info.Y > Y - 24 && info.Y < Y - 16)
+                {
+                    if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsPress())
+                    {
+                        base.CancelSkill();
+                    }
+                }
+                else
+                {
+                    if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].IsDown())
+                    {
+                        if (LockTarget != null)
+                        {
+                            markerD.SetCoords(LockTarget.X, LockTarget.Y);
+
+                            if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                            {
+                                animations.Pop();
+                            }
+
+                            Attack(LockTarget, location, "sword");
+                        }
+                    }
+                    else
+                    {
+                        LivingEntity selected = GetLivingEntityAtMouse(location);
+                        if (selected != null)
+                        {
+                            if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                            {
+                                animations.Pop();
+                            }
+
+                            Attack(selected, location, "sword");
+                        }
+                    }
+                }
             }
 
             if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsDown())
@@ -126,74 +131,80 @@ namespace AnimationTransitionExample
                 mci = Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
                 Point p = new Point(mci.X, mci.Y);
 
-                if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].IsDown())
+                if (p.Y > Program.SCREENHEIGHT - 16 * 2 && p.Y < Program.SCREENHEIGHT - 16)
                 {
-                    if (LockTarget != null)
+                    int i = p.X / 16;
+                    if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsPress())
                     {
-                        p.X = (int)LockTarget.X;
-                        p.Y = (int)LockTarget.Y;
-                        markerD.SetCoords(p.X, p.Y);
-
-                        if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                        Skill skill = Hotbar[i] as Skill;
+                        if (skill != null && skill.CooldownTime == 0 && stamina >= skill.Stamina)
                         {
-                            animations.Pop();
-                        }
-
-                        target = LockTarget;
-
-                        if (ActiveSkill == null)
-                        {
-                            animations.Push(new AnimationChain(
-                                AnimationManager.Instance[$"-sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                                AnimationManager.Instance[$"sword{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                                AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(target) < 20 && !target.IsBeingKnockedBack())));
-                        }
-                        else
-                        {
-                            ActiveSkill.SAction(location, this);
+                            stamina -= skill.Stamina;
+                            this.PreppedSkill = null;
+                            this.ActiveSkill = null;
+                            Hotbar.Execute(i, this);
                         }
                     }
                 }
                 else
                 {
-                    if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                    while (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
                     {
                         animations.Pop();
                     }
+
                     markerD.SetCoords(p.X, p.Y);
+                    this.MoveTarget = p;
                     animations.Push(new AnimationChain(
-                        AnimationManager.Instance["playermove"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(markerD) < 1)));
+                        AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(((Player)pd).MoveTarget) < 1)));
                     combo.Reset();
                 }
             }
         }
 
-        public static void PlayerMove(IDescription d)
+        private LivingEntity GetLivingEntityAtMouse(Location location)
         {
-            Player player = d as Player;
-            if (player == null)
+            MouseControllerInfo info = Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
+            double dist = double.MaxValue;
+            return location.GetEntities<Enemy>().Where(e =>
             {
-                return;
-            }
+                double d = e.Distance(info.X, info.Y + 8);
 
-            Marker markerD = Program.Engine.Location.GetEntities<Marker>().First();
+                if (d < dist)
+                {
+                    dist = d;
+                }
 
-            double dir = player.Direction(markerD);
-            WalkDirection(player, dir);
+                return d < 8;
+            }).LastOrDefault();
+        }
 
-            double scale = 1;
+        private LivingEntity GetLivingEntityNearestMouse(Location location)
+        {
+            MouseControllerInfo mci = Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
+            Enemy nearest = null;
+            return location.GetEntities<Enemy>().Where(
+                e =>
+                {
+                    if (e.IsDead())
+                    {
+                        return false;
+                    }
 
-            Skill skill = player.PreppedSkill ?? player.ActiveSkill;
-            if (skill?.Name == "block")
-            {
-                scale = 0.5;
-            }
-            else if (skill?.Name == "counter")
-            {
-                scale = 0;
-            }
+                    if (nearest == null)
+                    {
+                        nearest = e;
+                        return true;
+                    }
 
-            player.ChangeCoordsDelta(Math.Cos(dir) * scale, Math.Sin(dir) * scale);
+                    if (e.Distance(mci.X, mci.Y) < nearest.Distance(mci.X, mci.Y))
+                    {
+                        nearest = e;
+                        return true;
+                    }
+
+                    return false;
+                }).Last();
         }
 
         public static void Swing(IDescription d)
@@ -204,7 +215,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            AnimationDistance(player, 0, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.target.Distance(player) - 8) / 5);
+            AnimationDistance(player, 0, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.Target.Distance(player) - 8) / 5);
         }
 
         public static void BackSwing(IDescription d)
@@ -215,7 +226,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            AnimationDistance(player, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.target.Distance(player) - 8) / 5);
+            AnimationDistance(player, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.Target.Distance(player) - 8) / 5);
         }
 
         public Bitmap Draw()
@@ -257,7 +268,7 @@ namespace AnimationTransitionExample
                 color = Color.SaddleBrown;
             }
 
-            if (stun > 0)
+            if (stun > 0 || animations.Any() && animations.Peek().Peek().Name == "blocked")
             {
                 color = Color.LightYellow;
             }

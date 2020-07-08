@@ -169,25 +169,29 @@ namespace AnimationTransitionExample
                 "heavy",
                 new SkillIcon(13, 3),
                 LivingEntity.HeavyAttack,
-                false);
+                5,
+                4 * Program.TPS);
 
             new CombatSkill(
                 "block",
                 new SkillIcon(5, 4),
                 (l, d) => false,
-                false);
+                3,
+                3 * Program.TPS);
 
             new CombatSkill(
                 "counter",
                 new SkillIcon(10, 10),
                 (l, d) => false,
-                false);
+                10,
+                7 * Program.TPS);
 
             new CombatSkill(
                 "ranged",
                 new SkillIcon(3, 4),
                 (l, d) => false,
-                false);
+                5,
+                2 * Program.TPS);
         }
 
         private static void SetupSprites()
@@ -207,6 +211,8 @@ namespace AnimationTransitionExample
 
             new Sprite("window", "Sprites/_sheet_window_20.png", 16, 16);
 
+            new Sprite("bars", "Sprites/bars.png", 8, 8);
+
             //http://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=102
             AddFont("Sprites/BetterPixels.ttf");
         }
@@ -214,15 +220,15 @@ namespace AnimationTransitionExample
         private static void SetupAnimations()
         {
             new Animation(
-                "move",
+                "attackmove",
                 -1,
-                tick: LivingEntity.Move,
+                tick: LivingEntity.AttackMove,
                 final: LivingEntity.EndMove);
 
             new Animation(
-                "playermove",
+                "move",
                 -1,
-                tick: Player.PlayerMove,
+                tick: LivingEntity.Move,
                 final: LivingEntity.EndMove);
 
             new AttackAnimation(

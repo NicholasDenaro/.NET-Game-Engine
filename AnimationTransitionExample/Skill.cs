@@ -18,19 +18,43 @@ namespace AnimationTransitionExample
 
         public SkillAction SAction { get; private set; }
 
-        public bool CanMove { get; private set; }
+        public int Stamina { get; private set; }
 
-        public Skill(string name, SkillIcon icon, SkillAction action, bool canMove)
+        public int CooldownDuration { get; private set; }
+
+        public int CooldownTime { get; private set; }
+
+        public Skill(string name, SkillIcon icon, SkillAction action, int stamina, int cooldown)
         {
             this.Name = name;
             this.SAction = action;
             this.Icon = icon;
-            this.CanMove = canMove;
+            this.Stamina = stamina;
+            this.CooldownDuration = cooldown;
+            this.CooldownTime = 0;
             SkillManager.Instance.Add(this);
         }
 
         protected Skill()
         {
+        }
+
+        public void Tick()
+        {
+            if (CooldownTime > 0)
+            {
+                CooldownTime--;
+            }
+        }
+
+        public bool IsReady()
+        {
+            return CooldownTime == 0;
+        }
+
+        public void Cooldown()
+        {
+            this.CooldownTime = CooldownDuration;
         }
 
         public void Action(LivingEntity entity)
@@ -43,7 +67,8 @@ namespace AnimationTransitionExample
             skill.Name = Name;
             skill.Icon = Icon;
             skill.SAction = SAction;
-            skill.CanMove = CanMove;
+            skill.Stamina = Stamina;
+            skill.CooldownDuration = CooldownDuration;
 
             return skill;
         }

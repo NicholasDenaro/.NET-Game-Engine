@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
@@ -15,14 +14,4 @@
     <ProjectReference Include="..\GameEngine.UI\GameEngine.UI.csproj" />
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="GameFrame.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="GamePanel.cs">
-      <SubType>Component</SubType>
-    </Compile>
-  </ItemGroup>
-
 </Project>

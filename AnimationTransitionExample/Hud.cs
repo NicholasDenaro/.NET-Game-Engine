@@ -2,6 +2,7 @@
 using GameEngine._2D;
 using GameEngine.UI;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -46,11 +47,14 @@ namespace AnimationTransitionExample
 
             DrawEntityHealth(gfx);
 
+            DrawSkills(gfx, Program.Engine.Location.GetEntities<LivingEntity>());
+
             DrawPlayerSkill(gfx, player);
 
             DrawTargetLine(gfx, player);
 
             DrawHotbar(gfx, player, f);
+            DrawPlayerHud(gfx, player, f);
 
             gfx.ScaleTransform((float)0.25, (float)0.25);
 
@@ -113,6 +117,30 @@ namespace AnimationTransitionExample
                 Point center = new Point((int)(le.X - le.Sprite.X - 2 + (le.Width + 4) / 2), (int)(le.Y - le.Sprite.Y - 2 + (le.Height + 4) / 2));
                 gfx.DrawLine(Pens.Cyan, mci.X, mci.Y, center.X, center.Y);
             }
+
+            if (player.Target != null)
+            {
+                le = player.Target;
+                gfx.DrawArc(Pens.Red, (float)le.X - 4, (float)le.Y - 3, 8, 4, 180, -180);
+            }
+        }
+
+        private void DrawSkills(Graphics gfx, IEnumerable<LivingEntity> entities)
+        {
+            foreach (LivingEntity entity in entities)
+            {
+                Skill skill = entity.PreppedSkill ?? entity.ActiveSkill;
+                if (skill != null)
+                {
+                    float scale = 1;
+                    if (skill == entity.PreppedSkill)
+                    {
+                        scale = (AnimationManager.Instance["activateskill"].Duration - entity.SkillActivationTime) * 1.0f / AnimationManager.Instance["activateskill"].Duration / 2 + 0.6f;
+                    }
+
+                    gfx.DrawImage(skill.Icon.Image(), (int)entity.X - 2, (int)entity.Y - 24, 8 * scale, 8 * scale);
+                }
+            }
         }
 
         private void DrawPlayerSkill(Graphics gfx, Player player)
@@ -124,6 +152,12 @@ namespace AnimationTransitionExample
                 if (skill == player.PreppedSkill)
                 {
                     scale = (AnimationManager.Instance["activateskill"].Duration - player.SkillActivationTime) * 1.0f / AnimationManager.Instance["activateskill"].Duration / 2 + 0.6f;
+                }
+                if (skill == player.ActiveSkill)
+                {
+                    Pen outline = new Pen(Brushes.Yellow);
+                    outline.Width = 0.25f;
+                    gfx.DrawRectangle(outline, (int)player.X - 2.25f, (int)player.Y - 24.25f, 8.25f, 8.25f);
                 }
                 gfx.DrawImage(skill.Icon.Image(), (int)player.X - 2, (int)player.Y - 24, 8 * scale, 8 * scale);
             }
@@ -154,6 +188,66 @@ namespace AnimationTransitionExample
             }
 
             gfx.ScaleTransform(4, 4);
+        }
+
+        private void DrawPlayerHud(Graphics gfx, Player player, Font f)
+        {
+            gfx.FillRectangle(Brushes.DarkSlateGray, 0, bmp.Height / 4 - 16, bmp.Width / 4, f.Size);
+            gfx.ScaleTransform(0.25f, 0.25f);
+            // HP
+            gfx.DrawString("HP", f, Brushes.White, 8, bmp.Height - 16 * 4 - 4);
+            gfx.ScaleTransform(4, 4);
+
+            DrawBar(gfx, player.health / 100f, 8, bmp.Height / 4 - 16 - 2, 5, 0);
+
+            gfx.ScaleTransform(0.25f, 0.25f);
+            StringFormat format = new StringFormat();
+            format.Alignment = StringAlignment.Center;
+            gfx.DrawString($"{player.health:0}/{100}", f, Brushes.White, 8 + 8 * 6 * 4 / 2, bmp.Height - 16 * 4 - 4, format);
+
+            // Stamina
+            gfx.DrawString("SP", f, Brushes.White, 8 + 8 * 6 * 4, bmp.Height - 16 * 4 - 4);
+            gfx.ScaleTransform(4, 4);
+
+            DrawBar(gfx, player.stamina / 30, 8 + 8 * 6, bmp.Height / 4 - 16 - 2, 5, 1);
+
+            gfx.ScaleTransform(0.25f, 0.25f);
+            gfx.DrawString($"{player.stamina:0}/{30}", f, Brushes.Black, 8 + 8 * 6 * 4 + 8 * 6 * 4 / 2, bmp.Height - 16 * 4 - 4, format);
+            gfx.ScaleTransform(4, 4);
+        }
+
+        private void DrawBar(Graphics gfx, float percent, float x, float y, int segments, int imageIndex)
+        {
+            // TODO: Fix this for bars of size <= 2
+            Sprite s = Sprite.Sprites["bars"];
+            float i = 0;
+            float max = 7.5f * segments;
+            float incr = 7.5f;
+            float over;
+
+            gfx.DrawImage(s.GetImage(0 + imageIndex * 6), x + i, y);
+            if (percent > i / max)
+            {
+                over = Math.Min(percent - i / max, (1.0f / segments)) / (1.0f / segments) * 8;
+                gfx.DrawImage(s.GetImage(3 + imageIndex * 6), new RectangleF(x + i, y, over, 8), new RectangleF(0, 0, over, 8), GraphicsUnit.Pixel);
+            }
+
+            for (i = incr; i < max - incr - 1; i += incr)
+            {
+                gfx.DrawImage(s.GetImage(1 + imageIndex * 6), x + i, y);
+                if (percent > i / max)
+                {
+                    over = Math.Min(percent - i / max, (1.0f / segments)) / (1.0f / segments) * 8;
+                    gfx.DrawImage(s.GetImage(4 + imageIndex * 6), new RectangleF(x + i, y, over, 8), new RectangleF(0, 0, over, 8), GraphicsUnit.Pixel);
+                }
+            }
+
+            gfx.DrawImage(s.GetImage(2 + imageIndex * 6), x + i, y);
+            if (percent >= i / max)
+            {
+                over = Math.Min(percent - i / max, (1.0f / segments)) / (1.0f / segments) * 8;
+                gfx.DrawImage(s.GetImage(5 + imageIndex * 6), new RectangleF(x + i, y, over, 8), new RectangleF(0, 0, over, 8), GraphicsUnit.Pixel);
+            }
         }
     }
 }

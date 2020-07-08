@@ -1,24 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>4dc4a52a-9d81-41a8-9e74-8367d749daf9</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AnimationTransitionExample</RootNamespace>
-    <AssemblyName>AnimationTransitionExample</AssemblyName>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net48;netcoreapp3.1</TargetFrameworks>
     <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
   </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
     <DefineConstants>TRACE;net48</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
     <DefineConstants>TRACE;netcoreapp31</DefineConstants>
   </PropertyGroup>
+  
   <ItemGroup>
+    <None Remove="Sprites\bars.png" />
     <None Remove="Sprites\BetterPixels.ttf" />
     <None Remove="Sprites\monster_03.png" />
     <None Remove="Sprites\player.png" />
@@ -26,36 +21,21 @@
     <None Remove="Sprites\TileMap.png" />
     <None Remove="Sprites\_sheet_window_20.png" />
   </ItemGroup>
+  
   <ItemGroup>
+    <EmbeddedResource Include="Sprites\bars.png" />
     <EmbeddedResource Include="Sprites\BetterPixels.ttf" />
     <EmbeddedResource Include="Sprites\monster_03.png" />
-    <EmbeddedResource Include="Sprites\player.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Sprites\player.png" />
     <EmbeddedResource Include="Sprites\skills.png" />
-    <EmbeddedResource Include="Sprites\TileMap.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Sprites\TileMap.png" />
     <EmbeddedResource Include="Sprites\_sheet_window_20.png" />
   </ItemGroup>
+  
   <ItemGroup>
-    <Reference Include="System" />
-    
-    <Reference Include="System.Core" />
-
     <Reference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'" Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    
-    
-    <Reference Include="Microsoft.CSharp" />
-    
-    <Reference Include="System.Data" />
-    
-    <Reference Include="System.Net.Http" />
-    
-    <Reference Include="System.Xml" />
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'" Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
     <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'" Include="..\GameEngine.Windows\GameEngine.UI.WinForms.csproj" />

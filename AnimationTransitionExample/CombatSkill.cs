@@ -7,7 +7,7 @@
 
         }
 
-        public CombatSkill(string name, SkillIcon icon, SkillAction action, bool canMove) : base(name, icon, action, canMove)
+        public CombatSkill(string name, SkillIcon icon, SkillAction action, int stamina, int cooldown) : base(name, icon, action, stamina, cooldown)
         {
         }
 

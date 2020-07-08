@@ -17,6 +17,9 @@ namespace AnimationTransitionExample
         {
             combo = new AttackCombo(3, 30);
             walkCycle = 2;
+            SkillBook = new SkillBook(
+                SkillManager.Instance["heavy"].CreateNew(),
+                SkillManager.Instance["block"].CreateNew());
         }
 
         public static Entity Create(Enemy enemy)
@@ -34,13 +37,41 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            if (target != null)
+            if (Target != null)
             {
-                animations.Push(new AnimationChain(
-                    AnimationManager.Instance[$"-bite{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                    AnimationManager.Instance[$"bite{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                    AnimationManager.Instance["move"].MakeInterruptable().MakePausing()
-                        .Trigger(pd => this.Distance(this.target) < 20 && !this.IsBeingKnockedBack())));
+                if (Target.IsBlocked() || this.combo.IsStarted() || this.ActiveSkill?.Name == "heavy")
+                {
+                    if (animations.Any() && animations.Peek().Peek().Name.Contains("move"))
+                    {
+                        animations.Pop();
+                    }
+
+                    Attack(Target, location, "bite");
+                }
+                else if (CheckSkill(this, null))
+                {
+                    if (!animations.Any())
+                    {
+                        if (CheckSkill(Target, "block") && SkillBook["heavy"].IsReady())
+                        {
+                            SkillBook["heavy"].Action(this);
+                            animations.Push(new AnimationChain(
+                                AnimationManager.Instance["attackmove"].MakeInterruptable().MakePausing()
+                                    .Trigger(pd => this.Distance(this.Target) < 20 && !this.IsBeingKnockedBack())));
+                        }
+                        else if (CheckSkill(Target, null) && Target.IsAttacking() && SkillBook["block"].IsReady())
+                        {
+                            SkillBook["block"].Action(this);
+                            animations.Push(new AnimationChain(
+                                AnimationManager.Instance["attackmove"].MakeInterruptable().MakePausing()
+                                    .Trigger(pd => this.Distance(this.Target) < 20 && !this.IsBeingKnockedBack())));
+                        }
+                        else
+                        {
+                            Attack(Target, location, "bite");
+                        }
+                    }
+                }
             }
         }
 
@@ -52,7 +83,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            AnimationDistance(enemy, 0, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.target.Distance(enemy) - 8) / 5);
+            AnimationDistance(enemy, 0, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.Target.Distance(enemy) - 8) / 5);
         }
 
         public static void FastBite(IDescription d)
@@ -63,7 +94,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            AnimationDistance(enemy, 0.5, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.target.Distance(enemy) - 8) / 5);
+            AnimationDistance(enemy, 0.5, 0.8, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.Target.Distance(enemy) - 8) / 5);
         }
 
         public static void BiteRecovery(IDescription d)
@@ -74,7 +105,7 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            AnimationDistance(enemy, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.target.Distance(enemy) - 8) / 5);
+            AnimationDistance(enemy, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, enemy.Target.Distance(enemy) - 8) / 5);
         }
 
         public Bitmap Draw()

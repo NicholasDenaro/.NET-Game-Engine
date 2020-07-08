@@ -216,5 +216,10 @@ namespace GameEngine
             this.State = (HoldState)int.Parse(tokens[0]);
             this.Duration = int.Parse(tokens[1]);
         }
+
+        public bool IsPress()
+        {
+            return this.State == HoldState.PRESS;
+        }
     }
 }

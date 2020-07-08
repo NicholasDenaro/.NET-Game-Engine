@@ -66,7 +66,7 @@ namespace GameEngine
 
         public AnimationChain Peek()
         {
-            return animations[0];
+            return animations.FirstOrDefault();
         }
 
         public AnimationChain Pop()

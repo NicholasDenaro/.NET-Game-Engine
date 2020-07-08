@@ -93,6 +93,11 @@ namespace GameEngine._2D
             return Math.Sqrt((X - other.X) * (X - other.X) + (Y - other.Y) * (Y - other.Y));
         }
 
+        public double Distance(Point p)
+        {
+            return Math.Sqrt((X - p.X) * (X - p.X) + (Y - p.Y) * (Y - p.Y));
+        }
+
         public double Distance(double x, double y)
         {
             return Math.Sqrt((X - x) * (X - x) + (Y - y) * (Y - y));
@@ -101,6 +106,11 @@ namespace GameEngine._2D
         public double Direction(Description2D other)
         {
             return Math.Atan2(other.Y - Y, other.X - X);
+        }
+
+        public double Direction(Point point)
+        {
+            return Math.Atan2(point.Y - Y, point.X - X);
         }
 
         virtual public string Serialize()

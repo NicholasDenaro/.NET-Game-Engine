@@ -3,10 +3,8 @@ using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 
 namespace AnimationTransitionExample
 {
@@ -14,15 +12,17 @@ namespace AnimationTransitionExample
     {
         protected AnimationStack animations;
         public int health;
+        public float stamina;
         public int balance;
 
         protected int stun;
         private Point knockbackFrom;
         protected AttackCombo combo;
 
-        protected LivingEntity target;
-        public LivingEntity Target => target;
+        protected Point MoveTarget;
+        public LivingEntity Target { get; protected set; }
 
+        protected SkillBook SkillBook { get; set; }
 
         private Animation skillActivation;
         public Skill PreppedSkill { get; protected set; }
@@ -37,6 +37,7 @@ namespace AnimationTransitionExample
         public LivingEntity(Sprite sprite, int x, int y, int w, int h) : base(sprite, x, y, w, h)
         {
             health = 100;
+            stamina = 30;
             balance = 100;
             knockbackFrom = Point.Empty;
             animations = new AnimationStack();
@@ -52,6 +53,13 @@ namespace AnimationTransitionExample
             {
                 balance++;
             }
+
+            if (stamina < 30)
+            {
+                stamina += 1.0f / Program.TPS / 2.5f;
+            }
+
+            SkillBook.Tick();
 
             if (combo.IsStarted() && ((animations.Any() && !(animations.Peek().Peek() is AttackAnimation)) || !animations.Any()) && combo.Tick())
             {
@@ -109,6 +117,13 @@ namespace AnimationTransitionExample
             this.PreppedSkill = skill;
         }
 
+        public void CancelSkill()
+        {
+            this.skillActivation = null;
+            this.PreppedSkill = null;
+            this.ActiveSkill = null;
+        }
+
         public static void ActivateSkill(IDescription d)
         {
             LivingEntity le = d as LivingEntity;
@@ -143,11 +158,28 @@ namespace AnimationTransitionExample
             le.walkIndex = 0;
         }
 
+        protected void Attack(LivingEntity entity, Location location, string attackName)
+        {
+            Target = entity;
+            if (ActiveSkill == null)
+            {
+                animations.Push(new AnimationChain(
+                    AnimationManager.Instance[$"-{attackName}{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                    AnimationManager.Instance[$"{attackName}{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                    AnimationManager.Instance["attackmove"].MakeInterruptable().Trigger(le => ((LivingEntity)le).Distance(Target) < 20 && !Target.IsBeingKnockedBack())));
+            }
+            else
+            {
+                ActiveSkill.Cooldown();
+                ActiveSkill.SAction(location, this);
+            }
+        }
+
         public void Hit(Description2D hitter, bool finisher, int balanceDiff, int damage)
         {
             if (this is Enemy)
             {
-                this.target = hitter as LivingEntity;
+                this.Target = hitter as LivingEntity;
             }
 
             LivingEntity leHitter = hitter as LivingEntity;
@@ -155,6 +187,7 @@ namespace AnimationTransitionExample
             {
                 if (ActiveSkill.Name == "block")
                 {
+                    ActiveSkill.Cooldown();
                     if (balanceDiff != 100)
                     {
                         ActiveSkill = null;
@@ -166,6 +199,7 @@ namespace AnimationTransitionExample
                 }
                 else if (ActiveSkill.Name == "counter")
                 {
+                    ActiveSkill.Cooldown();
                     leHitter.Hit(this, true, 100, damage);
                     ActiveSkill = null;
                     return;
@@ -173,7 +207,7 @@ namespace AnimationTransitionExample
             }
 
             this.PreppedSkill = null;
-            this.skillActivation.Reset();
+            this.skillActivation?.Reset();
             stun = 15;
             DrawOffsetX = 0;
             DrawOffsetY = 0;
@@ -204,6 +238,35 @@ namespace AnimationTransitionExample
             }
         }
 
+        public static void AttackMove(IDescription d)
+        {
+            LivingEntity le = d as LivingEntity;
+            if (le == null)
+            {
+                return;
+            }
+
+            double dir = le.Direction(le.Target);
+            WalkDirection(le, dir);
+            double scale = 1;
+            Skill skill = le.PreppedSkill ?? le.ActiveSkill;
+
+            if (skill?.Name == "block")
+            {
+                scale = 0.5;
+            }
+            else if (skill?.Name == "ranged")
+            {
+                scale = 0.5;
+            }
+            else if (skill?.Name == "counter")
+            {
+                scale = 0;
+            }
+
+            le.ChangeCoordsDelta(Math.Cos(dir) * scale, Math.Sin(dir) * scale);
+        }
+
         public static void Move(IDescription d)
         {
             LivingEntity le = d as LivingEntity;
@@ -212,9 +275,22 @@ namespace AnimationTransitionExample
                 return;
             }
 
-            double dir = le.Direction(le.target);
+            double dir = le.Direction(le.MoveTarget);
             WalkDirection(le, dir);
-            le.ChangeCoordsDelta(Math.Cos(dir), Math.Sin(dir));
+
+            double scale = 1;
+
+            Skill skill = le.PreppedSkill ?? le.ActiveSkill;
+            if (skill?.Name == "block")
+            {
+                scale = 0.5;
+            }
+            else if (skill?.Name == "counter")
+            {
+                scale = 0;
+            }
+
+            le.ChangeCoordsDelta(Math.Cos(dir) * scale, Math.Sin(dir) * scale);
         }
 
         public static void WalkDirection(LivingEntity le, double direction)
@@ -293,9 +369,19 @@ namespace AnimationTransitionExample
             return animations.Any() ? animations.Peek().Peek().Name == "knockback" || animations.Peek().Peek().Name == "slideback" : false;
         }
 
+        public bool IsBlocked()
+        {
+            return animations.Any(astack => astack.Any(a => a.Name == "blocked"));
+        }
+
         public bool IsDead()
         {
             return health <= 0;
+        }
+
+        public bool IsAttacking()
+        {
+            return animations.Peek()?.Any(a => a is AttackAnimation) ?? false;
         }
 
         public static void KnockBack(IDescription description)
@@ -344,6 +430,12 @@ namespace AnimationTransitionExample
             livingEntity.ActiveSkill = skill;
         }
 
+        public static bool CheckSkill(LivingEntity target, string name)
+        {
+            return name != null && (target?.PreppedSkill?.Name == name || target?.ActiveSkill?.Name == name)
+                || name == null && (target?.PreppedSkill?.Name == null && target?.ActiveSkill?.Name == null);
+        }
+
         public static bool HeavyAttack(Location location, IDescription description)
         {
             LivingEntity le = description as LivingEntity;
@@ -355,33 +447,31 @@ namespace AnimationTransitionExample
             le.animations.Push(new AnimationChain(
                 AnimationManager.Instance[$"-heavy"].MakeInterruptable().MakePausing(),
                 AnimationManager.Instance[$"heavy"].MakeInterruptable().MakePausing(),
-                AnimationManager.Instance["move"].MakeInterruptable().Trigger(pd => ((Player)pd).Distance(le.target) < 20 && !le.target.IsBeingKnockedBack())));
+                AnimationManager.Instance["attackmove"].MakeInterruptable().Trigger(pd => ((LivingEntity)le).Distance(le.Target) < 20 && !le.Target.IsBeingKnockedBack())));
 
             return true;
         }
 
-
-
         public static void HeavyAnimation(IDescription d)
         {
-            Player player = d as Player;
-            if (player == null)
+            LivingEntity le = d as LivingEntity;
+            if (le == null)
             {
                 return;
             }
 
-            AnimationDistance(player, 0.5, 0.8, (t, s) => Math.Min(-(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, 3), Math.Max(0, player.target.Distance(player) - 8) / 5);
+            AnimationDistance(le, 0.5, 0.8, (t, s) => Math.Min(-(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, 3), Math.Max(0, le.Target.Distance(le) - 8) / 5);
         }
 
         public static void HeavyBackAnimation(IDescription d)
         {
-            Player player = d as Player;
-            if (player == null)
+            LivingEntity le = d as LivingEntity;
+            if (le == null)
             {
                 return;
             }
 
-            AnimationDistance(player, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, player.target.Distance(player) - 8) / 5);
+            AnimationDistance(le, 0.8, 1.05, (t, s) => -(t * 2 * Math.PI) * Math.Sin(t * 2 * Math.PI) * s, Math.Max(0, le.Target.Distance(le) - 8) / 5);
         }
 
         public static double AnimationFrame(LivingEntity le, double start, double cutoff)
@@ -396,7 +486,7 @@ namespace AnimationTransitionExample
         {
             double t = AnimationFrame(le, start, end);
             double dist = distFunc(t, scale);
-            double angle = Math.Atan2(le.target.Y - le.Y, le.target.X - le.X);
+            double angle = Math.Atan2(le.Target.Y - le.Y, le.Target.X - le.X);
             le.DrawOffsetX = Math.Cos(angle) * dist;
             le.DrawOffsetY = Math.Sin(angle) * dist;
         }
