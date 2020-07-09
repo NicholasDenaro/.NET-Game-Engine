@@ -19,11 +19,9 @@ namespace GameEngine.UI.WinForms
             this.keymap = keymap;
         }
 
-        public void Hook(GameFrame frame)
+        public void Hook(IGameWindow window)
         {
-            frame.KeyDown += Frame_KeyDown;
-            frame.KeyUp += Frame_KeyUp;
-            hooked = true;
+            hooked = window.HookKeyboard(Frame_KeyDown, Frame_KeyUp);
         }
 
         public bool IsHooked()
@@ -33,17 +31,17 @@ namespace GameEngine.UI.WinForms
 
         private void Frame_KeyUp(object sender, KeyEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.KeyCode))
+            if (keymap.ContainsKey(e.KeyCode))
             {
-                ActionEnd(keymap[(int)e.KeyCode], null);
+                ActionEnd(keymap[e.KeyCode], null);
             }
         }
 
         private void Frame_KeyDown(object sender, KeyEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.KeyCode))
+            if (keymap.ContainsKey(e.KeyCode))
             {
-                ActionStart(keymap[(int)e.KeyCode], null);
+                ActionStart(keymap[e.KeyCode], null);
             }
         }
 

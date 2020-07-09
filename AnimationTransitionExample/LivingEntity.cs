@@ -354,12 +354,13 @@ namespace AnimationTransitionExample
             le.ActiveSkill = null;
         }
 
-        public static void Strike(IDescription d, bool finisher, int balance, int damage)
+        public static void Strike(IDescription d, bool finisher, int stamina, int balance, int damage)
         {
             LivingEntity le = d as LivingEntity;
             if (le != null)
             {
                 LivingEntity t = le.Target;
+                le.stamina -= stamina;
                 t.Hit(le, finisher, balance, damage);
             }
         }

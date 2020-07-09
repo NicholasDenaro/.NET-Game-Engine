@@ -15,10 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.UI.WinForms", "G
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimationTransitionExample", "AnimationTransitionExample\AnimationTransitionExample.csproj", "{4DC4A52A-9D81-41A8-9E74-8367D749DAF9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0268266C-3197-46B0-A3EE-5590F37519EE} = {0268266C-3197-46B0-A3EE-5590F37519EE}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine.UI.AvaloniaUI", "GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj", "{0268266C-3197-46B0-A3EE-5590F37519EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.UI.AvaloniaUI", "GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj", "{0268266C-3197-46B0-A3EE-5590F37519EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine.UI", "GameEngine.UI\GameEngine.UI.csproj", "{BE3A6A57-29D0-471D-AB7E-6770530EF08F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.UI", "GameEngine.UI\GameEngine.UI.csproj", "{BE3A6A57-29D0-471D-AB7E-6770530EF08F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

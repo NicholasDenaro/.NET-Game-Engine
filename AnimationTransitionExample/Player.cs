@@ -5,6 +5,7 @@ using GameEngine.Interfaces;
 using GameEngine.UI;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 
 namespace AnimationTransitionExample
@@ -92,6 +93,7 @@ namespace AnimationTransitionExample
                     if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsPress())
                     {
                         base.CancelSkill();
+                        Program.Frame.PlaySound("Sounds.GAME_MENU_SCORE_SFX001771.wav");
                     }
                 }
                 else
@@ -107,7 +109,14 @@ namespace AnimationTransitionExample
                                 animations.Pop();
                             }
 
-                            Attack(LockTarget, location, "sword");
+                            if (stamina > 2)
+                            {
+                                Attack(LockTarget, location, "sword");
+                            }
+                            else
+                            {
+                                Attack(LockTarget, location, "punch");
+                            }
                         }
                     }
                     else
@@ -120,7 +129,14 @@ namespace AnimationTransitionExample
                                 animations.Pop();
                             }
 
-                            Attack(selected, location, "sword");
+                            if (stamina > 2)
+                            {
+                                Attack(selected, location, "sword");
+                            }
+                            else
+                            {
+                                Attack(selected, location, "punch");
+                            }
                         }
                     }
                 }

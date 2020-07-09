@@ -12,80 +12,33 @@ using Bitmap = System.Drawing.Bitmap;
 
 namespace GameEngine.UI.AvaloniaUI
 {
-    public class GamePanel : Panel
+    public class GamePanel : Panel, IGamePanel
     {
         public bool Drawing { get; private set; }
+        public double ScaleX { get; private set; }
+        public double ScaleY { get; private set; }
+
+        public int WindowWidth { get; private set; }
+        public int WindowHeight { get; private set; }
+
         private Bitmap[] buffers;
         private byte currentBuffer;
-        private int xScale;
-        private int yScale;
-        private GameFrame frame;
+        private AvaloniaWindow window;
         Semaphore sem = new Semaphore(1, 1);
 
-        public GamePanel(GameFrame frame, int width, int height, int xScale, int yScale)
+        public GamePanel(AvaloniaWindow window, int width, int height, double xScale, double yScale)
         {
-            this.frame = frame;
+            this.window = window;
             this.Name = "panel";
             Drawing = false;
-            this.xScale = xScale;
-            this.yScale = yScale;
+            this.ScaleX = xScale;
+            this.ScaleY = yScale;
             this.Width = width * xScale;
             this.Height = height * yScale;
+            WindowWidth = (int)this.Width;
+            WindowHeight = (int)this.Height;
             currentBuffer = 0;
             buffers = new Bitmap[] { BitmapExtensions.CreateBitmap((int)this.Width, (int)this.Height), BitmapExtensions.CreateBitmap((int)this.Width, (int)this.Height) };
-        }
-
-        public void HookMouse(EventHandler<MouseEventArgs> mouseInfo, EventHandler<MouseEventArgs> mouseDown, EventHandler<MouseEventArgs> mouseUp)
-        {
-            this.frame.window.PointerMoved += (s, e) => mouseInfo(s, ScaleEvent(Convert(e)));
-            this.frame.window.PointerPressed += (s, e) => mouseDown(s, ScaleEvent(Convert(e)));
-            this.frame.window.PointerReleased += (s, e) => mouseUp(s, ScaleEvent(Convert(e)));
-        }
-
-        public static int Key(PointerUpdateKind puk)
-        {
-            int key;
-            switch (puk)
-            {
-                case PointerUpdateKind.LeftButtonPressed:
-                case PointerUpdateKind.LeftButtonReleased:
-                    key = 0;
-                    break;
-
-                case PointerUpdateKind.RightButtonPressed:
-                case PointerUpdateKind.RightButtonReleased:
-                    key = 1;
-                    break;
-
-                case PointerUpdateKind.MiddleButtonPressed:
-                case PointerUpdateKind.MiddleButtonReleased:
-                    key = 2;
-                    break;
-
-                case PointerUpdateKind.Other:
-                    key = 6;
-                    break;
-
-                default:
-                    key = -1;
-                    break;
-            }
-
-            return key;
-        }
-
-        public MouseEventArgs Convert(PointerEventArgs pea)
-        {
-            PointerPoint pp = pea.GetCurrentPoint(frame.window);
-            Avalonia.Point point = pea.GetPosition(frame.window);
-            int key = Key(pp.Properties.PointerUpdateKind);
-
-            return new MouseEventArgs(key, 1, (int)point.X, (int)point.Y, 0);
-        }
-
-        public MouseEventArgs ScaleEvent(MouseEventArgs e)
-        {
-            return new MouseEventArgs(e.Button, e.Clicks, e.X / xScale, e.Y / yScale, e.Wheel);
         }
 
         public void Draw(Bitmap img, Bitmap overlay)
@@ -95,16 +48,19 @@ namespace GameEngine.UI.AvaloniaUI
             Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            gfx.DrawImage(img, 1, 1, (int)this.Width, (int)this.Height);
+            gfx.DrawImage(img, 1, 1, WindowWidth, WindowHeight);
             gfx.DrawImage(overlay, 1, 1, overlay.Width, overlay.Height);
-            if (frame.window != null)
+            if (window != null)
             {
                 if (sem.WaitOne())
                 {
                     try
                     {
-                        frame.Pane.InvalidateVisual();
-                        frame.window.Renderer.Paint(new Rect(0, 0, this.Width, this.Height));
+                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            this.InvalidateVisual();
+                            window.Renderer.Paint(new Rect(0, 0, WindowWidth, WindowHeight));
+                        });
                     }
                     finally
                     {

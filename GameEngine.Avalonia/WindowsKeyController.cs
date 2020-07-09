@@ -19,16 +19,14 @@ namespace GameEngine.UI.AvaloniaUI
             this.keymap = keymap;
         }
 
-        public void Hook(GameFrame frame)
+        public void Hook(IGameWindow window)
         {
-            if (frame.window == null)
+            if (window == null)
             {
                 return;
             }
 
-            frame.window.KeyDown += Frame_KeyDown;
-            frame.window.KeyUp += Frame_KeyUp;
-            hooked = true;
+            hooked = window.HookKeyboard(Frame_KeyDown, Frame_KeyUp);
         }
 
         public bool IsHooked()
@@ -36,19 +34,19 @@ namespace GameEngine.UI.AvaloniaUI
             return hooked;
         }
 
-        private void Frame_KeyUp(object sender, Avalonia.Input.KeyEventArgs e)
+        private void Frame_KeyUp(object sender, KeyEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Key))
+            if (keymap.ContainsKey(e.KeyCode))
             {
-                ActionEnd(keymap[(int)e.Key], null);
+                ActionEnd(keymap[e.KeyCode], null);
             }
         }
 
-        private void Frame_KeyDown(object sender, Avalonia.Input.KeyEventArgs e)
+        private void Frame_KeyDown(object sender, KeyEventArgs e)
         {
-            if (keymap.ContainsKey((int)e.Key))
+            if (keymap.ContainsKey(e.KeyCode))
             {
-                ActionStart(keymap[(int)e.Key], null);
+                ActionStart(keymap[e.KeyCode], null);
             }
         }
 

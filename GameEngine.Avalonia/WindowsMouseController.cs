@@ -21,15 +21,14 @@ namespace GameEngine.UI.AvaloniaUI
             this.keymap = keymap;
         }
 
-        public void Hook(GameFrame frame)
+        public void Hook(IGameWindow window)
         {
-            if (frame.window == null)
+            if (window == null)
             {
                 return;
             }
 
-            frame.Pane.HookMouse(Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
-            hooked = true;
+            hooked = window.HookMouse(Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
         }
 
         public bool IsHooked()
@@ -57,13 +56,13 @@ namespace GameEngine.UI.AvaloniaUI
         {
             if (keymap.ContainsKey(e.Button))
             {
-                if (this[keymap[GamePanel.Key(PointerUpdateKind.LeftButtonPressed)]].IsDown())
+                if (this[keymap[AvaloniaWindow.Key(PointerUpdateKind.LeftButtonPressed)]].IsDown())
                 {
-                    ActionInfo(keymap[GamePanel.Key(PointerUpdateKind.LeftButtonPressed)], new MouseControllerInfo(new Point(e.X, e.Y)));
+                    ActionInfo(keymap[AvaloniaWindow.Key(PointerUpdateKind.LeftButtonPressed)], new MouseControllerInfo(new Point(e.X, e.Y)));
                 }
-                else if (this[keymap[GamePanel.Key(PointerUpdateKind.RightButtonPressed)]].IsDown())
+                else if (this[keymap[AvaloniaWindow.Key(PointerUpdateKind.RightButtonPressed)]].IsDown())
                 {
-                    ActionInfo(keymap[GamePanel.Key(PointerUpdateKind.RightButtonPressed)], new MouseControllerInfo(new Point(e.X, e.Y)));
+                    ActionInfo(keymap[AvaloniaWindow.Key(PointerUpdateKind.RightButtonPressed)], new MouseControllerInfo(new Point(e.X, e.Y)));
                 }
                 else
                 {

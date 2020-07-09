@@ -5,41 +5,24 @@ using System.Windows.Forms;
 
 namespace GameEngine.UI.WinForms
 {
-    public class GamePanel : Panel
+    public class GamePanel : Panel, IGamePanel
     {
         public bool Drawing { get; private set; }
         private Bitmap[] buffers;
         private byte currentBuffer;
-        private int xScale;
-        private int yScale;
+        public double ScaleX { get; private set; }
+        public double ScaleY { get; private set; }
 
-        public GamePanel(int width, int height, int xScale, int yScale)
+        public GamePanel(int width, int height, double xScale, double yScale)
         {
             Drawing = false;
-            this.xScale = xScale;
-            this.yScale = yScale;
-            this.Width = width * xScale;
-            this.Height = height * yScale;
+            this.ScaleX = xScale;
+            this.ScaleY = yScale;
+            this.Width = (int)(width * xScale);
+            this.Height = (int)(height * yScale);
             currentBuffer = 0;
             buffers = new Bitmap[] { BitmapExtensions.CreateBitmap(this.Width, this.Height), BitmapExtensions.CreateBitmap(this.Width, this.Height) };
             this.DoubleBuffered = true;
-        }
-
-        public void HookMouse(GameFrame frame, EventHandler<MouseEventArgs> mouseInfo, EventHandler<MouseEventArgs> mouseDown, EventHandler<MouseEventArgs> mouseUp)
-        {
-            this.MouseMove += (s, e) => mouseInfo(s, ScaleEvent(Convert(e)));
-            this.MouseDown += (s, e) => mouseDown(s, ScaleEvent(Convert(e)));
-            this.MouseUp += (s, e) => mouseUp(s, ScaleEvent(Convert(e)));
-        }
-
-        public MouseEventArgs Convert(System.Windows.Forms.MouseEventArgs mea)
-        {
-            return new MouseEventArgs((int)mea.Button, mea.Clicks, mea.X, mea.Y, mea.Delta);
-        }
-
-        public MouseEventArgs ScaleEvent(MouseEventArgs e)
-        {
-            return new MouseEventArgs(e.Button, e.Clicks, e.X / xScale, e.Y / yScale, e.Wheel);
         }
 
         public void Draw(Bitmap img, Bitmap overlay)

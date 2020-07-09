@@ -13,6 +13,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771.wav" />
     <None Remove="Sprites\bars.png" />
     <None Remove="Sprites\BetterPixels.ttf" />
     <None Remove="Sprites\monster_03.png" />
@@ -23,6 +24,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771.wav" />
     <EmbeddedResource Include="Sprites\bars.png" />
     <EmbeddedResource Include="Sprites\BetterPixels.ttf" />
     <EmbeddedResource Include="Sprites\monster_03.png" />

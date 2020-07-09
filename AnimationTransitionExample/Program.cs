@@ -1,6 +1,7 @@
 ﻿using AnimationTransitionExample.Animations;
 using GameEngine;
 using GameEngine._2D;
+using GameEngine.UI;
 #if netcoreapp31
 using GameEngine.UI.AvaloniaUI;
 #endif
@@ -35,32 +36,43 @@ namespace AnimationTransitionExample
         public static readonly PrivateFontCollection FontCollection = new PrivateFontCollection();
 
         public static GameEngine.GameEngine Engine { get; private set; }
+        public static GameFrame Frame { get; private set; }
+
         public static void Main(string[] args)
         {
             Engine = new FixedTickEngine(TPS);
             GameView2D view = new GameView2D(SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray);
             Engine.View = view;
 
-            GameFrame frame = new GameFrame(0, 0, 160, 144, scale, scale);
-            frame.Start();
-            Engine.DrawEnd += frame.Pane.DrawHandle;
+            IGameWindowBuilder windowBuilder;
+
+#if netcoreapp31
+            windowBuilder = new AvaloniaWindowBuilder();
+#endif
+#if net48
+            windowBuilder = new WinFormWindowBuilder();
+#endif
+
+            Frame = new GameFrame(windowBuilder, 0, 0, 160, 144, scale, scale);
+            Frame.Start();
+            Engine.DrawEnd += Frame.DrawHandle;
 
             Location location = new Location(new Description2D(0, 0, 100, 100));
             Engine.SetLocation(location);
 
             WindowsKeyController keyController = new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value));
-            keyController.Hook(frame);
+            keyController.Hook(Frame.Window);
             Engine.AddController(keyController);
 
             WindowsMouseController mouseController = new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value));
-            mouseController.Hook(frame);
+            mouseController.Hook(Frame.Window);
             Engine.AddController(mouseController);
 
             TickHandler th = null;
             th = (s, o) =>
             {
-                keyController.Hook(frame);
-                mouseController.Hook(frame);
+                keyController.Hook(Frame.Window);
+                mouseController.Hook(Frame.Window);
 
                 if (keyController.IsHooked() && mouseController.IsHooked())
                 {
@@ -159,9 +171,14 @@ namespace AnimationTransitionExample
         };
         public static int Convert(Avalonia.Input.PointerUpdateKind key)
         {
-            return GamePanel.Key(key);
+            return AvaloniaWindow.Key(key);
         }
 #endif
+
+        public static Stream GetStream(string resource)
+        {
+            return Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{resource.Replace("/", ".")}");
+        }
 
         private static void SetupSkills()
         {
@@ -232,11 +249,27 @@ namespace AnimationTransitionExample
                 final: LivingEntity.EndMove);
 
             new AttackAnimation(
+                "punch1",
+                30,
+                first: LivingEntity.StartAttack,
+                tick: Player.Swing,
+                final: d2d => LivingEntity.Strike(d2d, false, 0, 40, 5)
+                );
+
+            new AttackAnimation(
+                "-punch1",
+                45,
+                first: LivingEntity.StartAttack,
+                tick: Player.Swing,
+                final: LivingEntity.ResetToAttackPosition
+                );
+
+            new AttackAnimation(
                 "sword1",
                 24,
                 first: LivingEntity.StartAttack,
                 tick: Player.Swing,
-                final: d2d => LivingEntity.Strike(d2d, false, 40, 20));
+                final: d2d => LivingEntity.Strike(d2d, false, 2, 40, 20));
 
             new AttackAnimation(
                 "-sword1",
@@ -249,7 +282,7 @@ namespace AnimationTransitionExample
                 12,
                 first: LivingEntity.StartAttack,
                 tick: Player.Swing,
-                final: d2d => LivingEntity.Strike(d2d, false, 40, 15));
+                final: d2d => LivingEntity.Strike(d2d, false, 2, 40, 15));
 
             new AttackAnimation(
                 "-sword2",
@@ -262,7 +295,7 @@ namespace AnimationTransitionExample
                 20,
                 first: LivingEntity.StartAttack,
                 tick: Player.Swing,
-                final: d2d => LivingEntity.Strike(d2d, true, 80, 30));
+                final: d2d => LivingEntity.Strike(d2d, true, 2, 80, 30));
 
             new AttackAnimation(
                 "-sword3",
@@ -290,7 +323,7 @@ namespace AnimationTransitionExample
                 10,
                 first: LivingEntity.StartAttack,
                 tick: Enemy.Bite,
-                final: d2d => LivingEntity.Strike(d2d, false, 40, 5));
+                final: d2d => LivingEntity.Strike(d2d, false, 2, 40, 5));
 
             new AttackAnimation(
                 "-bite1",
@@ -303,7 +336,7 @@ namespace AnimationTransitionExample
                 10,
                 first: LivingEntity.StartAttack,
                 tick: Enemy.FastBite,
-                final: d2d => LivingEntity.Strike(d2d, false, 40, 2));
+                final: d2d => LivingEntity.Strike(d2d, false, 2, 40, 2));
 
             new AttackAnimation(
                 "-bite2",
@@ -316,7 +349,7 @@ namespace AnimationTransitionExample
                 30,
                 first: LivingEntity.StartAttack,
                 tick: Enemy.FastBite,
-                final: d2d => LivingEntity.Strike(d2d, false, 40, 2));
+                final: d2d => LivingEntity.Strike(d2d, false, 2, 40, 2));
 
             new AttackAnimation(
                 "-bite3",
@@ -329,7 +362,7 @@ namespace AnimationTransitionExample
                 24,
                 first: LivingEntity.StartAttack,
                 tick: LivingEntity.HeavyAnimation,
-                final: d2d => { LivingEntity.Strike(d2d, true, 100, 50); LivingEntity.CombatSkillEnd(d2d); });
+                final: d2d => { LivingEntity.Strike(d2d, true, 0, 100, 50); LivingEntity.CombatSkillEnd(d2d); });
 
             new AttackAnimation(
                 "-heavy",

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace GameEngine.UI.WinForms
@@ -18,10 +19,9 @@ namespace GameEngine.UI.WinForms
             this.keymap = keymap;
         }
 
-        public void Hook(GameFrame frame)
+        public void Hook(IGameWindow window)
         {
-            frame.Pane.HookMouse(frame, Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
-            hooked = true;
+            hooked = window.HookMouse(Frame_KeyInfo, Frame_KeyDown, Frame_KeyUp);
         }
 
         public bool IsHooked()
@@ -33,7 +33,7 @@ namespace GameEngine.UI.WinForms
         {
             if (keymap.ContainsKey((int)e.Button))
             {
-                ActionEnd(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionEnd(keymap[(int)e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
             }
         }
 
@@ -41,7 +41,7 @@ namespace GameEngine.UI.WinForms
         {
             if (keymap.ContainsKey((int)e.Button))
             {
-                ActionStart(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionStart(keymap[(int)e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
             }
         }
 
@@ -49,7 +49,7 @@ namespace GameEngine.UI.WinForms
         {
             if (keymap.ContainsKey((int)e.Button))
             {
-                ActionInfo(keymap[(int)e.Button], new MouseControllerInfo(new System.Drawing.Point(e.X, e.Y)));
+                ActionInfo(keymap[(int)e.Button], new MouseControllerInfo(new Point(e.X, e.Y)));
             }
         }
 
