@@ -21,13 +21,6 @@ namespace GameEngine.UI.AvaloniaUI
                     .StartWithClassicDesktopLifetime(new string[] { }, ShutdownMode.OnMainWindowClose);
             });
 
-            ////AppBuilder builder = AppBuilder
-            ////    .Configure<Application>()
-            ////    .UsePlatformDetect()
-            ////    .UseReactiveUI()
-            ////    .AfterSetup(ab => CreateWindow(ref window, frame))
-            ////    .SetupWithoutStarting();
-
             while (window == null) { }
 
             return (window, new AvaloniaSoundPlayer());
@@ -36,6 +29,7 @@ namespace GameEngine.UI.AvaloniaUI
         private void CreateWindow(ref AvaloniaWindow window, IGameFrame frame)
         {
             window = new AvaloniaWindow();
+            window.Title = "GameWindow";
             GamePanel panel = new GamePanel(window, (int)(frame.Bounds.Width / frame.ScaleX), (int)(frame.Bounds.Height / frame.ScaleY), frame.ScaleX, frame.ScaleY);
             window.Add(panel);
             window.WindowStartupLocation = WindowStartupLocation.CenterScreen;

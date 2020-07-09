@@ -163,9 +163,10 @@ namespace AnimationTransitionExample
             Target = entity;
             if (ActiveSkill == null)
             {
+                int index = attackName == "punch" ? 1 : this.combo.Attack + 1;
                 animations.Push(new AnimationChain(
-                    AnimationManager.Instance[$"-{attackName}{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
-                    AnimationManager.Instance[$"{attackName}{combo.Attack + 1}"].MakeInterruptable().MakePausing(),
+                    AnimationManager.Instance[$"-{attackName}{index}"].MakeInterruptable().MakePausing(),
+                    AnimationManager.Instance[$"{attackName}{index}"].MakeInterruptable().MakePausing(),
                     AnimationManager.Instance["attackmove"].MakeInterruptable().Trigger(le => ((LivingEntity)le).Distance(Target) < 20 && !Target.IsBeingKnockedBack())));
             }
             else
@@ -187,6 +188,7 @@ namespace AnimationTransitionExample
             {
                 if (ActiveSkill.Name == "block")
                 {
+                    Program.Frame.PlaySound("Sounds.GAME_MENU_SCORE_SFX001755.wav");
                     ActiveSkill.Cooldown();
                     if (balanceDiff != 100)
                     {
@@ -206,6 +208,7 @@ namespace AnimationTransitionExample
                 }
             }
 
+            Program.Frame.PlaySound("Sounds.GAME_MENU_SCORE_SFX001771.wav");
             this.PreppedSkill = null;
             this.skillActivation?.Reset();
             stun = 15;

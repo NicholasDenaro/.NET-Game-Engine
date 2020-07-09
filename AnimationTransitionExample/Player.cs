@@ -93,7 +93,6 @@ namespace AnimationTransitionExample
                     if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsPress())
                     {
                         base.CancelSkill();
-                        Program.Frame.PlaySound("Sounds.GAME_MENU_SCORE_SFX001771.wav");
                     }
                 }
                 else

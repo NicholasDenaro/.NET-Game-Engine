@@ -38,7 +38,7 @@ namespace GameEngine.UI
         public void PlaySound(string resource)
         {
             Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{resource}");
-
+            soundPlayer.Play(stream);
         }
 
         public void DrawHandle(object sender, View view)
