@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Text;
-using System.Windows.Forms;
 
-namespace GameEngine.UI.WinForms
+namespace GameEngine.UI
 {
     public class WindowsKeyController : Controller
     {
         private Dictionary<int, int> keymap;
-        private bool hooked = false;
 
         public WindowsKeyController() : base()
         {
@@ -19,17 +17,7 @@ namespace GameEngine.UI.WinForms
             this.keymap = keymap;
         }
 
-        public void Hook(IGameWindow window)
-        {
-            hooked = window.HookKeyboard(Frame_KeyDown, Frame_KeyUp);
-        }
-
-        public bool IsHooked()
-        {
-            return hooked;
-        }
-
-        private void Frame_KeyUp(object sender, KeyEventArgs e)
+        public void Frame_KeyUp(object sender, KeyEventArgs e)
         {
             if (keymap.ContainsKey(e.KeyCode))
             {
@@ -37,7 +25,7 @@ namespace GameEngine.UI.WinForms
             }
         }
 
-        private void Frame_KeyDown(object sender, KeyEventArgs e)
+        public void Frame_KeyDown(object sender, KeyEventArgs e)
         {
             if (keymap.ContainsKey(e.KeyCode))
             {

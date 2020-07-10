@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 
 namespace GameEngine.UI
 {
@@ -30,6 +31,11 @@ namespace GameEngine.UI
             X = x;
             Y = y;
             Wheel = wheelbumps;
+        }
+
+        public void AlterButton(int button)
+        {
+            this.Button = button;
         }
     }
 }

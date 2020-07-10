@@ -49,6 +49,24 @@ namespace GameEngine.UI.WinForms
             return new MouseEventArgs(e.Button, e.Clicks, (int)(e.X / this.panel.ScaleX), (int)(e.Y / this.panel.ScaleY), e.Wheel);
         }
 
+        public bool Hook(Controller controller)
+        {
+            if (controller is WindowsMouseController)
+            {
+                WindowsMouseController mwc = controller as WindowsMouseController;
+                return HookMouse(mwc.Frame_KeyInfo, mwc.Frame_KeyDown, mwc.Frame_KeyUp);
+            }
+            else if (controller is WindowsKeyController)
+            {
+                WindowsKeyController wkc = controller as WindowsKeyController;
+                return HookKeyboard(wkc.Frame_KeyDown, wkc.Frame_KeyUp);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException($"{this.GetType().Name} does not use {controller.GetType().Name}");
+            }
+        }
+
         public IGamePanel Panel => panel;
     }
 }

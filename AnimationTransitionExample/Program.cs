@@ -10,7 +10,6 @@ using GameEngine.UI.WinForms;
 #endif
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
@@ -27,9 +26,10 @@ namespace AnimationTransitionExample
         public const int SCREENWIDTH = 160;
         public const int SCREENHEIGHT = 144;
 
-        public static long tickTime;
-        public static long drawTime;
-        public static long tps;
+        public static long tickTime => builder.tickTime;
+        public static long drawTime => builder.drawTime;
+        public static long tps => builder.tps;
+        private static GameBuilder builder;
 
         public const int scale = 4;
 
@@ -40,12 +40,9 @@ namespace AnimationTransitionExample
 
         public static void Main(string[] args)
         {
-            Engine = new FixedTickEngine(TPS);
-            GameView2D view = new GameView2D(SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray);
-            Engine.View = view;
+            builder = new GameBuilder();
 
             IGameWindowBuilder windowBuilder;
-
 #if netcoreapp31
             windowBuilder = new AvaloniaWindowBuilder();
 #endif
@@ -53,34 +50,18 @@ namespace AnimationTransitionExample
             windowBuilder = new WinFormWindowBuilder();
 #endif
 
-            Frame = new GameFrame(windowBuilder, 0, 0, 160, 144, scale, scale);
-            Frame.Start();
-            Engine.DrawEnd += Frame.DrawHandle;
+            builder
+                .GameEngine(new FixedTickEngine(TPS))
+                .GameView(new GameView2D(SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray))
+                .GameFrame(new GameFrame(windowBuilder, 0, 0, 160, 144, scale, scale))
+                .Controller(new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value)))
+                .Controller(new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value)))
+                .StartingLocation(new Location(new Description2D(0, 0, 100, 100)))
+                .Build();
 
-            Location location = new Location(new Description2D(0, 0, 100, 100));
-            Engine.SetLocation(location);
+            Engine = builder.Engine;
 
-            WindowsKeyController keyController = new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value));
-            keyController.Hook(Frame.Window);
-            Engine.AddController(keyController);
-
-            WindowsMouseController mouseController = new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value));
-            mouseController.Hook(Frame.Window);
-            Engine.AddController(mouseController);
-
-            TickHandler th = null;
-            th = (s, o) =>
-            {
-                keyController.Hook(Frame.Window);
-                mouseController.Hook(Frame.Window);
-
-                if (keyController.IsHooked() && mouseController.IsHooked())
-                {
-                    Engine.TickEnd -= th;
-                }
-            };
-
-            Engine.TickEnd += th;
+            Frame = builder.Frame;
 
             SetupAnimations();
 
@@ -98,32 +79,11 @@ namespace AnimationTransitionExample
                 Engine.AddEntity(enemy);
             }
 
-            Entity player = Player.Create(new Player(50, 50, Engine.GetControllerIndex(keyController), Engine.GetControllerIndex(mouseController)));
+            Entity player = Player.Create(new Player(50, 50, 0, 1));
             Engine.AddEntity(player);
 
-            Entity hud = Hud.Create(new Hud(Engine.GetControllerIndex(keyController), Engine.GetControllerIndex(mouseController), SCREENWIDTH * scale, SCREENHEIGHT * scale));
+            Entity hud = Hud.Create(new Hud(0, 1, SCREENWIDTH * scale, SCREENHEIGHT * scale));
             Engine.AddEntity(hud);
-
-            Stopwatch swTick = new Stopwatch();
-            Engine.TickStart += (e, o) => swTick.Restart();
-            Engine.TickEnd += (e, o) => { swTick.Stop(); ; tickTime = swTick.ElapsedTicks; };
-
-            Stopwatch swDraw = new Stopwatch();
-            Engine.DrawStart += (e, o) => swDraw.Restart();
-            Engine.DrawEnd += (e, o) => { swDraw.Stop(); drawTime = swDraw.ElapsedTicks; };
-
-            int ticks = 0;
-            Stopwatch tpsWatch = Stopwatch.StartNew();
-            Engine.TickStart += (e, o) => ticks++;
-            Engine.TickEnd += (e, o) =>
-            {
-                if (tpsWatch.ElapsedMilliseconds >= 1000)
-                {
-                    tpsWatch.Restart();
-                    tps = ticks;
-                    ticks = 0;
-                }
-            };
 
             Engine.Start();
 

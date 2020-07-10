@@ -21,14 +21,53 @@ namespace GameEngine.UI.AvaloniaUI
             this.VisualChildren.Add(panel);
         }
 
+        public bool Hook(Controller controller)
+        {
+            if (controller is WindowsMouseController)
+            {
+                WindowsMouseController mwc = controller as WindowsMouseController;
+                return HookMouse(mwc.Frame_KeyInfo, mwc.Frame_KeyDown, mwc.Frame_KeyUp);
+            }
+            else if (controller is WindowsKeyController)
+            {
+                WindowsKeyController wkc = controller as WindowsKeyController;
+                return HookKeyboard(wkc.Frame_KeyDown, wkc.Frame_KeyUp);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException($"{this.GetType().Name} does not use {controller.GetType().Name}");
+            }
+        }
+
         public bool HookMouse(Action<object, MouseEventArgs> frame_KeyInfo, Action<object, MouseEventArgs> frame_KeyDown, Action<object, MouseEventArgs> frame_KeyUp)
         {
-            if (this.panel == null)
+            this.PointerMoved += (s, e) =>
             {
-                return false;
-            }
+                MouseEventArgs mea = ScaleEvent(Convert(e));
+                bool pressed = false;
 
-            this.PointerMoved += (s, e) => frame_KeyInfo(s, ScaleEvent(Convert(e)));
+                if (e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
+                {
+                    mea.AlterButton(Key(PointerUpdateKind.LeftButtonPressed));
+                    frame_KeyInfo(s, mea);
+                    pressed = true;
+                }
+
+                if (e.GetCurrentPoint(null).Properties.IsRightButtonPressed)
+                {
+                    mea.AlterButton(Key(PointerUpdateKind.RightButtonPressed));
+                    frame_KeyInfo(s, mea);
+                    pressed = true;
+                }
+
+                if (pressed)
+                {
+                    return;
+                }
+
+                frame_KeyInfo(s, mea);
+            };
+
             this.PointerPressed += (s, e) => frame_KeyDown(s, ScaleEvent(Convert(e)));
             this.PointerReleased += (s, e) => frame_KeyUp(s, ScaleEvent(Convert(e)));
 

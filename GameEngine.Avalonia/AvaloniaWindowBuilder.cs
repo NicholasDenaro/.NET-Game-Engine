@@ -7,9 +7,12 @@ namespace GameEngine.UI.AvaloniaUI
 {
     public class AvaloniaWindowBuilder : IGameWindowBuilder
     {
+        private bool ready;
+
         public (IGameWindow, ISoundPlayer) Run(IGameFrame frame)
         {
             AvaloniaWindow window = null;
+            ready = false;
 
             Task.Run(() =>
             {
@@ -21,7 +24,7 @@ namespace GameEngine.UI.AvaloniaUI
                     .StartWithClassicDesktopLifetime(new string[] { }, ShutdownMode.OnMainWindowClose);
             });
 
-            while (window == null) { }
+            while (!ready) { }
 
             return (window, new AvaloniaSoundPlayer());
         }
@@ -36,6 +39,7 @@ namespace GameEngine.UI.AvaloniaUI
             window.Width = frame.Bounds.Width;
             window.Height = frame.Bounds.Height;
             window.Show();
+            ready = true;
         }
     }
 }

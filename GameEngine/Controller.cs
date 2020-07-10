@@ -12,6 +12,8 @@ namespace GameEngine
         private List<int> keys;
         private object Lock = new object();
 
+        public bool IsHooked { get; set; }
+
         public Controller()
         {
 
