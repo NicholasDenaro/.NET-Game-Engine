@@ -12,9 +12,6 @@ namespace GameEngine
         public Location Location { get; internal set; }
         public Location NextLocation { get; internal set; }
 
-        ////public IFocusable Focus { get; internal set; }
-        ////public IFocusable NextFocus { get; internal set; }
-
         public string Serialize()
         {
             StringBuilder sb = new StringBuilder();

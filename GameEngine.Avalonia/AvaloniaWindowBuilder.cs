@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GameEngine.UI.AvaloniaUI
@@ -19,8 +21,10 @@ namespace GameEngine.UI.AvaloniaUI
                 int i = AppBuilder
                     .Configure<Application>()
                     .UsePlatformDetect()
-                    .UseReactiveUI()
-                    .AfterSetup(ab => CreateWindow(ref window, frame))
+                    .AfterSetup(ab =>
+                    {
+                        CreateWindow(ref window, frame);
+                    })
                     .StartWithClassicDesktopLifetime(new string[] { }, ShutdownMode.OnMainWindowClose);
             });
 
@@ -31,13 +35,14 @@ namespace GameEngine.UI.AvaloniaUI
 
         private void CreateWindow(ref AvaloniaWindow window, IGameFrame frame)
         {
-            window = new AvaloniaWindow();
+            window = new AvaloniaWindow(frame.Bounds.Width, frame.Bounds.Height);
             window.Title = "GameWindow";
             GamePanel panel = new GamePanel(window, (int)(frame.Bounds.Width / frame.ScaleX), (int)(frame.Bounds.Height / frame.ScaleY), frame.ScaleX, frame.ScaleY);
             window.Add(panel);
             window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            window.Width = frame.Bounds.Width;
-            window.Height = frame.Bounds.Height;
+            ////Type t = window.PlatformImpl.GetType();
+            ////System.Reflection.FieldInfo fi = t.GetField("_scaling", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            ////fi.SetValue(window.PlatformImpl, 1);
             window.Show();
             ready = true;
         }

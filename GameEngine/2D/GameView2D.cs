@@ -199,7 +199,8 @@ namespace GameEngine._2D
             {
                 if (description.HasImage())
                 {
-                    gfx.DrawImage(description.Image(), (float)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (float)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0));
+                    Rectangle dest = new Rectangle((int)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0), description.Width, description.Height);
+                    gfx.DrawImage(description.Image(), dest, new Rectangle(0, 0, description.Width, description.Height), GraphicsUnit.Pixel);
                 }
             }
         }
@@ -216,7 +217,9 @@ namespace GameEngine._2D
                 if (tiles == null)
                 {
                     tiles = BitmapExtensions.CreateBitmap(map.Width, map.Height);
+                    tiles.MakeTransparent();
                     Graphics mgfx = Graphics.FromImage(tiles);
+                    mgfx.Clear(Color.Transparent);
                     mgfx.Clip = new Region(new Rectangle(new Point(), new Size(map.Width, map.Height)));
                     int x = 0;
                     int y = 0;
@@ -230,6 +233,8 @@ namespace GameEngine._2D
                             y++;
                         }
                     }
+
+                    mgfx.DrawRectangle(Pens.Black, 0, 0, map.Width - 1, map.Height - 1);
                 }
 
                 gfx.DrawImage(tiles, 0, 0);

@@ -6,8 +6,9 @@ namespace GameEngine.UI.AvaloniaUI
 {
     public class AvaloniaWindow : Window, IGameWindow
     {
-        public AvaloniaWindow()
+        public AvaloniaWindow(int width, int height)
         {
+            ClientSize = new Avalonia.Size(width / PlatformImpl.Scaling, height / PlatformImpl.Scaling);
             this.CanResize = false;
             this.Closing += (s, o) => Environment.Exit(-1);
         }
@@ -93,7 +94,7 @@ namespace GameEngine.UI.AvaloniaUI
             Avalonia.Point point = pea.GetPosition(this);
             int key = Key(pp.Properties.PointerUpdateKind);
 
-            return new MouseEventArgs(key, 1, (int)point.X, (int)point.Y, 0);
+            return new MouseEventArgs(key, 1, (int)(point.X * this.PlatformImpl.Scaling), (int)(point.Y * this.PlatformImpl.Scaling), 0);
         }
 
         public MouseEventArgs ScaleEvent(MouseEventArgs e)

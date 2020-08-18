@@ -1,5 +1,6 @@
 ﻿using GameEngine;
 using GameEngine._2D;
+using GameEngine.UI;
 using GameEngine.UI.WinForms;
 using System;
 using System.Collections.Generic;
@@ -26,13 +27,14 @@ namespace GridWalkRPG
             Engine.TickEnd += view.Tick;
             Engine.View = view;
             Engine.SetLocation(Location.Load("GridWalkRPG.Maps.map.dat"));
-            Frame = new GameFrame(0, 0, 240, 160, 4, 4);
-            Engine.DrawEnd += Frame.Pane.DrawHandle;
+            Frame = new GameFrame(new WinFormWindowBuilder(), 0, 0, 240, 160, 4, 4);
+            Engine.DrawEnd += Frame.DrawHandle;
             Frame.Start();
 
             WindowsKeyController controller = new WindowsKeyController(keymap);
             Engine.AddController(controller);
-            controller.Hook(Frame);
+            
+            Frame.Window.Hook(controller);
 
             Entity player = new Entity(new DescriptionPlayer(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48));
             Guid playerId = player.Id;

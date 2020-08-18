@@ -1,5 +1,6 @@
 ﻿using GameEngine;
 using GameEngine._2D;
+using GameEngine.UI;
 using GameEngine.UI.WinForms;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,6 @@ namespace GridWalkRPG
         public void TickAction(Location location, Entity entity)
         {
             WindowsKeyController controller = Program.Engine.Controllers[controllerIndex] as WindowsKeyController;
-            if(!controller.IsHooked())
-            {
-                controller.Hook(Program.Frame);
-            }
 
             DescriptionPlayer descr = entity.Description as DescriptionPlayer;
             if (descr == null)

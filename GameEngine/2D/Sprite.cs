@@ -40,6 +40,11 @@ namespace GameEngine._2D
             SetupSubImages(image[0], tileWidth, tileHeight);
         }
 
+        public Sprite(string name, Stream bmp, Point origin = default(Point), Rectangle tile = default(Rectangle)) : this(name, bmp, origin.X, origin.Y)
+        {
+            SetupSubImages(image[0], tile.Width, tile.Height);
+        }
+
         public Sprite(string name, Stream sbmp, int x, int y)
         {
             Name = name;
@@ -81,7 +86,13 @@ namespace GameEngine._2D
             {
                 for (int i = 0; i < hSubImages; i++)
                 {
-                    image[i + j * hSubImages] = bmp.Clone(new Rectangle(i * Width, j * Height, Width, Height), System.Drawing.Imaging.PixelFormat.DontCare);
+                    image[i + j * hSubImages] = BitmapExtensions.CreateBitmap(Width, Height);
+                    image[i + j * hSubImages].MakeTransparent(Color.Transparent);
+                    using (Graphics gfx = Graphics.FromImage(image[i + j * hSubImages]))
+                    {
+                        gfx.DrawImage(bmp, new Rectangle(0, 0, Width, Height), new Rectangle(i * Width, j * Height, Width, Height), GraphicsUnit.Pixel);
+                    }
+                    //image[i + j * hSubImages] = bmp.Clone(new Rectangle(i * Width, j * Height, Width, Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 }
             }
         }

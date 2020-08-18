@@ -2,11 +2,13 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using GameEngine._2D;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using Bitmap = System.Drawing.Bitmap;
 
@@ -48,8 +50,8 @@ namespace GameEngine.UI.AvaloniaUI
             Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            gfx.DrawImage(img, 1, 1, WindowWidth, WindowHeight);
-            gfx.DrawImage(overlay, 1, 1, overlay.Width, overlay.Height);
+            gfx.DrawImage(img, 0, 0, WindowWidth, WindowHeight);
+            gfx.DrawImage(overlay, 0, 0, overlay.Width, overlay.Height);
             if (window != null)
             {
                 if (sem.WaitOne())
@@ -93,10 +95,9 @@ namespace GameEngine.UI.AvaloniaUI
                     using (MemoryStream stream = new MemoryStream())
                     {
                         bufferBmp.Save(stream, ImageFormat.Bmp);
-
                         stream.Position = 0;
                         Avalonia.Media.Imaging.Bitmap bmp = new Avalonia.Media.Imaging.Bitmap(stream);
-                        context.DrawImage(bmp, 1, new Avalonia.Rect(0, 0, bufferBmp.Width, bufferBmp.Height), new Avalonia.Rect(0, 0, bufferBmp.Width, bufferBmp.Height));
+                        context.DrawImage(bmp, 1, new Avalonia.Rect(0, 0, bmp.PixelSize.Width, bmp.PixelSize.Height), new Avalonia.Rect(-this.Bounds.X, -this.Bounds.Y, bufferBmp.Width / window.PlatformImpl.Scaling, bufferBmp.Height / window.PlatformImpl.Scaling));
                     }
                 }
                 finally

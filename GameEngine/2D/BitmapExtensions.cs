@@ -20,7 +20,7 @@ namespace GameEngine._2D
 
         private static Bitmap SetRes(this Bitmap bmp)
         {
-            bmp.SetResolution(Sprite.dpiX, Sprite.dpiY);
+            //bmp.SetResolution(Sprite.dpiX, Sprite.dpiY); // intentional
             return bmp;
         }
     }
