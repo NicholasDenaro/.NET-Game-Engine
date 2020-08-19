@@ -50,8 +50,8 @@ namespace GameEngine.UI.AvaloniaUI
             Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            gfx.DrawImage(img, 0, 0, WindowWidth, WindowHeight);
-            gfx.DrawImage(overlay, 0, 0, overlay.Width, overlay.Height);
+            gfx.DrawImage(img, new RectangleF(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY), new RectangleF(0, 0, WindowWidth, WindowHeight), GraphicsUnit.Pixel);
+            gfx.DrawImage(overlay, new RectangleF(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY), new RectangleF(0, 0, WindowWidth, WindowHeight), GraphicsUnit.Pixel);
             if (window != null)
             {
                 if (sem.WaitOne())

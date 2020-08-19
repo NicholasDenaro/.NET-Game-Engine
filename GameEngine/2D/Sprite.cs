@@ -87,12 +87,11 @@ namespace GameEngine._2D
                 for (int i = 0; i < hSubImages; i++)
                 {
                     image[i + j * hSubImages] = BitmapExtensions.CreateBitmap(Width, Height);
-                    image[i + j * hSubImages].MakeTransparent(Color.Transparent);
                     using (Graphics gfx = Graphics.FromImage(image[i + j * hSubImages]))
                     {
-                        gfx.DrawImage(bmp, new Rectangle(0, 0, Width, Height), new Rectangle(i * Width, j * Height, Width, Height), GraphicsUnit.Pixel);
+                        gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                        gfx.DrawImage(bmp, new RectangleF(0, 0, Width, Height), new RectangleF(i * Width, j * Height, Width, Height), GraphicsUnit.Pixel);
                     }
-                    //image[i + j * hSubImages] = bmp.Clone(new Rectangle(i * Width, j * Height, Width, Height), System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 }
             }
         }

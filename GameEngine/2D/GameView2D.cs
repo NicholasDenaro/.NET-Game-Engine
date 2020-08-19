@@ -225,7 +225,7 @@ namespace GameEngine._2D
                     int y = 0;
                     foreach (byte tile in map.Tiles)
                     {
-                        mgfx.DrawImage(map.Image(tile), x * map.Sprite.Width, y * map.Sprite.Height);
+                        mgfx.DrawImage(map.Image(tile), new RectangleF(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height), new RectangleF(0, 0, map.Sprite.Width, map.Sprite.Height), GraphicsUnit.Pixel);
                         x++;
                         if (x >= map.Columns)
                         {
@@ -237,7 +237,7 @@ namespace GameEngine._2D
                     mgfx.DrawRectangle(Pens.Black, 0, 0, map.Width - 1, map.Height - 1);
                 }
 
-                gfx.DrawImage(tiles, 0, 0);
+                gfx.DrawImage(tiles, new RectangleF(0, 0, tiles.Width, tiles.Height), new RectangleF(0, 0, tiles.Width, tiles.Height), GraphicsUnit.Pixel);
             }
         }
     }
