@@ -7,6 +7,10 @@ namespace GameEngine.UI
 {
     public interface ISoundPlayer
     {
-        void Play(Stream stream);
+        void PlayStream(Stream stream);
+
+        void PlaySound(ISound sound);
+
+        void PlayTrack(ITrack track);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Text;
 
 namespace GameEngine.UI
@@ -9,7 +10,10 @@ namespace GameEngine.UI
     {
         void Start();
 
-        void PlaySound(string resource);
+        void PlayResource(string resource);
+        void PlayStream(Stream stream);
+        void PlaySound(ISound sound);
+        void PlayTrack(ITrack track);
 
         IGameWindow Window { get; }
 

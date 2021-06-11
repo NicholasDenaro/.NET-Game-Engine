@@ -13,17 +13,33 @@ namespace GameEngine.UI.AvaloniaUI
         public AvaloniaSoundPlayer()
         {
             player = new WasapiOut(AudioClientShareMode.Shared, 0);
-            WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(48000, 2);
+            WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             provider = new MixingSampleProvider(format);
             player.Init(provider);
         }
 
-        public void Play(Stream stream)
+        public void PlayStream(Stream stream)
         {
             WaveFileReader reader = new WaveFileReader(stream);
             provider.AddMixerInput(reader);
             player.Volume = 0.8f;
             player.Play();
+        }
+
+        public void PlaySound(ISound s)
+        {
+            AvaloniaSound sound = s as AvaloniaSound;
+            provider.AddMixerInput((ISampleProvider)sound.GetOutput());
+            player.Volume = 0.8f;
+            player.Play();
+        }
+
+        public void PlayTrack(ITrack t)
+        {
+            foreach(ISound sound in t.Channels())
+            {
+                PlaySound(sound);
+            }
         }
     }
 }

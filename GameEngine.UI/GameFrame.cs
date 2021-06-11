@@ -36,10 +36,25 @@ namespace GameEngine.UI
                 (Window, this.soundPlayer) = this.windowBuilder.Run(this);
             }
         }
-        public void PlaySound(string resource)
+        public void PlayResource(string resource)
         {
             Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{resource}");
-            soundPlayer.Play(stream);
+            soundPlayer.PlayStream(stream);
+        }
+
+        public void PlayStream(Stream stream)
+        {
+            soundPlayer.PlayStream(stream);
+        }
+
+        public void PlaySound(ISound sound)
+        {
+            soundPlayer.PlaySound(sound);
+        }
+
+        public void PlayTrack(ITrack track)
+        {
+            soundPlayer.PlayTrack(track);
         }
 
         public void DrawHandle(object sender, View view)
