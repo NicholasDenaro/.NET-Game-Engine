@@ -66,6 +66,11 @@ namespace GameEngine._2D
             SetCoords(X + dx, Y + dy);
         }
 
+        public void AddMovementListener(MovementTrigger listener)
+        {
+            onMove += listener;
+        }
+
         public void SetCoords(double x, double y)
         {
             onMove?.Invoke(this);

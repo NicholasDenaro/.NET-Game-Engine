@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="player.png" />
+    <None Remove="Sprites\SunnysideWorld_Tileset_V0.1.png" />
+    <None Remove="TileMap.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Sprites\SunnysideWorld_Tileset_V0.1.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
+    <ProjectReference Include="..\GameEngine.UI\GameEngine.UI.csproj" />
+    <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
+  </ItemGroup>
+
+</Project>

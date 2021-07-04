@@ -18,5 +18,20 @@ namespace GameEngine.UI.WinForms
             player.Load();
             player.Play();
         }
+
+        public void PlaySound(ISound sound)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void PlayStream(Stream stream)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void PlayTrack(ITrack track)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

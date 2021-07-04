@@ -15,6 +15,6 @@ namespace GameEngine
 
     public interface IDrawer
     {
-        void Draw(object output, IDescription description);
+        void Draw(int buffer, IDescription description);
     }
 }

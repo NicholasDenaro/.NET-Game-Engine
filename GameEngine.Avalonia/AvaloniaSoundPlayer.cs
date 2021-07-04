@@ -22,7 +22,7 @@ namespace GameEngine.UI.AvaloniaUI
         {
             WaveFileReader reader = new WaveFileReader(stream);
             provider.AddMixerInput(reader);
-            player.Volume = 0.8f;
+            //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
             player.Play();
         }
 
@@ -30,7 +30,7 @@ namespace GameEngine.UI.AvaloniaUI
         {
             AvaloniaSound sound = s as AvaloniaSound;
             provider.AddMixerInput((ISampleProvider)sound.GetOutput());
-            player.Volume = 0.8f;
+            //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
             player.Play();
         }
 

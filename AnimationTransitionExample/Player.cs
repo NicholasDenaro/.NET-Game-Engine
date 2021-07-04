@@ -7,6 +7,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace AnimationTransitionExample
 {
@@ -253,7 +254,7 @@ namespace AnimationTransitionExample
             }
 
             gfx.Clear(Color.Transparent);
-            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), 0, 0);
+            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), GraphicsUnit.Pixel);
 
             Color color = Color.Black;
 

@@ -117,7 +117,7 @@ namespace AnimationTransitionExample
             }
 
             gfx.Clear(Color.Transparent);
-            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), 0, 0);
+            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), GraphicsUnit.Pixel);
             Color color = Color.Black;
 
             if (animations.Any() && animations.Peek().Peek() is AttackAnimation)

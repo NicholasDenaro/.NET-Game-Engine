@@ -23,13 +23,21 @@ namespace GameEngine.UI.AvaloniaUI
         public int WindowWidth { get; private set; }
         public int WindowHeight { get; private set; }
 
-        private Bitmap[] buffers;
         private byte currentBuffer;
-        private AvaloniaWindow window;
+        internal AvaloniaWindow window;
         Semaphore sem = new Semaphore(1, 1);
+        private MemoryStream[] mstreams;
+        private RenderTargetBitmap rtb;
+        private DrawingContext rtbdc;
+        private Avalonia.Skia.ISkiaDrawingContextImpl skdc;
+        private SkiaSharp.SKBitmap skbmp;
+        private SkiaSharp.SKCanvas canvas;
+
+        internal static GamePanel Panel { get; private set; }
 
         public GamePanel(AvaloniaWindow window, int width, int height, double xScale, double yScale)
         {
+            Panel = this;
             this.window = window;
             this.Name = "panel";
             Drawing = false;
@@ -40,18 +48,50 @@ namespace GameEngine.UI.AvaloniaUI
             WindowWidth = (int)this.Width;
             WindowHeight = (int)this.Height;
             currentBuffer = 0;
-            buffers = new Bitmap[] { BitmapExtensions.CreateBitmap((int)this.Width, (int)this.Height), BitmapExtensions.CreateBitmap((int)this.Width, (int)this.Height) };
+
+            mstreams = new MemoryStream[] { new MemoryStream(), new MemoryStream() };
+
+            rtb = new RenderTargetBitmap(new PixelSize((int)this.Width, (int)this.Height));
+            rtbdc = new DrawingContext(rtb.CreateDrawingContext(null));
+            skdc = (Avalonia.Skia.ISkiaDrawingContextImpl)rtb.CreateDrawingContext(null);
+
+            skbmp = new SkiaSharp.SKBitmap((int)this.Width, (int)this.Height);
+            canvas = new SkiaSharp.SKCanvas(skbmp);
         }
 
-        public void Draw(Bitmap img, Bitmap overlay)
+        public void Draw(GameView2D view)
         {
             Drawing = true;
 
-            Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
-            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            skdc.Clear(Avalonia.Media.Color.FromArgb(0, 0, 0, 0));
+            Drawer2DAvalonia d = view.Drawer as Drawer2DAvalonia;
+            Avalonia.Media.Imaging.Bitmap b;
+            Avalonia.Media.Imaging.Bitmap o;
+            if (d != null)
+            {
+                b = d.Image(0)?.Image;
+                o = d.Overlay(0)?.Image;
+            }
+            else
+            {
+                mstreams[0].Position = 0;
+                (view.Drawer as Drawer2DSystemDrawing).Image(0).Image.Save(mstreams[0], ImageFormat.Png);
+                mstreams[0].Position = 0;
+                b = new Avalonia.Media.Imaging.Bitmap(mstreams[0]);
 
-            gfx.DrawImage(img, new RectangleF(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY), new RectangleF(0, 0, WindowWidth, WindowHeight), GraphicsUnit.Pixel);
-            gfx.DrawImage(overlay, new RectangleF(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY), new RectangleF(0, 0, WindowWidth, WindowHeight), GraphicsUnit.Pixel);
+
+                mstreams[0].Position = 0;
+                (view.Drawer as Drawer2DSystemDrawing).Overlay(0).Image.Save(mstreams[0], ImageFormat.Png);
+                mstreams[0].Position = 0;
+                o = new Avalonia.Media.Imaging.Bitmap(mstreams[0]);
+            }
+
+            if (b != null)
+            {
+                skdc.DrawBitmap(b.PlatformImpl, 1, new Rect(0, 0, WindowWidth, WindowHeight), new Rect(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY));
+                skdc.DrawBitmap(o.PlatformImpl, 1, new Rect(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY), new Rect(0, 0, WindowWidth * (float)ScaleX, WindowHeight * (float)ScaleY));
+            }
+
             if (window != null)
             {
                 if (sem.WaitOne())
@@ -62,7 +102,7 @@ namespace GameEngine.UI.AvaloniaUI
                         {
                             this.InvalidateVisual();
                             window.Renderer.Paint(new Rect(0, 0, WindowWidth, WindowHeight));
-                        });
+                        }).Wait();
                     }
                     finally
                     {
@@ -78,7 +118,7 @@ namespace GameEngine.UI.AvaloniaUI
             GameView2D view2D = view as GameView2D;
             if (view2D != null)
             {
-                Draw(view2D.Image, view2D.Overlay);
+                Draw(view2D);
             }
         }
 
@@ -91,13 +131,9 @@ namespace GameEngine.UI.AvaloniaUI
                 try
                 {
                     base.Render(context);
-                    Bitmap bufferBmp = buffers[currentBuffer % 2];
-                    using (MemoryStream stream = new MemoryStream())
+                    MemoryStream stream = mstreams[0];
                     {
-                        bufferBmp.Save(stream, ImageFormat.Bmp);
-                        stream.Position = 0;
-                        Avalonia.Media.Imaging.Bitmap bmp = new Avalonia.Media.Imaging.Bitmap(stream);
-                        context.DrawImage(bmp, 1, new Avalonia.Rect(0, 0, bmp.PixelSize.Width, bmp.PixelSize.Height), new Avalonia.Rect(-this.Bounds.X, -this.Bounds.Y, bufferBmp.Width / window.PlatformImpl.Scaling, bufferBmp.Height / window.PlatformImpl.Scaling));
+                        context.DrawImage(rtb, new Avalonia.Rect(0, 0, rtb.Size.Width - 0, rtb.Size.Height - 0), new Avalonia.Rect(-this.Bounds.X - window.PlatformImpl.DesktopScaling * ScaleX, -this.Bounds.Y - window.PlatformImpl.DesktopScaling * ScaleY, rtb.Size.Width / window.PlatformImpl.DesktopScaling + window.PlatformImpl.DesktopScaling * ScaleX, rtb.Size.Height / window.PlatformImpl.DesktopScaling + window.PlatformImpl.DesktopScaling * ScaleY));
                     }
                 }
                 finally

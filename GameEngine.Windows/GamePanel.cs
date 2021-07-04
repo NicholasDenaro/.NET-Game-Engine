@@ -25,16 +25,17 @@ namespace GameEngine.UI.WinForms
             this.DoubleBuffered = true;
         }
 
-        public void Draw(Bitmap img, Bitmap overlay)
+        public void Draw(GameView2D view)
         {
             Drawing = true;
 
+            Drawer2DSystemDrawing d = view.Drawer as Drawer2DSystemDrawing;
             Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
             gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
             //gfx.DrawImage(img, 0, 0, this.Width + 2, this.Height + 2);
-            gfx.DrawImage(img, 1, 1, this.Width, this.Height);
-            gfx.DrawImage(overlay, 1, 1, overlay.Width, overlay.Height);
+            gfx.DrawImage(d.Image(currentBuffer % 2).Image, 1, 1, this.Width, this.Height);
+            gfx.DrawImage(d.Overlay(currentBuffer % 2).Image, 1, 1, d.Overlay(currentBuffer % 2).Width, d.Overlay(currentBuffer % 2).Height);
             //gfx.DrawRectangle(Pens.Cyan, 0, 0, width - 1, height - 1);
             Drawing = false;
             Invalidate();
@@ -45,13 +46,20 @@ namespace GameEngine.UI.WinForms
             GameView2D view2D = view as GameView2D;
             if (view2D != null)
             {
-                Draw(view2D.Image, view2D.Overlay);
+                Draw(view2D);
             }
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.DrawImage(buffers[currentBuffer % 2], 0, 0, this.Width, this.Height);
+            try
+            {
+                e.Graphics.DrawImage(buffers[currentBuffer % 2], 0, 0, this.Width, this.Height);
+            }
+            catch
+            {
+
+            }
         }
     }
 }

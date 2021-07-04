@@ -5,7 +5,7 @@ namespace GameEngine._2D
     public class TileMap : Description2D
     {
         public Brush BackgroundColor { get; set; } = Brushes.Gray;
-        public byte[] Tiles { get; private set; }
+        public int[] Tiles { get; private set; }
         public int Columns { get; private set; }
         public int Rows { get; private set; }
 
@@ -18,15 +18,16 @@ namespace GameEngine._2D
                 Columns = ((width - 1) / Sprite.Width) + 1;
                 Rows = ((height - 1) / Sprite.Height) + 1;
             }
-            Tiles = new byte[Columns * Rows];
+            Tiles = new int[Columns * Rows];
         }
 
-        public Image Image(byte tile)
+        public Image Image(int tile)
         {
+            //return BitmapExtensions.CreateBitmap(Sprite.GetImage(tile).Width, Sprite.GetImage(tile).Height);
             return Sprite.GetImage(tile);
         }
 
-        public byte this[int x, int y]
+        public int this[int x, int y]
         {
             get
             {
