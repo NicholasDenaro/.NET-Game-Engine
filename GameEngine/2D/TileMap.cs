@@ -4,7 +4,7 @@ namespace GameEngine._2D
 {
     public class TileMap : Description2D
     {
-        public Brush BackgroundColor { get; set; } = Brushes.Gray;
+        public Color BackgroundColor { get; set; } = Color.Gray;
         public int[] Tiles { get; private set; }
         public int Columns { get; private set; }
         public int Rows { get; private set; }

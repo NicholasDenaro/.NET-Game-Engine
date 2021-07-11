@@ -25,10 +25,10 @@ namespace GridWalkRPG
             Engine = new FixedTickEngine(144);
 
 #if WinForm
-            GameView2D view = new GameView2D(new Drawer2DSystemDrawing() ,240, 160, 4, 4, Color.FromArgb(0, Color.Magenta));
+            GameView2D view = new GameView2D(new Drawer2DSystemDrawing(), 240, 160, 4, 4, Color.FromArgb(0, Color.Magenta), 2);
 #endif
 #if Avalonia
-            GameView2D view = new GameView2D(new Drawer2DAvalonia() ,240, 160, 4, 4, Color.FromArgb(0, Color.Magenta));
+            GameView2D view = new GameView2D(new Drawer2DAvalonia(), 240, 160, 4, 4, Color.FromArgb(0, Color.Transparent));
 #endif
             view.ScrollTop = view.Height / 2;
             view.ScrollBottom = view.Height / 2 - 16;
@@ -60,11 +60,33 @@ namespace GridWalkRPG
             Engine.AddEntity(player);
 
 #if Avalonia
-            dp.AddMovementListener(d => AvaloniaWindowBuilder.SetWindowRegion(Frame, d.X - (Engine.View as GameView2D).ViewBounds.X, d.Y - (Engine.View as GameView2D).ViewBounds.Y, d.Width, d.Height));
+            //AvaloniaWindowBuilder.MakeTransparent(Frame, true);
+            //dp.AddMovementListener(d => AvaloniaWindowBuilder.SetWindowRegion(Frame, d.X - (Engine.View as GameView2D).ViewBounds.X, d.Y - (Engine.View as GameView2D).ViewBounds.Y, d.Width, d.Height));
+            
+            short prevState = AvaloniaWindowBuilder.GetKeyState(0xA1);
+            Engine.TickEnd += (s, e) =>
+            {
+                short state = AvaloniaWindowBuilder.GetKeyState(0xA1);
+                if (prevState != state)
+                {
+                    Console.WriteLine(state);
+                    if (state != 0 && state != 1)
+                    {
+                        AvaloniaWindowBuilder.MakeTransparent(Frame, false);
+                    }
+                    else
+                    {
+                        AvaloniaWindowBuilder.MakeTransparent(Frame, true);
+                    }
+                }
+
+                prevState = state;
+            };
 #endif
 
             view.Follow(player.Description as Description2D);
             Engine.TickEnd += (s, e) => view.Follow(Entity.Entities[playerId].Description as Description2D);
+            
 
             MML mml = new MML(new string[] {
                 ////// Good // https://www.reddit.com/r/archebards/comments/26rjdt/ocarina_of_time/
@@ -81,19 +103,22 @@ namespace GridWalkRPG
 
             TileMap map = Engine.Location.Description as TileMap;
 
-            // This is a hack to make the walls spawn where tree tiles are.
-            for (int x = 0; x < map.Width; x += 16)
+            if (map != null)
             {
-                for (int y = 0; y < map.Height; y += 16)
+                // This is a hack to make the walls spawn where tree tiles are.
+                for (int x = 0; x < map.Width; x += 16)
                 {
-                    switch (map[x / map.Sprite.Width, y / map.Sprite.Height])
+                    for (int y = 0; y < map.Height; y += 16)
                     {
-                        case 3:
-                        case 4:
-                        case 19:
-                        case 20:
-                            Engine.Location.AddEntity(new Entity(new WallDescription(x, y, 16, 16)));
-                            break;
+                        switch (map[x / map.Sprite.Width, y / map.Sprite.Height])
+                        {
+                            case 3:
+                            case 4:
+                            case 19:
+                            case 20:
+                                Engine.Location.AddEntity(new Entity(new WallDescription(x, y, 16, 16)));
+                                break;
+                        }
                     }
                 }
             }

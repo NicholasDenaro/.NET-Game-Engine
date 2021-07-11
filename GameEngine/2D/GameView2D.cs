@@ -25,7 +25,7 @@ namespace GameEngine._2D
         public int Width => Bounds.Width;
         public int Height => Bounds.Height;
 
-        private SolidBrush backgroundColor;
+        private Color backgroundColor;
 
         public GameView2D(IDrawer2D<IGameBitmap> drawer, int width, int height, int xScale, int yScale, Color bgColor, int buffers = 1)
         {
@@ -40,7 +40,7 @@ namespace GameEngine._2D
             ScrollLeft = 20;
             ScrollRight = 20;
             LockViewToLocation = true;
-            backgroundColor = new SolidBrush(bgColor);
+            backgroundColor = bgColor;
             this.buffers = buffers;
         }
 
@@ -59,13 +59,14 @@ namespace GameEngine._2D
             buf++;
             buf = buf % buffers;
             drawer.Clear(buf, Color.Transparent);
-            //gfx.FillRectangle(backgroundColor, 0, 0, Bounds.Width, Bounds.Height);
-
-            drawer.TranslateTransform(buf, -Bounds.X, -Bounds.Y);
             TileMap tileMap = location.Description as TileMap;
             if (tileMap != null)
             {
-                //gfx.FillRectangle(tileMap.BackgroundColor, 0, 0, tileMap.Width, tileMap.Height);
+                drawer.FillRectangle(buf, tileMap.BackgroundColor, 0, 0, tileMap.Width, tileMap.Height);
+            }
+            else
+            {
+                drawer.FillRectangle(buf, this.backgroundColor, 0, 0, this.Width, this.Height);
             }
 
             List<IDescription> descriptions = location.Draw();
@@ -74,8 +75,6 @@ namespace GameEngine._2D
             {
                 drawer.Draw(buf, description);
             }
-
-            drawer.TranslateTransform(buf, Bounds.X, Bounds.Y);
         }
 
         public void Tick(object sender, GameState state)
@@ -155,9 +154,9 @@ namespace GameEngine._2D
         void Init(int width, int height, int xScale, int yScale);
         void Clear(int buffer, System.Drawing.Color color);
         void TranslateTransform(int buffer, int x, int y);
+        void FillRectangle(int buffer, System.Drawing.Color color, int x, int y, int w, int h);
 
         T Image(int buf);
-
         T Overlay(int buf);
     }
 
@@ -197,6 +196,11 @@ namespace GameEngine._2D
         public void TranslateTransform(int buffer, int x, int y)
         {
             this.sbuffer[buffer].Context.TranslateTransform(x, y);
+        }
+        
+        public void FillRectangle(int buf, System.Drawing.Color color, int x, int y, int w, int h)
+        {
+            this.sbuffer[buf].Context.FillRectangle(new SolidBrush(color), x, y, w, h);
         }
 
         public void Draw(int buffer, IDescription description)

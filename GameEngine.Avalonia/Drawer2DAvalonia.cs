@@ -1,102 +1,61 @@
 ﻿using Avalonia;
-using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using GameEngine._2D;
-using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameEngine.UI.AvaloniaUI
 {
     public class Drawer2DAvalonia : IDrawer2D<AvaloniaBitmap>
     {
-        private RenderTargetBitmap tiles;
-
-        private AvaloniaBitmap[] bmps;
-        private AvaloniaBitmap[] overlays;
+        private List<Action<DrawingContext>> drawings;
 
         public Drawer2DAvalonia()
         {
+            drawings = new List<Action<DrawingContext>>();
         }
 
         public void Init(int width, int height, int xScale, int yScale)
         {
-            Task.Run(() =>
-            {
-                while (true)
-                {
-                    try
-                    {
-                        if (Avalonia.Application.Current != null)
-                        {
-                            return;
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-                    Task.Delay(500).Wait();
-                }
-            }).ContinueWith(ca =>
-            {
-                try
-                {
-                    Task t = Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        RenderTargetBitmap b0 = new RenderTargetBitmap(new PixelSize(width, height));
-
-                        RenderTargetBitmap[] b = new RenderTargetBitmap[] { b0, new RenderTargetBitmap(new PixelSize(width, height)) };
-                        RenderTargetBitmap[] o = new RenderTargetBitmap[] { new RenderTargetBitmap(new PixelSize(width * xScale, height * yScale)), new RenderTargetBitmap(new PixelSize(width * xScale, height * yScale)) };
-
-                        bmps = new AvaloniaBitmap[] { new AvaloniaBitmap(b[0]), new AvaloniaBitmap(b[1]) };
-                        overlays = new AvaloniaBitmap[] { new AvaloniaBitmap(o[0]), new AvaloniaBitmap(o[1]) };
-                    }, Avalonia.Threading.DispatcherPriority.Render);
-
-                    while (!t.Wait(5000))
-                    {
-
-                    }
-                }
-                catch (Exception ex)
-                {
-
-                }
-            });
         }
 
         public void Clear(int buffer, System.Drawing.Color color) 
         {
-            this.bmps?[buffer]?.Context?.PlatformImpl?.Clear(Colors.Transparent);
         }
 
         public void TranslateTransform(int buffer, int x, int y)
         {
-            this.bmps?[buffer]?.Context?.PushSetTransform(new Matrix(1, 0, 0, 1, x, y));
+        }
+
+        public void FillRectangle(int buffer, System.Drawing.Color color, int x, int y, int w, int h)
+        {
+            drawings.Add((g) => g.FillRectangle(new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)), new Rect(x, y, w, h)));
         }
 
         public void Draw(int buffer, Interfaces.IDescription description)
         {
             if (description is TileMap)
             {
-                Draw(this.bmps?[0]?.Context, description as TileMap);
+                drawings.Add((g) => Draw(g, description as TileMap));
             }
             else
             {
                 Description2D d2d = description as Description2D;
-                DrawingContext gfx = d2d.DrawInOverlay ? this.overlays?[buffer]?.Context : this.bmps?[buffer]?.Context;
-                Draw(gfx, d2d);
+                if (d2d != null)
+                {
+                    drawings.Add((g) => Draw(g, d2d));
+                }
             }
         }
 
-        public AvaloniaBitmap Image(int buf) => bmps?[0];
+        public AvaloniaBitmap Image(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
 
-        public AvaloniaBitmap Overlay(int buf) => overlays?[0];
+        public AvaloniaBitmap Overlay(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
+
+        public List<Action<DrawingContext>> Drawings => drawings;
 
         public void Draw(DrawingContext gfx, Description2D description)
         {
@@ -109,11 +68,13 @@ namespace GameEngine.UI.AvaloniaUI
                     using MemoryStream stream = new MemoryStream();
                     description.Image().Save(stream, ImageFormat.Png);
                     stream.Position = 0;
-                    gfx?.DrawImage(new Avalonia.Media.Imaging.Bitmap(stream), new Rect(0, 0, description.Width, description.Height), dest);
+                    Bitmap bmp = new Bitmap(stream);
+                    gfx?.DrawImage(bmp, new Rect(0, 0, description.Width, description.Height), dest);
                 }
             }
         }
 
+        RenderTargetBitmap tiles;
         public void RedrawTiles()
         {
             tiles = null;

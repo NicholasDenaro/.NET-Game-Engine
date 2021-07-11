@@ -1,6 +1,7 @@
 ﻿using GameEngine._2D;
 using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace GameEngine.UI.WinForms
@@ -12,6 +13,7 @@ namespace GameEngine.UI.WinForms
         private byte currentBuffer;
         public double ScaleX { get; private set; }
         public double ScaleY { get; private set; }
+        Semaphore sem = new Semaphore(1, 1);
 
         public GamePanel(int width, int height, double xScale, double yScale)
         {
@@ -29,16 +31,26 @@ namespace GameEngine.UI.WinForms
         {
             Drawing = true;
 
-            Drawer2DSystemDrawing d = view.Drawer as Drawer2DSystemDrawing;
-            Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
-            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            if (sem.WaitOne())
+            {
+                Drawer2DSystemDrawing d = view.Drawer as Drawer2DSystemDrawing;
+                Graphics gfx = Graphics.FromImage(buffers[++currentBuffer % 2]);
+                gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-            //gfx.DrawImage(img, 0, 0, this.Width + 2, this.Height + 2);
-            gfx.DrawImage(d.Image(currentBuffer % 2).Image, 1, 1, this.Width, this.Height);
-            gfx.DrawImage(d.Overlay(currentBuffer % 2).Image, 1, 1, d.Overlay(currentBuffer % 2).Width, d.Overlay(currentBuffer % 2).Height);
-            //gfx.DrawRectangle(Pens.Cyan, 0, 0, width - 1, height - 1);
-            Drawing = false;
-            Invalidate();
+                //gfx.DrawImage(img, 0, 0, this.Width + 2, this.Height + 2);
+                gfx.DrawImage(d.Image(currentBuffer % 2).Image, 1, 1, this.Width, this.Height);
+                gfx.DrawImage(d.Overlay(currentBuffer % 2).Image, 1, 1, d.Overlay(currentBuffer % 2).Width, d.Overlay(currentBuffer % 2).Height);
+                //gfx.DrawRectangle(Pens.Cyan, 0, 0, width - 1, height - 1);
+
+                Invalidate();
+
+                while (Drawing)
+                {
+                    Thread.Sleep(TimeSpan.FromTicks(1000));
+                }
+
+                sem.Release();
+            }
         }
 
         public void DrawHandle(object sender, View view)
@@ -52,13 +64,25 @@ namespace GameEngine.UI.WinForms
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            bool selfDraw = Drawing;
             try
             {
-                e.Graphics.DrawImage(buffers[currentBuffer % 2], 0, 0, this.Width, this.Height);
+                if (selfDraw || sem.WaitOne())
+                {
+                    e.Graphics.DrawImage(buffers[currentBuffer % 2], 0, 0, this.Width, this.Height);
+                }
             }
             catch
             {
 
+            }
+            finally
+            {
+                if (!selfDraw)
+                {
+                    sem.Release();
+                }
+                Drawing = false;
             }
         }
     }
