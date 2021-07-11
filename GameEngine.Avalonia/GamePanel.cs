@@ -53,11 +53,7 @@ namespace GameEngine.UI.AvaloniaUI
                 {
                     try
                     {
-                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            this.InvalidateVisual();
-                            window.Renderer.Paint(new Rect(0, 0, WindowWidth, WindowHeight));
-                        }).Wait();
+                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(DrawScreen).Wait();
                     }
                     finally
                     {
@@ -65,6 +61,15 @@ namespace GameEngine.UI.AvaloniaUI
                         Drawing = false;
                     }
                 }
+            }
+        }
+
+        public void DrawScreen()
+        {
+            if (this.window.WindowState != WindowState.Minimized)
+            {
+                this.InvalidateVisual();
+                window.Renderer.Paint(new Rect(0, 0, WindowWidth, WindowHeight));
             }
         }
 

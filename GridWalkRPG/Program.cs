@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace GridWalkRPG
 {
@@ -20,7 +21,7 @@ namespace GridWalkRPG
         public static GameFrame Frame { get; private set; }
         public static Queue<string> states = new Queue<string>();
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Engine = new FixedTickEngine(144);
 
@@ -61,8 +62,31 @@ namespace GridWalkRPG
 
 #if Avalonia
             //AvaloniaWindowBuilder.MakeTransparent(Frame, true);
-            //dp.AddMovementListener(d => AvaloniaWindowBuilder.SetWindowRegion(Frame, d.X - (Engine.View as GameView2D).ViewBounds.X, d.Y - (Engine.View as GameView2D).ViewBounds.Y, d.Width, d.Height));
+
+            dp.AddMovementListener(d => AvaloniaWindowBuilder.SetWindowRegion(Frame, d.X - (Engine.View as GameView2D).ViewBounds.X, d.Y - (Engine.View as GameView2D).ViewBounds.Y, d.Width, d.Height));
             
+            //dp.AddMovementListener(d => AvaloniaWindowBuilder.SetWindowRegion(Frame, new AvaloniaWindowBuilder.Point[] {
+            //    new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y },
+            //    new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10 },
+            //    new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 10, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10 },
+            //    new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20 },
+            //}, 4, 4));
+
+            //dp.AddMovementListener(d => AvaloniaWindowBuilder.SetWindowRegion(Frame, new AvaloniaWindowBuilder.Point[][] { 
+            //    new AvaloniaWindowBuilder.Point[] {
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y },
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10 },
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 10, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10 },
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20 },
+            //    },
+            //    new AvaloniaWindowBuilder.Point[] {
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20 },
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 30, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 40 },
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 30, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 30 },
+            //        new AvaloniaWindowBuilder.Point{ x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20, y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 30 },
+            //    },
+            //}, 4, 4));
+
             short prevState = AvaloniaWindowBuilder.GetKeyState(0xA1);
             Engine.TickEnd += (s, e) =>
             {
@@ -143,6 +167,7 @@ namespace GridWalkRPG
 
             while (true)
             {
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
         }
 

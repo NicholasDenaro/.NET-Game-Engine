@@ -24,12 +24,16 @@ namespace GameEngine
             Task.Run(Run);
         }
 
-        private void Run()
+        private async Task Run()
         {
             Stopwatch sw = Stopwatch.StartNew();
             while (true)
             {
-                while (sw.ElapsedTicks < this.period) { };
+                while (sw.ElapsedTicks < this.period)
+                {
+                    await Task.Delay(TimeSpan.FromTicks(100));
+                };
+
                 sw.Restart();
                 Tick();
                 this.tickTime = sw.ElapsedTicks;
