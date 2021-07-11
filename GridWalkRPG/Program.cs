@@ -42,7 +42,13 @@ namespace GridWalkRPG
             Frame = new GameFrame(new WinFormWindowBuilder(), 0, 0, 240, 160, 4, 4);
 #endif 
 #if Avalonia
-            Frame = new GameFrame(new AvaloniaWindowBuilder(), 0, 0, 240, 160, 4, 4);
+            Frame = new GameFrame(
+                new AvaloniaWindowBuilder()
+                    .TopMost(true)
+                    .Decorations(Avalonia.Controls.SystemDecorations.None)
+                    .Transparency(Avalonia.Controls.WindowTransparencyLevel.Transparent)
+                    .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
+                0, 0, 240, 160, 4, 4);
 #endif 
             Engine.DrawEnd += Frame.DrawHandle;
             Frame.Start();
