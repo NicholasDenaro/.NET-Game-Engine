@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,56 +10,73 @@ namespace GameEngine.UI.AvaloniaUI
 {
     public class AvaloniaWindowBuilder : IGameWindowBuilder
     {
-        private bool ready;
-        Action<IGameFrame> f;
+        private AvaloniaSoundPlayer soundPlayer;
 
         public (IGameWindow, ISoundPlayer) Run(IGameFrame frame)
         {
-            ready = false;
             AvaloniaWindow window = null;
 
-            if (f == null)
+            ClassicDesktopStyleApplicationLifetime lifetime;
+            if (Application.Current == null)
             {
+                var builder = AppBuilder.Configure<Application>()
+                    .UsePlatformDetect()
+                    .With(new AvaloniaNativePlatformOptions { UseGpu = true });
+                lifetime = new ClassicDesktopStyleApplicationLifetime()
+                {
+                };
+
                 Task.Run(() =>
-                  {
-                      int i = AppBuilder
-                          .Configure<Application>()
-                          .UsePlatformDetect()
-                          .With(new AvaloniaNativePlatformOptions { UseGpu = true })
-                          .AfterSetup(ab =>
-                          {
-                              CreateWindow(ref window, frame);
-                              f = (frame) => CreateWindow(ref window, frame);
-                          })
-                          .StartWithClassicDesktopLifetime(new string[] { }, ShutdownMode.OnMainWindowClose);
-                  });
+                {
+                    builder.Start((app, args) =>
+                    {
+                        window = CreateWindow(frame);
+                        lifetime.MainWindow = window;
+                        window.Show();
+                        window.Closed += (o, e) => Environment.Exit(0);
+                        app.Run(System.Threading.CancellationToken.None);
+                    }, null);
+                });
+
+                while (window == null) { }
             }
             else
             {
-                f(frame);
+                AvaloniaWindow win = null;
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    win = CreateWindow(frame);
+                    win.Show();
+                });
+
+                while (win == null) { }
+
+                return (win, soundPlayer);
             }
 
-
-            while (!ready) { }
-
-            return (window, new AvaloniaSoundPlayer());
+            soundPlayer = new AvaloniaSoundPlayer();
+            return (window, soundPlayer);
         }
 
         private string title = "Game Window";
         private WindowStartupLocation startupLocation = WindowStartupLocation.CenterScreen;
         private WindowTransparencyLevel transparency = WindowTransparencyLevel.None;
         private SystemDecorations decorations = SystemDecorations.Full;
-        private bool topmost = false;
+        private bool topMost = false;
+        private bool canResize = true;
+        private bool showInTaskBar = true;
 
         public AvaloniaWindowBuilder Title(string title) { this.title = title; return this; }
         public AvaloniaWindowBuilder StartupLocation(WindowStartupLocation location) { this.startupLocation = location; return this; }
         public AvaloniaWindowBuilder Transparency(WindowTransparencyLevel transparency) { this.transparency = transparency; return this; }
         public AvaloniaWindowBuilder Decorations(SystemDecorations decorations) { this.decorations = decorations; return this; }
-        public AvaloniaWindowBuilder TopMost(bool topmost) { this.topmost = topmost; return this; }
+        public AvaloniaWindowBuilder TopMost(bool topmost) { this.topMost = topmost; return this; }
+        public AvaloniaWindowBuilder CanResize(bool canResize) { this.canResize = canResize; return this; }
+        public AvaloniaWindowBuilder ShowInTaskBar(bool showInTaskBar) { this.showInTaskBar = showInTaskBar; return this; }
 
-        private void CreateWindow(ref AvaloniaWindow window, IGameFrame frame)
+        private AvaloniaWindow CreateWindow(IGameFrame frame)
         {
-            window = new AvaloniaWindow(frame.Bounds.Width, frame.Bounds.Height);
+            AvaloniaWindow window = new AvaloniaWindow(frame.Bounds.Width, frame.Bounds.Height);
             
             window.Title = title;
             GamePanel panel = new GamePanel(window, (int)(frame.Bounds.Width / frame.ScaleX), (int)(frame.Bounds.Height / frame.ScaleY), frame.ScaleX, frame.ScaleY);
@@ -67,10 +85,12 @@ namespace GameEngine.UI.AvaloniaUI
 
             window.TransparencyLevelHint = transparency;
             window.SystemDecorations = decorations;
-            window.Topmost = topmost;
+            window.Topmost = topMost;
 
-            window.Show();
-            ready = true;
+            window.ShowInTaskbar = showInTaskBar;
+            window.CanResize = canResize;
+
+            return window;
         }
 
         public static void MakeTransparent(GameFrame frame, bool transparent)
@@ -124,7 +144,7 @@ namespace GameEngine.UI.AvaloniaUI
             }
         }
 
-        public static void SetWindowRegion(GameFrame frame, Point[] points, int xScale = 1, int yScale = 1)
+        public static void SetWindowRegion(GameFrame frame, ref Point[] points)
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
@@ -136,10 +156,9 @@ namespace GameEngine.UI.AvaloniaUI
 
                 for (int i = 0; i < points.Length; i++)
                 {
-                    points[i].x *= xScale;
-                    points[i].y *= yScale;
-                    Marshal.StructureToPtr(points[i], hPoints + i * size, true);
+                    Marshal.StructureToPtr(points[i], hPoints + i * size, false);
                 }
+
 
                 long hRegion = Win32CreatePolygonRgn(hPoints.ToInt64(), points.Length, 1);
 
@@ -160,7 +179,7 @@ namespace GameEngine.UI.AvaloniaUI
         static IntPtr hPoints;
         static IntPtr hCount;
 
-        public static void SetWindowRegion(GameFrame frame, Point[][] points, int xScale = 1, int yScale = 1)
+        public static void SetWindowRegion(GameFrame frame, ref Point[][] points)
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
@@ -185,9 +204,7 @@ namespace GameEngine.UI.AvaloniaUI
 
                     for (int i = 0; i < points[p].Length; i++)
                     {
-                        points[p][i].x *= xScale;
-                        points[p][i].y *= yScale;
-                        Marshal.StructureToPtr(points[p][i], hPoints + c++ * size, true);
+                        Marshal.StructureToPtr(points[p][i], hPoints + c++ * size, false);
                     }
                 }
 

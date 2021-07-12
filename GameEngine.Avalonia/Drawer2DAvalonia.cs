@@ -24,6 +24,7 @@ namespace GameEngine.UI.AvaloniaUI
 
         public void Clear(int buffer, System.Drawing.Color color) 
         {
+            drawings.Clear();
         }
 
         public void TranslateTransform(int buffer, int x, int y)

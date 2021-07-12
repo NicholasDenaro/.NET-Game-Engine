@@ -10,7 +10,6 @@ namespace GameEngine.UI.AvaloniaUI
         {
             ClientSize = new Avalonia.Size(width / PlatformImpl.DesktopScaling, height / PlatformImpl.DesktopScaling);
             this.CanResize = false;
-            this.Closing += (s, o) => Environment.Exit(-1);
         }
 
         private GamePanel panel;

@@ -8,3 +8,6 @@
 /.vs
 *.suo
 *.dtbcache
+/AnimationTransitionExample/Sprites
+/AnimationTransitionExample/Sounds
+/TilingExample/Sprites

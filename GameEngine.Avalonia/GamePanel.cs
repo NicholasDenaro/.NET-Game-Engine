@@ -69,7 +69,7 @@ namespace GameEngine.UI.AvaloniaUI
             if (this.window.WindowState != WindowState.Minimized)
             {
                 this.InvalidateVisual();
-                window.Renderer.Paint(new Rect(0, 0, WindowWidth, WindowHeight));
+                window?.Renderer?.Paint(new Rect(0, 0, WindowWidth, WindowHeight));
             }
         }
 
@@ -97,7 +97,6 @@ namespace GameEngine.UI.AvaloniaUI
                     using var scale = context.PushPreTransform(new Matrix(ScaleX, 0, 0, ScaleY, 0, 0));
                     using var translate = context.PushPreTransform(new Matrix(1, 0, 0, 1, -view?.ViewBounds.X ?? 0, -view?.ViewBounds.Y ?? 0));
                     drawings?.ForEach(act => act(context));
-                    drawings?.Clear();
                 }
                 finally
                 {
