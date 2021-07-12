@@ -12,6 +12,11 @@ namespace GameEngine.UI.WinForms
             this.Controls.Add(gamePanel);
         }
 
+        public void Resize(int width, int height)
+        {
+            this.panel.Resize(width, height);
+        }
+
         public bool HookMouse(Action<object, MouseEventArgs> frame_KeyInfo, Action<object, MouseEventArgs> frame_KeyDown, Action<object, MouseEventArgs> frame_KeyUp)
         {
             if (this.panel == null)

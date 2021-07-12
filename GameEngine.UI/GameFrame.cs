@@ -8,7 +8,9 @@ namespace GameEngine.UI
     public class GameFrame : IGameFrame
     {
         private bool started = false;
-        public Rectangle Bounds { get; private set; }
+
+        private Rectangle bounds;
+        public Rectangle Bounds => bounds;
 
         public double ScaleX { get; private set; }
 
@@ -24,7 +26,7 @@ namespace GameEngine.UI
         {
             ScaleX = xScale;
             ScaleY = yScale;
-            Bounds = new Rectangle(x, y, width * xScale, height * yScale);
+            bounds = new Rectangle(x, y, width * xScale, height * yScale);
             this.windowBuilder = windowBuilder;
         }
 
@@ -36,6 +38,16 @@ namespace GameEngine.UI
                 (Window, this.soundPlayer) = this.windowBuilder.Run(this);
             }
         }
+
+        public void SetBounds(int x, int y, int width, int height)
+        {
+            this.bounds.X = x;
+            this.bounds.Y = y;
+            this.bounds.Width = width;
+            this.bounds.Height = height;
+            this.Window.SetBounds(x, y, width, height);
+        }
+
         public void PlayResource(string resource)
         {
             Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{resource}");

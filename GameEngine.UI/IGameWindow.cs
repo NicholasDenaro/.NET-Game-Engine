@@ -10,6 +10,8 @@ namespace GameEngine.UI
 
         bool HookKeyboard(Action<object, KeyEventArgs> frame_KeyDown, Action<object, KeyEventArgs> frame_KeyUp);
 
+        void SetBounds(int x, int y, int width, int height);
+
         IGamePanel Panel { get; }
     }
 }

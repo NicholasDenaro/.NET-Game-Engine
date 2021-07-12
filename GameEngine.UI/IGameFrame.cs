@@ -15,6 +15,8 @@ namespace GameEngine.UI
         void PlaySound(ISound sound);
         void PlayTrack(ITrack track);
 
+        void SetBounds(int x, int y, int width, int height);
+
         IGameWindow Window { get; }
 
         Rectangle Bounds { get; }

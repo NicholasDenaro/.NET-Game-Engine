@@ -56,6 +56,12 @@ namespace GridWalkRPG
             Engine.DrawEnd += Frame.DrawHandle;
             Frame.Start();
 
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Frame.SetBounds(0, 0, 2560, 1440);
+                view.Resize(2560, 1440);
+            });
+
             //var frame2 = new GameFrame(
             //    new AvaloniaWindowBuilder()
             //        .TopMost(true)
@@ -126,37 +132,37 @@ namespace GridWalkRPG
                 },
             };
 
-            dp.AddMovementListener(d =>
-            {
-                pointarray[0][0].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X;
-                pointarray[0][0].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y;
-                pointarray[0][1].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X;
-                pointarray[0][1].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10;
-                pointarray[0][2].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 10;
-                pointarray[0][2].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10;
-                pointarray[0][3].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20;
-                pointarray[0][3].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20;
+            //dp.AddMovementListener(d =>
+            //{
+            //    pointarray[0][0].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X;
+            //    pointarray[0][0].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y;
+            //    pointarray[0][1].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X;
+            //    pointarray[0][1].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10;
+            //    pointarray[0][2].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 10;
+            //    pointarray[0][2].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y - 10;
+            //    pointarray[0][3].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20;
+            //    pointarray[0][3].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20;
 
-                pointarray[1][0].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20;
-                pointarray[1][0].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20;
-                pointarray[1][1].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 30;
-                pointarray[1][1].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 40;
-                pointarray[1][2].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 30;
-                pointarray[1][2].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 30;
-                pointarray[1][3].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20;
-                pointarray[1][3].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 30;
+            //    pointarray[1][0].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20;
+            //    pointarray[1][0].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 20;
+            //    pointarray[1][1].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 30;
+            //    pointarray[1][1].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 40;
+            //    pointarray[1][2].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 30;
+            //    pointarray[1][2].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 30;
+            //    pointarray[1][3].x = (int)d.X - (Engine.View as GameView2D).ViewBounds.X + 20;
+            //    pointarray[1][3].y = (int)d.Y - (Engine.View as GameView2D).ViewBounds.Y + 30;
 
-                for (int p = 0; p < pointarray.Length; p++)
-                {
-                    for (int i = 0; i < pointarray[p].Length; i++)
-                    {
-                        pointarray[p][i].x *= 4;
-                        pointarray[p][i].y *= 4;
-                    }
-                }
+            //    for (int p = 0; p < pointarray.Length; p++)
+            //    {
+            //        for (int i = 0; i < pointarray[p].Length; i++)
+            //        {
+            //            pointarray[p][i].x *= 4;
+            //            pointarray[p][i].y *= 4;
+            //        }
+            //    }
 
-                AvaloniaWindowBuilder.SetWindowRegion(Frame, ref pointarray);
-            });
+            //    AvaloniaWindowBuilder.SetWindowRegion(Frame, ref pointarray);
+            //});
 
             short prevState = AvaloniaWindowBuilder.GetKeyState(0xA1);
             Engine.TickEnd += (s, e) =>

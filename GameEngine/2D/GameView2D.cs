@@ -27,12 +27,16 @@ namespace GameEngine._2D
 
         private Color backgroundColor;
 
+        private int xScale;
+        private int yScale;
+
         public GameView2D(IDrawer2D<IGameBitmap> drawer, int width, int height, int xScale, int yScale, Color bgColor, int buffers = 1)
         {
             Bounds = new Rectangle(0, 0, width, height);
             
-
             this.drawer = drawer;
+            this.xScale = xScale;
+            this.yScale = yScale;
             this.drawer.Init(width, height, xScale, yScale);
 
             ScrollTop = 20;
@@ -42,6 +46,13 @@ namespace GameEngine._2D
             LockViewToLocation = true;
             backgroundColor = bgColor;
             this.buffers = buffers;
+        }
+
+        public void Resize(int width, int height)
+        {
+            this.Bounds.Width = width;
+            this.Bounds.Height = height;
+            this.drawer.Init(width, height, this.xScale, this.yScale);
         }
 
         public void Redraw(Location location)

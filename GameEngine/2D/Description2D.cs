@@ -71,6 +71,12 @@ namespace GameEngine._2D
             onMove += listener;
         }
 
+        public void Resize(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+        }
+
         public void SetCoords(double x, double y)
         {
             onMove?.Invoke(this);

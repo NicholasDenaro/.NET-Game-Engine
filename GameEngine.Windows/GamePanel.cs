@@ -27,6 +27,13 @@ namespace GameEngine.UI.WinForms
             this.DoubleBuffered = true;
         }
 
+        public void Resize(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+            buffers = new Bitmap[] { BitmapExtensions.CreateBitmap(this.Width, this.Height), BitmapExtensions.CreateBitmap(this.Width, this.Height) };
+        }
+
         public void Draw(GameView2D view)
         {
             Drawing = true;

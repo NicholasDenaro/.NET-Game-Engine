@@ -21,6 +21,13 @@ namespace GameEngine.UI.AvaloniaUI
             this.VisualChildren.Add(panel);
         }
 
+        public void SetBounds(int x, int y, int width, int height)
+        {
+            this.Position = new Avalonia.PixelPoint(x, y);
+            ClientSize = new Avalonia.Size(width / PlatformImpl.DesktopScaling, height / PlatformImpl.DesktopScaling);
+            this.Panel.Resize(width, height);
+        }
+
         public bool Hook(Controller controller)
         {
             if (controller is WindowsMouseController)

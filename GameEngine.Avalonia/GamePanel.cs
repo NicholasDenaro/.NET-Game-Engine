@@ -39,6 +39,14 @@ namespace GameEngine.UI.AvaloniaUI
             WindowHeight = (int)this.Height;
         }
 
+        public void Resize(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+            WindowWidth = (int)this.Width;
+            WindowHeight = (int)this.Height;
+        }
+
         public void Draw(GameView2D view)
         {
             Drawing = true;

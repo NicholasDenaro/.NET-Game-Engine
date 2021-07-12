@@ -8,6 +8,7 @@ namespace GameEngine.UI
     {
         double ScaleX { get; }
         double ScaleY { get; }
+        void Resize(int width, int height);
         void DrawHandle(object sender, View view);
     }
 }
