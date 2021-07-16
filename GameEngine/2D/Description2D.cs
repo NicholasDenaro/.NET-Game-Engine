@@ -79,9 +79,9 @@ namespace GameEngine._2D
 
         public void SetCoords(double x, double y)
         {
-            onMove?.Invoke(this);
             this.X = x;
             this.Y = y;
+            onMove?.Invoke(this);
         }
 
         virtual public bool IsCollision(Description2D other)

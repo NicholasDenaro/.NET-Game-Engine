@@ -9,7 +9,6 @@ namespace GameEngine.UI.AvaloniaUI
         public AvaloniaWindow(int width, int height)
         {
             ClientSize = new Avalonia.Size(width / PlatformImpl.DesktopScaling, height / PlatformImpl.DesktopScaling);
-            this.CanResize = false;
         }
 
         private GamePanel panel;
@@ -25,6 +24,7 @@ namespace GameEngine.UI.AvaloniaUI
         {
             this.Position = new Avalonia.PixelPoint(x, y);
             ClientSize = new Avalonia.Size(width / PlatformImpl.DesktopScaling, height / PlatformImpl.DesktopScaling);
+            
             this.Panel.Resize(width, height);
         }
 

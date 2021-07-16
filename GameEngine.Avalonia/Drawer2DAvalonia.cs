@@ -58,6 +58,9 @@ namespace GameEngine.UI.AvaloniaUI
 
         public List<Action<DrawingContext>> Drawings => drawings;
 
+
+        private Dictionary<System.Drawing.Image, Bitmap> storedBitmaps = new Dictionary<System.Drawing.Image, Bitmap>();
+
         public void Draw(DrawingContext gfx, Description2D description)
         {
             if (description != null)
@@ -66,11 +69,16 @@ namespace GameEngine.UI.AvaloniaUI
                 {
                     Rect dest = new Rect((int)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0), description.Width, description.Height);
 
-                    using MemoryStream stream = new MemoryStream();
-                    description.Image().Save(stream, ImageFormat.Png);
-                    stream.Position = 0;
-                    Bitmap bmp = new Bitmap(stream);
-                    gfx?.DrawImage(bmp, new Rect(0, 0, description.Width, description.Height), dest);
+                    System.Drawing.Image img = description.Image();
+                    if (!storedBitmaps.ContainsKey(description.Image()))
+                    {
+                        using MemoryStream stream = new MemoryStream();
+                        img.Save(stream, ImageFormat.Png);
+                        stream.Position = 0;
+                        storedBitmaps.Add(img, new Bitmap(stream));
+                    }
+
+                    gfx?.DrawImage(storedBitmaps[img], new Rect(0, 0, description.Width, description.Height), dest);
                 }
             }
         }
