@@ -14,6 +14,8 @@ namespace GameEngine._2D
         public double X { get; private set; }
         public double Y { get; private set; }
 
+        public int ZIndex { get; private set; }
+
         public double DrawOffsetX { get; protected set; }
         public double DrawOffsetY { get; protected set; }
 

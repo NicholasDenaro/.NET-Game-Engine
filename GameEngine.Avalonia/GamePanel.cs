@@ -22,7 +22,7 @@ namespace GameEngine.UI.AvaloniaUI
 
         internal static GamePanel Panel { get; private set; }
 
-        private List<Action<DrawingContext>> drawings;
+        private SortedDictionary<int, List<Action<DrawingContext>>> drawings;
         private GameView2D view;
 
         public GamePanel(AvaloniaWindow window, int width, int height, double xScale, double yScale)
@@ -104,7 +104,13 @@ namespace GameEngine.UI.AvaloniaUI
                     using var scalePlat = context.PushPreTransform(new Matrix(1/this.window.PlatformImpl.DesktopScaling, 0, 0, 1/this.window.PlatformImpl.DesktopScaling, 0, 0));
                     using var scale = context.PushPreTransform(new Matrix(ScaleX, 0, 0, ScaleY, 0, 0));
                     using var translate = context.PushPreTransform(new Matrix(1, 0, 0, 1, -view?.ViewBounds.X ?? 0, -view?.ViewBounds.Y ?? 0));
-                    drawings?.ForEach(act => act(context));
+                    if (drawings != null)
+                    {
+                        foreach(var key in drawings.Keys)
+                        {
+                            drawings[key].ForEach(act => act(context));
+                        }
+                    }
                 }
                 finally
                 {

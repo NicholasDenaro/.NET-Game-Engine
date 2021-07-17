@@ -11,11 +11,11 @@ namespace GameEngine.UI.AvaloniaUI
 {
     public class Drawer2DAvalonia : IDrawer2D<AvaloniaBitmap>
     {
-        private List<Action<DrawingContext>> drawings;
+        private SortedDictionary<int, List<Action<DrawingContext>>> drawings;
 
         public Drawer2DAvalonia()
         {
-            drawings = new List<Action<DrawingContext>>();
+            drawings = new SortedDictionary<int, List<Action<DrawingContext>>>();
         }
 
         public void Init(int width, int height, int xScale, int yScale)
@@ -33,30 +33,51 @@ namespace GameEngine.UI.AvaloniaUI
 
         public void FillRectangle(int buffer, System.Drawing.Color color, int x, int y, int w, int h)
         {
-            drawings.Add((g) => g.FillRectangle(new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)), new Rect(x, y, w, h)));
+            AddDrawing(0, (g) => g.FillRectangle(new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)), new Rect(x, y, w, h)));
         }
 
-        public void Draw(int buffer, Interfaces.IDescription description)
+        public void Draw(int buffer, Interfaces.IDescription d)
+        {
+            if (!(d is Description2D))
+            {
+                throw new ArgumentOutOfRangeException($"{d.GetType()} is not a ${nameof(Description2D)}");
+            }
+
+            Draw(d as Description2D);
+        }
+
+
+        public void Draw(Description2D description)
         {
             if (description is TileMap)
             {
-                drawings.Add((g) => Draw(g, description as TileMap));
+                AddDrawing(description.ZIndex, (g) => Draw(g, description as TileMap));
             }
             else
             {
                 Description2D d2d = description as Description2D;
                 if (d2d != null)
                 {
-                    drawings.Add((g) => Draw(g, d2d));
+                    AddDrawing(description.ZIndex, (g) => Draw(g, d2d));
                 }
             }
+        }
+
+        private void AddDrawing(int index, Action<DrawingContext> action)
+        {
+            if (!drawings.ContainsKey(index))
+            {
+                drawings.Add(index, new List<Action<DrawingContext>>());
+            }
+
+            drawings[index].Add(action);
         }
 
         public AvaloniaBitmap Image(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
 
         public AvaloniaBitmap Overlay(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
 
-        public List<Action<DrawingContext>> Drawings => drawings;
+        public SortedDictionary<int, List<Action<DrawingContext>>> Drawings => drawings;
 
 
         private Dictionary<System.Drawing.Image, Bitmap> storedBitmaps = new Dictionary<System.Drawing.Image, Bitmap>();
