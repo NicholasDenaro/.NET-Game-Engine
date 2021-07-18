@@ -15,9 +15,9 @@ namespace GridWalkRPG
             this.controllerIndex = controllerIndex;
         }
 
-        public void TickAction(Location location, Entity entity)
+        public void TickAction(GameState state, Entity entity)
         {
-            WindowsKeyController controller = Program.Engine.Controllers[controllerIndex] as WindowsKeyController;
+            WindowsKeyController controller = state.Controllers[controllerIndex] as WindowsKeyController;
 
             DescriptionPlayer descr = entity.Description as DescriptionPlayer;
             if (descr == null)
@@ -25,7 +25,7 @@ namespace GridWalkRPG
                 return;
             }
 
-            List<WallDescription> walls = location.GetEntities<WallDescription>().ToList();
+            List<WallDescription> walls = state.Location.GetEntities<WallDescription>().ToList();
 
             for (int i = descr.controllerWalkChecks.Count - 1; i >= 0; i--)
             {

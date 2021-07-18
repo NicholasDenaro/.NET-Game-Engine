@@ -2,6 +2,6 @@
 {
     public interface ITicker
     {
-        void Tick(Location currentLocation);
+        void Tick(GameState state);
     }
 }

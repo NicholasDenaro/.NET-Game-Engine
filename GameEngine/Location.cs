@@ -43,7 +43,7 @@ namespace GameEngine
             return Entities.Where(entity => entity.Description.GetType() == typeof(T) || typeof(T).IsAssignableFrom(entity.Description.GetType())).Select(entity => entity.Description as T);
         }
 
-        public void Tick()
+        public void Tick(GameState state)
         {
             foreach(Entity entity in this.entityAddBuffer)
             {
@@ -59,7 +59,7 @@ namespace GameEngine
 
             foreach (Entity entity in entities.Values)
             {
-                entity.Tick(this);
+                entity.Tick(state);
             }
         }
 

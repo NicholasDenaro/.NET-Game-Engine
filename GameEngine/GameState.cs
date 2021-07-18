@@ -7,10 +7,25 @@ namespace GameEngine
 {
     public class GameState : IDescription
     {
+        public TickHandler TickStart;
+        public TickHandler TickEnd;
+
+        public DrawHandler DrawStart;
+        public DrawHandler DrawEnd;
+
         public List<Controller> Controllers { get; internal set; } = new List<Controller>();
 
         public Location Location { get; internal set; }
         public Location NextLocation { get; internal set; }
+
+        public View View { get; internal set; }
+        public View NextView { get; internal set; }
+
+        public void UpdateView()
+        {
+            View = NextView ?? View;
+            NextView = null;
+        }
 
         public string Serialize()
         {

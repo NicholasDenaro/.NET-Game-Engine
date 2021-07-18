@@ -36,24 +36,24 @@ namespace GridWalkRPG
             view.ScrollBottom = view.Height / 2 - 16;
             view.ScrollLeft = view.Width / 2;
             view.ScrollRight = view.Width / 2 - 16;
-            Engine.TickEnd += view.Tick;
-            Engine.View = view;
-            Engine.SetLocation(Location.Load("GridWalkRPG.Maps.map.dat"));
+            Engine.TickEnd(0) += view.Tick;
+            Engine.SetView(0, view);
+            Engine.SetLocation(0, Location.Load("GridWalkRPG.Maps.map.dat"));
 #if WinForm
             Frame = new GameFrame(new WinFormWindowBuilder(), 0, 0, 240, 160, 4, 4);
 #endif 
 #if Avalonia
             Frame = new GameFrame(
                 new AvaloniaWindowBuilder()
-                    .TopMost(true)
-                    .Decorations(Avalonia.Controls.SystemDecorations.None)
+                    //.TopMost(true)
+                    //.Decorations(Avalonia.Controls.SystemDecorations.None)
                     .Transparency(Avalonia.Controls.WindowTransparencyLevel.Transparent)
                     .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen)
                     .CanResize(false)
                     .ShowInTaskBar(false),
                 0, 0, 240, 160, 4, 4);
 #endif 
-            Engine.DrawEnd += Frame.DrawHandle;
+            Engine.DrawEnd(0) += Frame.DrawHandle;
             Frame.Start();
 
             await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -62,26 +62,26 @@ namespace GridWalkRPG
                 view.Resize(2560, 1440);
             });
 
-            //var frame2 = new GameFrame(
-            //    new AvaloniaWindowBuilder()
-            //        .TopMost(true)
-            //        .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
-            //    0, 0, 240, 160, 4, 4);
-            //Engine.DrawEnd += (s, v) => frame2.DrawHandle(s, v);
-            //frame2.Start();
+            var frame2 = new GameFrame(
+                new AvaloniaWindowBuilder()
+                    .TopMost(true)
+                    .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
+                0, 0, 240, 160, 4, 4);
+            Engine.DrawEnd(0) += (s, v) => frame2.DrawHandle(s, v);
+            frame2.Start();
 
             WindowsKeyController controller = new WindowsKeyController(keymap);
-            Engine.AddController(controller);
+            Engine.AddController(0, controller);
             
             Frame.Window.Hook(controller);
 
             DescriptionPlayer dp = new DescriptionPlayer(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48);
             Entity player = new Entity(dp);
             Guid playerId = player.Id;
-            PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(controller));
-            Engine.TickEnd += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
+            PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(0, controller));
+            Engine.TickEnd(0) += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
             player.TickAction = pActions.TickAction;
-            Engine.AddEntity(player);
+            Engine.AddEntity(0, player);
 
 #if Avalonia
             //AvaloniaWindowBuilder.MakeTransparent(Frame, true);
@@ -165,7 +165,7 @@ namespace GridWalkRPG
             //});
 
             short prevState = AvaloniaWindowBuilder.GetKeyState(0xA1);
-            Engine.TickEnd += (s, e) =>
+            Engine.TickEnd(0) += (s, e) =>
             {
                 short state = AvaloniaWindowBuilder.GetKeyState(0xA1);
                 if (prevState != state)
@@ -186,7 +186,7 @@ namespace GridWalkRPG
 #endif
 
             view.Follow(player.Description as Description2D);
-            Engine.TickEnd += (s, e) => view.Follow(Entity.Entities[playerId].Description as Description2D);
+            Engine.TickEnd(0) += (s, e) => view.Follow(Entity.Entities[playerId].Description as Description2D);
             
 
             MML mml = new MML(new string[] {
@@ -202,7 +202,7 @@ namespace GridWalkRPG
             });
             //Frame.PlayTrack(new AvaloniaTrack(mml));
 
-            TileMap map = Engine.Location.Description as TileMap;
+            TileMap map = Engine.Location(0).Description as TileMap;
 
             if (map != null)
             {
@@ -217,7 +217,7 @@ namespace GridWalkRPG
                             case 4:
                             case 19:
                             case 20:
-                                Engine.Location.AddEntity(new Entity(new WallDescription(x, y, 16, 16)));
+                                Engine.Location(0).AddEntity(new Entity(new WallDescription(x, y, 16, 16)));
                                 break;
                         }
                     }
@@ -228,10 +228,10 @@ namespace GridWalkRPG
             watchSecond.Start();
             watchTickTime = new Stopwatch();
 
-            Engine.TickEnd += TickInfo;
-            Engine.TickStart += TickTimer;
-            Engine.TickEnd += TickTimer;
-            Engine.TickEnd += (s, e) =>
+            Engine.TickEnd(0) += TickInfo;
+            Engine.TickStart(0) += TickTimer;
+            Engine.TickEnd(0) += TickTimer;
+            Engine.TickEnd(0) += (s, e) =>
             {
                 states.Enqueue(Engine.Serialize());
                 if (states.Count > 60)

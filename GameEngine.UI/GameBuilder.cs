@@ -17,34 +17,39 @@ namespace GameEngine
         public long drawTime;
         public long tps;
 
-        public GameBuilder Build()
+        public GameBuilder Build(int stateKey = 0)
         {
-            Engine.View = view;
+            if (!Engine.HasState(stateKey))
+            {
+                Engine.AddNewState(stateKey);
+            }
+
+            Engine.SetView(stateKey, view);
 
             Frame.Start();
-            Engine.DrawEnd += Frame.DrawHandle;
+            Engine.DrawEnd(stateKey) += Frame.DrawHandle;
             
-            Engine.SetLocation(location);
+            Engine.SetLocation(stateKey, location);
 
             foreach (Controller controller in controllers)
             {
-                Engine.AddController(controller);
+                Engine.AddController(stateKey, controller);
 
                 Frame.Window.Hook(controller);
             }
 
             Stopwatch swTick = new Stopwatch();
-            Engine.TickStart += (e, o) => swTick.Restart();
-            Engine.TickEnd += (e, o) => { swTick.Stop(); ; tickTime = swTick.ElapsedTicks; };
+            Engine.TickStart(stateKey) += (e, o) => swTick.Restart();
+            Engine.TickEnd(stateKey) += (e, o) => { swTick.Stop(); ; tickTime = swTick.ElapsedTicks; };
 
             Stopwatch swDraw = new Stopwatch();
-            Engine.DrawStart += (e, o) => swDraw.Restart();
-            Engine.DrawEnd += (e, o) => { swDraw.Stop(); drawTime = swDraw.ElapsedTicks; };
+            Engine.DrawStart(stateKey) += (e, o) => swDraw.Restart();
+            Engine.DrawEnd(stateKey) += (e, o) => { swDraw.Stop(); drawTime = swDraw.ElapsedTicks; };
 
             int ticks = 0;
             Stopwatch tpsWatch = Stopwatch.StartNew();
-            Engine.TickStart += (e, o) => ticks++;
-            Engine.TickEnd += (e, o) =>
+            Engine.TickStart(stateKey) += (e, o) => ticks++;
+            Engine.TickEnd(stateKey) += (e, o) =>
             {
                 if (tpsWatch.ElapsedMilliseconds >= 1000)
                 {

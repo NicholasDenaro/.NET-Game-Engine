@@ -12,44 +12,44 @@ namespace GameEngine
     {
         public enum QueueAction { Add, Remove }
 
-        private List<(QueueAction, Controller)> controllerQueue = new List<(QueueAction, Controller)>();
+        private List<(int stateKey, QueueAction action, Controller controller)> controllerQueue = new List<(int, QueueAction, Controller)>();
 
-        public TickHandler TickStart;
-        public TickHandler TickEnd;
+        public ref TickHandler TickStart(int stateKey) => ref this.states[stateKey].TickStart;
+        public ref TickHandler TickEnd(int stateKey) => ref this.states[stateKey].TickEnd;
 
-        public DrawHandler DrawStart;
-        public DrawHandler DrawEnd;
+        public ref DrawHandler DrawStart(int stateKey) => ref this .states[stateKey].DrawStart;
+        public ref DrawHandler DrawEnd(int stateKey) => ref this .states[stateKey].DrawEnd;
 
-        private View currentView;
-        private View nextView;
-        public View View
+        public Location Location(int stateKey) => this.states[stateKey].Location ?? this.states[stateKey].NextLocation;
+
+        public List<Controller> Controllers(int stateKey) => this.states[stateKey].Controllers;
+
+        public int GetControllerIndex(int stateKey, Controller controller)
         {
-            get
-            {
-                return currentView;
-            }
-            set
-            {
-                nextView = value;
-            }
+            return this.states[stateKey].Controllers.IndexOf(controller);
         }
 
-        public Location Location => this.state.Location;
-
-        public List<Controller> Controllers => this.state.Controllers;
-
-        public int GetControllerIndex(Controller controller)
+        public void SetLocation(int stateKey, Location location)
         {
-            return this.state.Controllers.IndexOf(controller);
+            this.states[stateKey].NextLocation = location;
         }
 
-        public void SetLocation(Location location)
+        public void SetView(int stateKey, View view)
         {
-            this.state.Location = location;
-            this.state.NextLocation = null;
+            this.states[stateKey].View = view;
         }
 
-        private GameState state = new GameState();
+        private Dictionary<int, GameState> states = new Dictionary<int, GameState>() { { 0, new GameState() } };
+
+        public bool HasState(int key)
+        {
+            return states.ContainsKey(key);
+        }
+
+        public void AddNewState(int key)
+        {
+            states.Add(key, new GameState());
+        }
 
         public bool Active { get; private set; }
 
@@ -69,78 +69,134 @@ namespace GameEngine
         public void Tick()
         {
             // Let all handlers know there is a tick happening
-            TickStart?.Invoke(this, this.state);
+            foreach (var state in this.states.Values)
+            {
+                state.TickStart?.Invoke(this, state);
+            }
 
-            foreach ((QueueAction action, Controller controller) queueAction in controllerQueue)
+            foreach ((int stateKey, QueueAction action, Controller controller) queueAction in controllerQueue)
             {
                 switch (queueAction.action)
                 {
                     case QueueAction.Add:
-                        this.state.Controllers.Add(queueAction.controller);
+                        states[queueAction.stateKey].Controllers.Add(queueAction.controller);
                         break;
                     case QueueAction.Remove:
-                        this.state.Controllers.Remove(queueAction.controller);
+                        states[queueAction.stateKey].Controllers.Remove(queueAction.controller);
                         break;
                 }
             }
+
             controllerQueue.Clear();
-            currentView = nextView;
-            if (this.state.NextLocation != null)
+
+            foreach (var state in this.states.Values)
             {
-                this.state.Location = this.state.NextLocation;
+                state.UpdateView();
+            }
+
+            foreach (var state in this.states.Values)
+            {
+                if (state.NextLocation != null)
+                {
+                    state.Location = state.NextLocation;
+                    state.NextLocation = null;
+                }
             }
 
             // Poll the controllers for input this tick
-            foreach (Controller controller in state.Controllers)
+            foreach (var state in this.states.Values)
             {
-                controller.Update();
+                foreach (Controller controller in state.Controllers)
+                {
+                    controller.Update();
+                }
             }
 
             // Tick all the things in the location
-            this.state.Location?.Tick();
 
-            TickEnd?.Invoke(this, this.state);
-        }
-
-        public void AddEntity(Entity entity)
-        {
-            this.state.Location.AddEntity(entity);
-        }
-
-        public void AddController(Controller controller)
-        {
-            if (!Active)
+            foreach (var state in this.states.Values)
             {
-                this.state.Controllers.Add(controller);
+                state.Location?.Tick(state);
+            }
+
+
+            foreach (var state in this.states.Values)
+            {
+                state.TickEnd?.Invoke(this, state);
+            }
+        }
+
+        public void AddEntity(int stateKey, Entity entity)
+        {
+            if (this.states[stateKey].Location != null)
+            {
+                this.states[stateKey].Location.AddEntity(entity);
             }
             else
             {
-                controllerQueue.Add((QueueAction.Add, controller));
+                this.states[stateKey].NextLocation.AddEntity(entity);
+            }
+        }
+
+        public void AddController(int stateKey, Controller controller)
+        {
+            if (!Active)
+            {
+                this.states[stateKey].Controllers.Add(controller);
+            }
+            else
+            {
+                controllerQueue.Add((stateKey, QueueAction.Add, controller));
             }
         }
 
         public void Draw()
         {
-            DrawStart?.Invoke(this, View);
-            View.Draw(state.Location);
-            DrawEnd?.Invoke(this, View);
+            foreach (var state in states.Values)
+            {
+                state.DrawStart?.Invoke(this, state.View);
+            }
+
+            foreach (var state in states.Values)
+            {
+                if (state.Location != null)
+                {
+                    state?.View.Draw(state.Location);
+                }
+            }
+
+
+            foreach (var state in states.Values)
+            {
+                state.DrawEnd?.Invoke(this, state.View);
+            }
         }
 
         public string Serialize()
         {
-            Stopwatch sw = Stopwatch.StartNew();
-            string str = state.Serialize();
-            sw.Stop();
-            //Console.WriteLine($"{sw.ElapsedTicks} ticks");
-            return str;
+            return "";
         }
 
         public void Deserialize(string state)
         {
-            Stopwatch sw = Stopwatch.StartNew();
-            this.state.Deserialize(state);
-            sw.Stop();
-            //Console.WriteLine($"{sw.ElapsedTicks} ticks");
+
         }
+
+        //public string Serialize()
+        //{
+        //    Stopwatch sw = Stopwatch.StartNew();
+        //    string str = states.Serialize();
+        //    sw.Stop();
+        //    //Console.WriteLine($"{sw.ElapsedTicks} ticks");
+        //    return str;
+        //}
+
+        //public void Deserialize(string state)
+        //{
+        //    Stopwatch sw = Stopwatch.StartNew();
+        //    this.states.Deserialize(state);
+        //    sw.Stop();
+        //    //Console.WriteLine($"{sw.ElapsedTicks} ticks");
+        //}
     }
 }
