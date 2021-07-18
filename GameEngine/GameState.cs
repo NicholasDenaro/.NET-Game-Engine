@@ -21,10 +21,55 @@ namespace GameEngine
         public View View { get; internal set; }
         public View NextView { get; internal set; }
 
-        public void UpdateView()
+        public bool IsPaused { get; internal set; }
+
+        public void NotifyTickStart(GameEngine engine)
         {
+            if (IsPaused)
+            {
+                return;
+            }
+
+            TickStart?.Invoke(engine, this);
+        }
+
+        public void Tick()
+        {
+            if (IsPaused)
+            {
+                return;
+            }
+
+            Location?.Tick(this);
+        }
+
+        public void NotifyTickEnd(GameEngine engine)
+        {
+            if (IsPaused)
+            {
+                return;
+            }
+
+            TickEnd?.Invoke(engine, this);
+        }
+
+        public void Update()
+        {
+            if (IsPaused)
+            {
+                return;
+            }
+
+            Location = NextLocation ?? Location;
+            NextLocation = null;
+
             View = NextView ?? View;
             NextView = null;
+
+            foreach (Controller controller in Controllers)
+            {
+                controller.Update();
+            }
         }
 
         public string Serialize()

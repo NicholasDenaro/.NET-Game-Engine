@@ -58,6 +58,17 @@ namespace GameEngine
             Active = true;
             Control();
         }
+        
+        public void Pause(int stateKey)
+        {
+            this.states[stateKey].IsPaused = true;
+        }
+        
+
+        public void Resume(int stateKey)
+        {
+            this.states[stateKey].IsPaused = false;
+        }
 
         public void Stop()
         {
@@ -68,10 +79,9 @@ namespace GameEngine
 
         public void Tick()
         {
-            // Let all handlers know there is a tick happening
             foreach (var state in this.states.Values)
             {
-                state.TickStart?.Invoke(this, state);
+                state.NotifyTickStart(this);
             }
 
             foreach ((int stateKey, QueueAction action, Controller controller) queueAction in controllerQueue)
@@ -91,38 +101,17 @@ namespace GameEngine
 
             foreach (var state in this.states.Values)
             {
-                state.UpdateView();
+                state.Update();
             }
 
             foreach (var state in this.states.Values)
             {
-                if (state.NextLocation != null)
-                {
-                    state.Location = state.NextLocation;
-                    state.NextLocation = null;
-                }
+                state.Tick();
             }
-
-            // Poll the controllers for input this tick
-            foreach (var state in this.states.Values)
-            {
-                foreach (Controller controller in state.Controllers)
-                {
-                    controller.Update();
-                }
-            }
-
-            // Tick all the things in the location
 
             foreach (var state in this.states.Values)
             {
-                state.Location?.Tick(state);
-            }
-
-
-            foreach (var state in this.states.Values)
-            {
-                state.TickEnd?.Invoke(this, state);
+                state.NotifyTickEnd(this);
             }
         }
 
