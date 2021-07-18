@@ -86,6 +86,12 @@ namespace GameEngine._2D
             onMove?.Invoke(this);
         }
 
+        public void SetOffset(double xOffset, double yOffset)
+        {
+            this.DrawOffsetX = xOffset;
+            this.DrawOffsetY = yOffset;
+        }
+
         virtual public bool IsCollision(Description2D other)
         {
             return this.Bounds.IntersectsWith(other.Bounds);

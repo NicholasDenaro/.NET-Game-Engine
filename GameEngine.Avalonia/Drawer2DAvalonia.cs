@@ -88,7 +88,7 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 if (description.HasImage())
                 {
-                    Rect dest = new Rect((int)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0), description.Width, description.Height);
+                    Rect dest = new Rect((int)(description.X + description.DrawOffsetX) - (description?.Sprite?.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite?.Y ?? 0), description.Width, description.Height);
 
                     System.Drawing.Image img = description.Image();
                     if (!storedBitmaps.ContainsKey(description.Image()))
