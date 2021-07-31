@@ -81,6 +81,7 @@ namespace GameEngine.UI.AvaloniaUI
 
 
         private Dictionary<System.Drawing.Image, Bitmap> storedBitmaps = new Dictionary<System.Drawing.Image, Bitmap>();
+        private object locker = new object();
 
         public void Draw(DrawingContext gfx, Description2D description)
         {
@@ -90,17 +91,33 @@ namespace GameEngine.UI.AvaloniaUI
                 {
                     Rect dest = new Rect((int)(description.X + description.DrawOffsetX) - (description?.Sprite?.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite?.Y ?? 0), description.Width, description.Height);
 
-                    System.Drawing.Image img = description.Image();
-                    if (!storedBitmaps.ContainsKey(description.Image()))
+                    lock (locker)
                     {
-                        using MemoryStream stream = new MemoryStream();
-                        img.Save(stream, ImageFormat.Png);
-                        stream.Position = 0;
-                        storedBitmaps.Add(img, new Bitmap(stream));
-                    }
+                        System.Drawing.Image img = description.Image();
+                        if (!storedBitmaps.ContainsKey(description.Image()))
+                        {
+                            using MemoryStream stream = new MemoryStream();
+                            img.Save(stream, ImageFormat.Png);
+                            stream.Position = 0;
+                            storedBitmaps.Add(img, new Bitmap(stream));
+                        }
 
-                    gfx?.DrawImage(storedBitmaps[img], new Rect(0, 0, description.Width, description.Height), dest);
+                        gfx?.DrawImage(storedBitmaps[img], new Rect(0, 0, description.Width, description.Height), dest);
+                    }
                 }
+            }
+        }
+
+        public void Free()
+        {
+            lock (locker)
+            {
+                foreach (Bitmap bmp in storedBitmaps.Values)
+                {
+                    bmp.Dispose();
+                }
+
+                storedBitmaps.Clear();
             }
         }
 
