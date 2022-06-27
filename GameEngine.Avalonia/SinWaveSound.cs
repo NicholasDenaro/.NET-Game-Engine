@@ -19,7 +19,7 @@ namespace GameEngine.UI.AvaloniaUI
                 Frequencies[i * 2 + 1] = time;
             }
 
-            Amplitude = 0.01f; // let's not hurt our ears
+            Amplitude = 0.04f; // let's not hurt our ears
             loop = true;
         }
         public SinWaveSound(bool loop, params float[] freqs) : this(freqs)

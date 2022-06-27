@@ -2,7 +2,6 @@
 using GameEngine.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
 
 namespace GameEngine._2D
@@ -23,7 +22,7 @@ namespace GameEngine._2D
         public int Width { get; private set; }
         public int Height { get; private set; }
         public int ImageIndex { get; set; }
-        virtual public Rectangle Bounds => new Rectangle(new Point((int)X, (int)Y), new Size(Width, Height));
+        virtual public Rectangle Bounds => new Rectangle((int)X, (int)Y, Width, Height);
 
         protected MovementTrigger onMove;
 
@@ -102,9 +101,18 @@ namespace GameEngine._2D
             return Sprite != null || DrawAction != null;
         }
 
-        public Image Image()
+        public BitmapSection Image()
         {
-            return DrawAction?.Invoke() ?? Sprite?.GetImage(ImageIndex);
+            Bitmap bmp = DrawAction?.Invoke();
+
+            if (bmp != null)
+            {
+                return new BitmapSection(bmp, new Rectangle(0, 0, this.Width, this.Height));
+            }
+            else
+            {
+                return new BitmapSection(Sprite?.GetImage(ImageIndex), new Rectangle((ImageIndex % this.Sprite.HImages) * this.Sprite.Width, (ImageIndex / this.Sprite.HImages) * this.Sprite.Height, this.Sprite.Width, this.Sprite.Height));
+            }
         }
 
         public double Distance(Description2D other)

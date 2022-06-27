@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -13,11 +12,6 @@ namespace GameEngine._2D
 
         static Sprite()
         {
-            using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
-            {
-                dpiX = graphics.DpiX;
-                dpiY = graphics.DpiY;
-            }
         }
 
         public static Dictionary<string, Sprite> Sprites { get; set; } = new Dictionary<string, Sprite>();
@@ -37,18 +31,34 @@ namespace GameEngine._2D
 
         public Sprite(string name, string bmpFile, int tileWidth, int tileHeight, int x = 0, int y = 0) : this(name, Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{bmpFile.Replace("/", ".")}"), x, y)
         {
-            SetupSubImages(image[0], tileWidth, tileHeight);
+            //SetupSubImages(image[0], tileWidth, tileHeight);
+
+            Width = tileWidth;
+            Height = tileHeight;
+
+
+            hSubImages = (image[0].Width / Width);
+            vSubImages = (image[0].Height / Height);
+
         }
 
         public Sprite(string name, Stream bmp, Point origin = default(Point), Rectangle tile = default(Rectangle)) : this(name, bmp, origin.X, origin.Y)
         {
-            SetupSubImages(image[0], tile.Width, tile.Height);
+            //SetupSubImages(image[0], tile.Width, tile.Height);
+
+            Width = tile.Width;
+            Height = tile.Height;
+
+
+            hSubImages = (image[0].Width / Width);
+            vSubImages = (image[0].Height / Height);
+
         }
 
         public Sprite(string name, Stream sbmp, int x, int y)
         {
             Name = name;
-            Bitmap bmp = BitmapExtensions.CreateBitmap(sbmp);
+            Bitmap bmp = Bitmap.Create(sbmp);
             this.image = new[] { bmp };
             hSubImages = 1;
             vSubImages = 1;
@@ -72,6 +82,19 @@ namespace GameEngine._2D
             Sprites.Add(name, this);
         }
 
+        public Sprite(string name, Bitmap bmp, int x, int y)
+        {
+            Name = name;
+            this.image = new Bitmap[] { bmp };
+            hSubImages = 1;
+            vSubImages = 1;
+            Width = bmp.Width;
+            Height = bmp.Height;
+            X = x;
+            Y = y;
+            Sprites.Add(name, this);
+        }
+
         private void SetupSubImages(Bitmap bmp, int tileWidth, int tileHeight)
         {
             Width = tileWidth;
@@ -86,21 +109,21 @@ namespace GameEngine._2D
             {
                 for (int i = 0; i < hSubImages; i++)
                 {
-                    image[i + j * hSubImages] = BitmapExtensions.CreateBitmap(Width, Height);
-                    using (Graphics gfx = Graphics.FromImage(image[i + j * hSubImages]))
+                    image[i + j * hSubImages] = Bitmap.Create(Width, Height);
+                    using (Graphics gfx = image[i + j * hSubImages].GetGraphics())
                     {
-                        gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                        gfx.DrawImage(bmp, new RectangleF(0, 0, Width, Height), new RectangleF(i * Width, j * Height, Width, Height), GraphicsUnit.Pixel);
+                        gfx.DrawImage(bmp, new RectangleF(i * Width, j * Height, Width, Height), new RectangleF(0, 0, Width, Height));
                     }
                 }
             }
         }
 
-        public Image[] Images => image;
+        public Bitmap[] Images => image;
 
         public Bitmap GetImage(int index)
         {
-            return image[index % image.Length];
+            //return image[index % image.Length];
+            return image[0];
         }
     }
 }

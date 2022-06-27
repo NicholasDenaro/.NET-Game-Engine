@@ -94,7 +94,17 @@ namespace GameEngine
             List<PendingAction> next;
             lock (Lock)
             {
-                next = actionBuffer.MoveNext();
+                List<PendingAction> actions = actionBuffer.MoveNext();
+                if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
+                {
+                    actions.Reverse();
+                    List<PendingAction> temp = actions.DistinctBy(action => action.ActionCode).ToList();
+                    actions.Clear();
+                    actions.AddRange(temp);
+                    actions.Reverse();
+                }
+
+                next = actions;
             }
 
             foreach (PendingAction pa in next)

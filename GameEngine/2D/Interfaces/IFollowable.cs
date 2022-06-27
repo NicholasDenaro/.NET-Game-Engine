@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace GameEngine._2D.Interfaces
+﻿namespace GameEngine._2D.Interfaces
 {
     public interface IFollowable
     {

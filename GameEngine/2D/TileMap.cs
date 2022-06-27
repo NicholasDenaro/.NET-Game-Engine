@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-
+﻿
 namespace GameEngine._2D
 {
     public class TileMap : Description2D
@@ -21,10 +20,9 @@ namespace GameEngine._2D
             Tiles = new int[Columns * Rows];
         }
 
-        public Image Image(int tile)
+        public BitmapSection Image(int tile)
         {
-            //return BitmapExtensions.CreateBitmap(Sprite.GetImage(tile).Width, Sprite.GetImage(tile).Height);
-            return Sprite.GetImage(tile);
+            return new BitmapSection(Sprite.GetImage(tile), new Rectangle((tile % Sprite.HImages) * Sprite.Width, (tile / Sprite.HImages) * Sprite.Height, Sprite.Width, Sprite.Height));
         }
 
         public int this[int x, int y]

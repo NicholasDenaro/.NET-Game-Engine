@@ -10,7 +10,6 @@ using GameEngine.UI.WinForms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Threading.Tasks;
 
 namespace GridWalkRPG
@@ -21,9 +20,11 @@ namespace GridWalkRPG
         public static GameFrame Frame { get; private set; }
         public static Queue<string> states = new Queue<string>();
 
+        private static Bitmap hudBitmap;
+
         public static async Task Main(string[] args)
         {
-            Engine = new FixedTickEngine(144);
+            Engine = new FixedTickEngine(60);
 
 #if WinForm
             GameView2D view = new GameView2D(new Drawer2DSystemDrawing(), 240, 160, 4, 4, Color.FromArgb(0, Color.Magenta), 2);
@@ -31,6 +32,7 @@ namespace GridWalkRPG
 #if Avalonia
             var drawer = new Drawer2DAvalonia();
             GameView2D view = new GameView2D(drawer, 240, 160, 4, 4, Color.FromArgb(0, Color.Transparent));
+            Bitmap.SetBitmapImpl(new AvaloniaBitmapCreator());
 #endif
             view.ScrollTop = view.Height / 2;
             view.ScrollBottom = view.Height / 2 - 16;
@@ -38,7 +40,6 @@ namespace GridWalkRPG
             view.ScrollRight = view.Width / 2 - 16;
             Engine.TickEnd(0) += view.Tick;
             Engine.SetView(0, view);
-            Engine.SetLocation(0, Location.Load("GridWalkRPG.Maps.map.dat"));
 #if WinForm
             Frame = new GameFrame(new WinFormWindowBuilder(), 0, 0, 240, 160, 4, 4);
 #endif 
@@ -50,30 +51,38 @@ namespace GridWalkRPG
                     .Transparency(Avalonia.Controls.WindowTransparencyLevel.Transparent)
                     .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen)
                     .CanResize(false)
-                    .ShowInTaskBar(false),
+                    .ShowInTaskBar(true),
                 0, 0, 240, 160, 4, 4);
+
 #endif 
-            Engine.DrawEnd(0) += Frame.DrawHandle;
+            Engine.DrawEnd(0) += (o, v) => { Frame.DrawHandle(o, v); };
             Frame.Start();
 
-            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                Frame.SetBounds(0, 0, 2560, 1440);
-                view.Resize(2560, 1440);
-            });
-
-            var frame2 = new GameFrame(
-                new AvaloniaWindowBuilder()
-                    .TopMost(true)
-                    .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
-                0, 0, 240, 160, 4, 4);
-            Engine.DrawEnd(0) += (s, v) => frame2.DrawHandle(s, v);
-            frame2.Start();
+            //await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            //{
+            //    Frame.SetBounds(0, 0, 2560, 1440);
+            //    view.Resize(2560, 1440);
+            //});
 
             WindowsKeyController controller = new WindowsKeyController(keymap);
             Engine.AddController(0, controller);
             
             Frame.Window.Hook(controller);
+
+            if (false)
+            {
+                var frame2 = new GameFrame(
+                    new AvaloniaWindowBuilder()
+                        .TopMost(true)
+                        .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
+                    0, 0, 240, 160, 4, 4);
+                Engine.DrawEnd(0) += (s, v) => frame2.DrawHandle(s, v);
+                frame2?.Start();
+                frame2?.Window.Hook(controller);
+            }
+
+            Engine.SetLocation(0, Location.Load("GridWalkRPG.Maps.map.dat"));
+
 
             DescriptionPlayer dp = new DescriptionPlayer(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48);
             Entity player = new Entity(dp);
@@ -82,6 +91,35 @@ namespace GridWalkRPG
             Engine.TickEnd(0) += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
             player.TickAction = pActions.TickAction;
             Engine.AddEntity(0, player);
+
+            Bitmap circleb = Bitmap.Create(16, 16);
+            circleb.GetGraphics().DrawEllipse(new Color(255, 0, 0), 0, 0, 16, 16);
+            Sprite circles = new Sprite("circles", circleb, 0, 0);
+            Description2D circled = new Description2D(circles, 64, 64, 16, 16);
+            Entity circlee = new Entity(circled);
+            Engine.AddEntity(0, circlee);
+
+            hudBitmap = Bitmap.Create(Frame.Bounds.Width, Frame.Bounds.Height);
+            hudBitmap.GetGraphics().FillRectangle(new Color(0, 255, 255), 0, 0, 16, 16);
+            Sprite huds = new Sprite("hud", hudBitmap, 0, 0);
+            Description2D hudd = new HudDescription(huds, 0, 0);
+            Entity hude = new Entity(hudd);
+            hude.TickAction += (state, entity) =>
+            {
+                hudBitmap.GetGraphics().Clear(Color.Transparent);
+                string info = $"TPS: {hudTicks}" +
+                $"\n Timings:" +
+                $"\n\tmin: {hudMinTime}" +
+                $"\n\tavg: {hudTotalTime / hudTicks}" +
+                $"\n\tmax: {hudMaxTime}" +
+                $"\nUP: {state.Controllers[0][(int)KEYS.UP].IsDown()}" +
+                $"\nDOWN: {state.Controllers[0][(int)KEYS.DOWN].IsDown()}" +
+                $"\nLEFT: {state.Controllers[0][(int)KEYS.LEFT].IsDown()}" +
+                $"\nRIGHT: {state.Controllers[0][(int)KEYS.RIGHT].IsDown()}";
+                hudBitmap.GetGraphics().DrawText(info, 0, 0, Color.Black, 20);
+            };
+            Engine.AddEntity(0, hude);
+
 
 #if Avalonia
             //AvaloniaWindowBuilder.MakeTransparent(Frame, true);
@@ -165,8 +203,13 @@ namespace GridWalkRPG
             //});
 
             short prevState = AvaloniaWindowBuilder.GetKeyState(0xA1);
-            Engine.TickEnd(0) += (s, e) =>
+            Engine.TickEnd(0) += (object s, GameState e) =>
             {
+                if (e.Controllers[0][(int)KEYS.EXIT].IsDown())
+                {
+                    Environment.Exit(0);
+                }
+
                 short state = AvaloniaWindowBuilder.GetKeyState(0xA1);
                 if (prevState != state)
                 {
@@ -200,7 +243,7 @@ namespace GridWalkRPG
                 "l16o5frarb4frarb4frarbr>erd4<b8>cr<brgre2&e8drergre2&e4frarb4frarb4frarbr>erd4<b8>crer<brg2&g8brgrdre2&e4r1r1frgra4br>crd4e8frg2&g4r1r1<f8era8grb8ar>c8<br>d8cre8drf8er<b>cr<ab1&b2r4e&e&er",
                 "l16r1r1r1r1r1r1r1r1o4drerf4grarb4>c8<bre2&e4drerf4grarb4>c8dre2&e4<drerf4grarb4>c8<bre2&e4d8crf8erg8fra8grb8ar>c8<br>d8crefrde1&e2r4"
             });
-            //Frame.PlayTrack(new AvaloniaTrack(mml));
+            Frame.PlayTrack(new AvaloniaTrack(mml));
 
             TileMap map = Engine.Location(0).Description as TileMap;
 
@@ -250,17 +293,27 @@ namespace GridWalkRPG
 
         private static Stopwatch watchSecond;
         private static int ticks;
+        private static int hudTicks = 1;
+        private static long hudMinTime;
+        private static long hudMaxTime;
+        private static long hudTotalTime;
         public static void TickInfo(object sender, GameState state)
         {
             ticks++;
             if (watchSecond.ElapsedMilliseconds >= 1000)
             {
                 Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime}");
+
+                hudTicks = ticks;
+                hudMinTime = minTime;
+                hudMaxTime = maxTime;
+                hudTotalTime = totalTime;
+
                 ticks = 0;
-                watchSecond.Restart();
                 minTime = long.MaxValue;
                 maxTime = long.MinValue;
                 totalTime = 0;
+                watchSecond.Restart();
             }
         }
 
@@ -290,7 +343,7 @@ namespace GridWalkRPG
             }
         }
 
-        public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5, X = 6, Y = 7, RESET = 8 }
+        public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5, X = 6, Y = 7, RESET = 8, EXIT=9 }
 
         public static Dictionary<int, int> keymap = new Dictionary<int, int>()
         {
@@ -315,6 +368,7 @@ namespace GridWalkRPG
             { (int)Avalonia.Input.Key.A, (int)KEYS.X },
             { (int)Avalonia.Input.Key.S, (int)KEYS.Y },
             { (int)Avalonia.Input.Key.OemOpenBrackets, (int)KEYS.RESET },
+            { (int)Avalonia.Input.Key.OemCloseBrackets, (int)KEYS.EXIT },
 #endif
         };
     }

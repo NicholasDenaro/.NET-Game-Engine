@@ -23,6 +23,7 @@ namespace GameEngine.UI.AvaloniaUI
         internal static GamePanel Panel { get; private set; }
 
         private SortedDictionary<int, List<Action<DrawingContext>>> drawings;
+        private SortedDictionary<int, List<Action<DrawingContext>>> overlays;
         private GameView2D view;
 
         public GamePanel(AvaloniaWindow window, int width, int height, double xScale, double yScale)
@@ -37,6 +38,7 @@ namespace GameEngine.UI.AvaloniaUI
             this.Height = height * yScale;
             WindowWidth = (int)this.Width;
             WindowHeight = (int)this.Height;
+            Console.WriteLine($"{width} {height} {xScale} {yScale}");
         }
 
         public void Resize(int width, int height)
@@ -53,6 +55,7 @@ namespace GameEngine.UI.AvaloniaUI
 
             Drawer2DAvalonia d = view.Drawer as Drawer2DAvalonia;
             drawings = d.Drawings;
+            overlays = d.Overlays;
             this.view = view;
 
             if (window != null)
@@ -99,16 +102,32 @@ namespace GameEngine.UI.AvaloniaUI
                 try
                 {
                     base.Render(context);
-
-                    using var undoTranform = context.PushPreTransform(context.CurrentContainerTransform.Invert());
-                    using var scalePlat = context.PushPreTransform(new Matrix(1/this.window.PlatformImpl.DesktopScaling, 0, 0, 1/this.window.PlatformImpl.DesktopScaling, 0, 0));
-                    using var scale = context.PushPreTransform(new Matrix(ScaleX, 0, 0, ScaleY, 0, 0));
-                    using var translate = context.PushPreTransform(new Matrix(1, 0, 0, 1, -view?.ViewBounds.X ?? 0, -view?.ViewBounds.Y ?? 0));
+                    using var transformContainer = context.PushTransformContainer();
+                    double transformOffsetX = 0;
+                    double transformOffsetY = 0;
+                    if (this.TransformedBounds.HasValue)
+                    {
+                        transformOffsetX = -this.TransformedBounds.Value.Transform.M31;
+                        transformOffsetY = -this.TransformedBounds.Value.Transform.M32;
+                    }
+                    
+                    using var undoTranform = context.PushPreTransform(new Matrix(1, 0, 0, 1, transformOffsetX, transformOffsetY));
                     if (drawings != null)
                     {
-                        foreach(var key in drawings.Keys)
+                        using var scalePlat = context.PushPreTransform(new Matrix(1 / this.window.PlatformImpl.DesktopScaling, 0, 0, 1 / this.window.PlatformImpl.DesktopScaling, 0, 0));
+                        using var scale = context.PushPreTransform(new Matrix(ScaleX, 0, 0, ScaleY, 0, 0));
+                        using var translate = context.PushPreTransform(new Matrix(1, 0, 0, 1, -view?.ViewBounds.X ?? 0, -view?.ViewBounds.Y ?? 0));
+                        foreach (var key in drawings.Keys)
                         {
                             drawings[key].ForEach(act => act(context));
+                        }
+                    }
+
+                    if (overlays != null)
+                    {
+                        foreach (var key in overlays.Keys)
+                        {
+                            overlays[key].ForEach(act => act(context));
                         }
                     }
                 }

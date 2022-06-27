@@ -9,17 +9,29 @@ namespace GameEngine.UI.AvaloniaUI
     {
         private IWavePlayer player;
         private MixingSampleProvider provider;
+        private bool initialized = false;
 
         public AvaloniaSoundPlayer()
         {
-            player = new WasapiOut(AudioClientShareMode.Shared, 0);
+            if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                return;
+            }
+
+            player = new WaveOutEvent();
             WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             provider = new MixingSampleProvider(format);
             player.Init(provider);
+            initialized = true;
         }
 
         public void PlayStream(Stream stream)
         {
+            if (!initialized)
+            {
+                return;
+            }
+
             WaveFileReader reader = new WaveFileReader(stream);
             provider.AddMixerInput(reader);
             //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
@@ -28,6 +40,11 @@ namespace GameEngine.UI.AvaloniaUI
 
         public void PlaySound(ISound s)
         {
+            if (!initialized)
+            {
+                return;
+            }
+
             AvaloniaSound sound = s as AvaloniaSound;
             provider.AddMixerInput((ISampleProvider)sound.GetOutput());
             //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
@@ -36,7 +53,12 @@ namespace GameEngine.UI.AvaloniaUI
 
         public void PlayTrack(ITrack t)
         {
-            foreach(ISound sound in t.Channels())
+            if (!initialized)
+            {
+                return;
+            }
+
+            foreach (ISound sound in t.Channels())
             {
                 PlaySound(sound);
             }

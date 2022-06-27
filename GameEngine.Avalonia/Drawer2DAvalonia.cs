@@ -4,36 +4,48 @@ using Avalonia.Media.Imaging;
 using GameEngine._2D;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 
 namespace GameEngine.UI.AvaloniaUI
 {
-    public class Drawer2DAvalonia : IDrawer2D<AvaloniaBitmap>
+    public class Drawer2DAvalonia : IDrawer2D<AvaloniaGameBitmap>
     {
         private SortedDictionary<int, List<Action<DrawingContext>>> drawings;
+        private SortedDictionary<int, List<Action<DrawingContext>>> overlays;
 
         public Drawer2DAvalonia()
         {
             drawings = new SortedDictionary<int, List<Action<DrawingContext>>>();
+            overlays = new SortedDictionary<int, List<Action<DrawingContext>>>();
         }
+
+        private int width;
+        private int height;
+        private int xScale;
+        private int yScale;
 
         public void Init(int width, int height, int xScale, int yScale)
         {
+            this.width = width;
+            this.height = height;
+            this.xScale = xScale;
+            this.yScale = yScale;
         }
 
-        public void Clear(int buffer, System.Drawing.Color color) 
+        public void Clear(int buffer, _2D.Color color) 
         {
             drawings.Clear();
+            overlays.Clear();
+            this.FillRectangle(buffer, color, 0, 0, this.width, this.height);
         }
 
         public void TranslateTransform(int buffer, int x, int y)
         {
         }
 
-        public void FillRectangle(int buffer, System.Drawing.Color color, int x, int y, int w, int h)
+        public void FillRectangle(int buffer, _2D.Color color, int x, int y, int w, int h)
         {
-            AddDrawing(0, (g) => g.FillRectangle(new SolidColorBrush(Color.FromArgb(color.A, color.R, color.G, color.B)), new Rect(x, y, w, h)));
+            AddDrawing(0, (g) => g.FillRectangle(new SolidColorBrush(Avalonia.Media.Color.FromArgb(color.A, color.R, color.G, color.B)), new Rect(x, y, w, h)));
         }
 
         public void Draw(int buffer, Interfaces.IDescription d)
@@ -55,10 +67,13 @@ namespace GameEngine.UI.AvaloniaUI
             }
             else
             {
-                Description2D d2d = description as Description2D;
-                if (d2d != null)
+                if (description.DrawInOverlay)
                 {
-                    AddDrawing(description.ZIndex, (g) => Draw(g, d2d));
+                    AddOverlay(description.ZIndex, (g) => Draw(g, description));
+                }
+                else
+                {
+                    AddDrawing(description.ZIndex, (g) => Draw(g, description));
                 }
             }
         }
@@ -73,14 +88,24 @@ namespace GameEngine.UI.AvaloniaUI
             drawings[index].Add(action);
         }
 
-        public AvaloniaBitmap Image(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
+        private void AddOverlay(int index, Action<DrawingContext> action)
+        {
+            if (!overlays.ContainsKey(index))
+            {
+                overlays.Add(index, new List<Action<DrawingContext>>());
+            }
 
-        public AvaloniaBitmap Overlay(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
+            overlays[index].Add(action);
+        }
+
+        public AvaloniaGameBitmap Image(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
+
+        public AvaloniaGameBitmap Overlay(int buf) => throw new NotImplementedException("Avalonia doesn't use buffers");
 
         public SortedDictionary<int, List<Action<DrawingContext>>> Drawings => drawings;
+        public SortedDictionary<int, List<Action<DrawingContext>>> Overlays => overlays;
 
-
-        private Dictionary<System.Drawing.Image, Bitmap> storedBitmaps = new Dictionary<System.Drawing.Image, Bitmap>();
+        //private Dictionary<_2D.Bitmap, Avalonia.Media.Imaging.Bitmap> storedBitmaps = new Dictionary<_2D.Bitmap, Avalonia.Media.Imaging.Bitmap>();
         private object locker = new object();
 
         public void Draw(DrawingContext gfx, Description2D description)
@@ -93,35 +118,17 @@ namespace GameEngine.UI.AvaloniaUI
 
                     lock (locker)
                     {
-                        System.Drawing.Image img = description.Image();
-                        if (!storedBitmaps.ContainsKey(description.Image()))
-                        {
-                            using MemoryStream stream = new MemoryStream();
-                            img.Save(stream, ImageFormat.Png);
-                            stream.Position = 0;
-                            storedBitmaps.Add(img, new Bitmap(stream));
-                        }
+                        _2D.BitmapSection bmpSection = description.Image();
+                        _2D.Bitmap img = bmpSection.Bitmap as AvaloniaGameBitmap;
 
-                        gfx?.DrawImage(storedBitmaps[img], new Rect(0, 0, description.Width, description.Height), dest);
+                        gfx?.DrawImage(img.Image<RenderTargetBitmap>(), new Rect(bmpSection.Bounds.X, bmpSection.Bounds.Y, bmpSection.Bounds.Width, bmpSection.Bounds.Height), dest);
                     }
                 }
             }
         }
 
-        public void Free()
-        {
-            lock (locker)
-            {
-                foreach (Bitmap bmp in storedBitmaps.Values)
-                {
-                    bmp.Dispose();
-                }
-
-                storedBitmaps.Clear();
-            }
-        }
-
-        RenderTargetBitmap tiles;
+        //RenderTargetBitmap tiles;
+        AvaloniaGameBitmap tiles;
         public void RedrawTiles()
         {
             tiles = null;
@@ -133,17 +140,19 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 if (tiles == null)
                 {
-                    tiles = new RenderTargetBitmap(new PixelSize(map.Width, map.Height));
-                    using DrawingContext mgfx = new DrawingContext(tiles.CreateDrawingContext(null));
-                    //mgfx.Clip = new Region(new Rectangle(new Point(), new Size(map.Width, map.Height)));
+                    //tiles = new RenderTargetBitmap(new PixelSize(map.Width, map.Height));
+                    //using DrawingContext mgfx = new DrawingContext(tiles.CreateDrawingContext(null));
+                    tiles = (AvaloniaGameBitmap)_2D.Bitmap.Create(map.Width, map.Height);
+                    var mgfx = tiles.GetGraphics();
                     int x = 0;
                     int y = 0;
+
                     foreach (int tile in map.Tiles)
                     {
-                        using MemoryStream stream = new MemoryStream();
-                        map.Image(tile).Save(stream, ImageFormat.Png);
-                        stream.Position = 0;
-                        mgfx.DrawImage(new Avalonia.Media.Imaging.Bitmap(stream), new Rect(0, 0, map.Sprite.Width, map.Sprite.Height), new Rect(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height));
+                        _2D.BitmapSection bmpSection = map.Image(tile);
+                        _2D.Bitmap img = bmpSection.Bitmap as AvaloniaGameBitmap;
+
+                        mgfx.DrawImage(img, bmpSection.Bounds, new Rectangle(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height));
                         x++;
                         if (x >= map.Columns)
                         {
@@ -153,7 +162,7 @@ namespace GameEngine.UI.AvaloniaUI
                     }
                 }
 
-                gfx?.DrawImage(tiles, new Rect(0, 0, tiles.Size.Width, tiles.Size.Height), new Rect(0, 0, tiles.Size.Width, tiles.Size.Height));
+                gfx?.DrawImage(tiles.Image<RenderTargetBitmap>(), new Rect(0, 0, tiles.Width, tiles.Height), new Rect(0, 0, tiles.Width, tiles.Height));
             }
         }
     }

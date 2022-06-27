@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameEngine.UI.AvaloniaUI
@@ -16,29 +17,34 @@ namespace GameEngine.UI.AvaloniaUI
         {
             AvaloniaWindow window = null;
 
-            ClassicDesktopStyleApplicationLifetime lifetime;
             if (Application.Current == null)
             {
+                ClassicDesktopStyleApplicationLifetime lifetime = new ClassicDesktopStyleApplicationLifetime { };
                 var builder = AppBuilder.Configure<Application>()
                     .UsePlatformDetect()
-                    .With(new AvaloniaNativePlatformOptions { UseGpu = true });
-                lifetime = new ClassicDesktopStyleApplicationLifetime()
-                {
-                };
+                    .With(new AvaloniaNativePlatformOptions
+                    {
+                        UseGpu = true,
+                        UseDeferredRendering = true,
+                    });
 
                 Task.Run(() =>
                 {
                     builder.Start((app, args) =>
                     {
+                        app.ApplicationLifetime = lifetime;
                         window = CreateWindow(frame);
-                        lifetime.MainWindow = window;
                         window.Show();
                         window.Closed += (o, e) => Environment.Exit(0);
-                        app.Run(System.Threading.CancellationToken.None);
+
+                        app.Run(CancellationToken.None);
                     }, null);
                 });
 
-                while (window == null) { }
+                while (window == null)
+                {
+                    Thread.Yield();
+                }
             }
             else
             {
@@ -49,7 +55,10 @@ namespace GameEngine.UI.AvaloniaUI
                     win.Show();
                 });
 
-                while (win == null) { }
+                while (win == null)
+                {
+                    Thread.Yield();
+                }
 
                 return (win, soundPlayer);
             }
@@ -63,7 +72,7 @@ namespace GameEngine.UI.AvaloniaUI
         private WindowTransparencyLevel transparency = WindowTransparencyLevel.None;
         private SystemDecorations decorations = SystemDecorations.Full;
         private bool topMost = false;
-        private bool canResize = true;
+        private bool canResize = false;
         private bool showInTaskBar = true;
 
         public AvaloniaWindowBuilder Title(string title) { this.title = title; return this; }
@@ -113,7 +122,8 @@ namespace GameEngine.UI.AvaloniaUI
             }
             else
             {
-                throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
+                return;
+                //throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
             }
         }
 
@@ -124,7 +134,8 @@ namespace GameEngine.UI.AvaloniaUI
                 return Win32GetKeyState(key);
             }
 
-            throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
+            return 0;
+            //throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
         }
 
         public static void SetWindowRegion(GameFrame frame, double x, double y, double w, double h)
@@ -172,7 +183,8 @@ namespace GameEngine.UI.AvaloniaUI
             }
             else
             {
-                throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
+                return;
+                //throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
             }
         }
 
@@ -220,7 +232,8 @@ namespace GameEngine.UI.AvaloniaUI
             }
             else
             {
-                throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
+                return;
+                //throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
             }
         }
 

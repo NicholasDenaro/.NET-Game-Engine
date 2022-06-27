@@ -1,7 +1,6 @@
 ﻿using GameEngine._2D.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
 
 namespace GameEngine._2D
@@ -14,7 +13,7 @@ namespace GameEngine._2D
         public SystemBitmap(Bitmap bmp)
         {
             this.bmp = bmp;
-            this.gfx = Graphics.FromImage(bmp);
+            this.gfx = bmp.GetGraphics();
         }
 
         public int Width => bmp.Width;

@@ -1,7 +1,6 @@
 ﻿using GameEngine._2D.Interfaces;
 using GameEngine.Interfaces;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace GameEngine._2D
 {
@@ -163,117 +162,117 @@ namespace GameEngine._2D
     public interface IDrawer2D<out T> : IDrawer where T: IGameBitmap
     {
         void Init(int width, int height, int xScale, int yScale);
-        void Clear(int buffer, System.Drawing.Color color);
+        void Clear(int buffer, Color color);
         void TranslateTransform(int buffer, int x, int y);
-        void FillRectangle(int buffer, System.Drawing.Color color, int x, int y, int w, int h);
+        void FillRectangle(int buffer, Color color, int x, int y, int w, int h);
 
         T Image(int buf);
         T Overlay(int buf);
     }
 
-    public class Drawer2DSystemDrawing : IDrawer2D<SystemBitmap>
-    {
-        private SystemBitmap[] sbuffer;
-        private SystemBitmap[] soverlay;
+    //public class Drawer2DSystemDrawing : IDrawer2D<SystemBitmap>
+    //{
+    //    private SystemBitmap[] sbuffer;
+    //    private SystemBitmap[] soverlay;
 
-        private Bitmap tiles;
+    //    private Bitmap tiles;
 
-        public SystemBitmap Image(int buf) => sbuffer[buf];
-        public SystemBitmap Overlay(int buf) => soverlay[buf];
+    //    public SystemBitmap Image(int buf) => sbuffer[buf];
+    //    public SystemBitmap Overlay(int buf) => soverlay[buf];
 
-        public Drawer2DSystemDrawing()
-        {
-        }
+    //    public Drawer2DSystemDrawing()
+    //    {
+    //    }
 
-        public void Init(int width, int height, int xScale, int yScale)
-        {
-            Bitmap[] buffer = new Bitmap[] { BitmapExtensions.CreateBitmap(width, height), BitmapExtensions.CreateBitmap(width, height) };
-            buffer[0].MakeTransparent();
-            buffer[1].MakeTransparent();
-            Bitmap[] overlay = new Bitmap[] { BitmapExtensions.CreateBitmap(width * xScale, height * yScale), BitmapExtensions.CreateBitmap(width * xScale, height * yScale) };
-            overlay[0].MakeTransparent();
-            overlay[1].MakeTransparent();
+    //    public void Init(int width, int height, int xScale, int yScale)
+    //    {
+    //        Bitmap[] buffer = new Bitmap[] { Bitmap.Create(width, height), Bitmap.Create(width, height) };
+    //        //buffer[0].MakeTransparent();
+    //        //buffer[1].MakeTransparent();
+    //        Bitmap[] overlay = new Bitmap[] { Bitmap.Create(width * xScale, height * yScale), Bitmap.Create(width * xScale, height * yScale) };
+    //        //overlay[0].MakeTransparent();
+    //        //overlay[1].MakeTransparent();
 
-            sbuffer = new SystemBitmap[] { new SystemBitmap(buffer[0]), new SystemBitmap(buffer[1]) };
-            soverlay = new SystemBitmap[] { new SystemBitmap(overlay[0]), new SystemBitmap(overlay[1]) };
-        }
+    //        sbuffer = new SystemBitmap[] { new SystemBitmap(buffer[0]), new SystemBitmap(buffer[1]) };
+    //        soverlay = new SystemBitmap[] { new SystemBitmap(overlay[0]), new SystemBitmap(overlay[1]) };
+    //    }
 
-        public void Clear(int buffer, Color color)
-        {
-            this.sbuffer[buffer].Context.Clear(color);
-            this.soverlay[buffer].Context.Clear(Color.Transparent);
-        }
+    //    public void Clear(int buffer, Color color)
+    //    {
+    //        this.sbuffer[buffer].Context.Clear(color);
+    //        this.soverlay[buffer].Context.Clear(Color.Transparent);
+    //    }
 
-        public void TranslateTransform(int buffer, int x, int y)
-        {
-            this.sbuffer[buffer].Context.TranslateTransform(x, y);
-        }
+    //    public void TranslateTransform(int buffer, int x, int y)
+    //    {
+    //        this.sbuffer[buffer].Context.TranslateTransform(x, y);
+    //    }
         
-        public void FillRectangle(int buf, System.Drawing.Color color, int x, int y, int w, int h)
-        {
-            this.sbuffer[buf].Context.FillRectangle(new SolidBrush(color), x, y, w, h);
-        }
+    //    public void FillRectangle(int buf, Color color, int x, int y, int w, int h)
+    //    {
+    //        this.sbuffer[buf].Context.FillRectangle(color, x, y, w, h);
+    //    }
 
-        public void Draw(int buffer, IDescription description)
-        {
-            if (description is TileMap)
-            {
-                Draw(this.sbuffer[buffer].Context, description as TileMap);
-            }
-            else
-            {
-                Description2D d2d = description as Description2D;
-                Graphics gfx = d2d.DrawInOverlay ? this.soverlay[buffer].Context : this.sbuffer[buffer].Context;
-                Draw(gfx, d2d);
-            }
-        }
+    //    public void Draw(int buffer, IDescription description)
+    //    {
+    //        if (description is TileMap)
+    //        {
+    //            Draw(this.sbuffer[buffer].Context, description as TileMap);
+    //        }
+    //        else
+    //        {
+    //            Description2D d2d = description as Description2D;
+    //            Graphics gfx = d2d.DrawInOverlay ? this.soverlay[buffer].Context : this.sbuffer[buffer].Context;
+    //            Draw(gfx, d2d);
+    //        }
+    //    }
 
-        public void Draw(Graphics gfx, Description2D description)
-        {
-            if (description != null)
-            {
-                if (description.HasImage())
-                {
-                    Rectangle dest = new Rectangle((int)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0), description.Width, description.Height);
-                    gfx.DrawImage(description.Image(), dest, new Rectangle(0, 0, description.Width, description.Height), GraphicsUnit.Pixel);
-                }
-            }
-        }
+    //    public void Draw(Graphics gfx, Description2D description)
+    //    {
+    //        if (description != null)
+    //        {
+    //            if (description.HasImage())
+    //            {
+    //                Rectangle dest = new Rectangle((int)(description.X + description.DrawOffsetX) - (description?.Sprite.X ?? 0), (int)(description.Y + description.DrawOffsetY) - (description?.Sprite.Y ?? 0), description.Width, description.Height);
+    //                gfx.DrawImage(description.Image(), dest, new Rectangle(0, 0, description.Width, description.Height));
+    //            }
+    //        }
+    //    }
 
-        public void RedrawTiles()
-        {
-            tiles = null;
-        }
+    //    public void RedrawTiles()
+    //    {
+    //        tiles = null;
+    //    }
 
-        public void Draw(Graphics gfx, TileMap map)
-        {
-            if (map.Sprite != null)
-            {
-                if (tiles == null)
-                {
-                    tiles = BitmapExtensions.CreateBitmap(map.Width, map.Height);
-                    tiles.MakeTransparent();
-                    Graphics mgfx = Graphics.FromImage(tiles);
-                    mgfx.Clear(Color.Transparent);
-                    mgfx.Clip = new Region(new Rectangle(new Point(), new Size(map.Width, map.Height)));
-                    int x = 0;
-                    int y = 0;
-                    foreach (int tile in map.Tiles)
-                    {
-                        mgfx.DrawImage(map.Image(tile), new RectangleF(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height), new RectangleF(0, 0, map.Sprite.Width, map.Sprite.Height), GraphicsUnit.Pixel);
-                        x++;
-                        if (x >= map.Columns)
-                        {
-                            x = 0;
-                            y++;
-                        }
-                    }
+    //    public void Draw(Graphics gfx, TileMap map)
+    //    {
+    //        if (map.Sprite != null)
+    //        {
+    //            if (tiles == null)
+    //            {
+    //                tiles = Bitmap.Create(map.Width, map.Height);
+    //                Graphics mgfx = tiles.GetGraphics();
+    //                mgfx.Clear(Color.Transparent);
+    //                // TODO: Decide if clip is necessary
+    //                //mgfx.Clip = new Region(new Rectangle(new Point(), new Size(map.Width, map.Height)));
+    //                int x = 0;
+    //                int y = 0;
+    //                foreach (int tile in map.Tiles)
+    //                {
+    //                    mgfx.DrawImage(map.Image(tile), new RectangleF(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height), new RectangleF(0, 0, map.Sprite.Width, map.Sprite.Height));
+    //                    x++;
+    //                    if (x >= map.Columns)
+    //                    {
+    //                        x = 0;
+    //                        y++;
+    //                    }
+    //                }
 
-                    mgfx.DrawRectangle(Pens.Black, 0, 0, map.Width - 1, map.Height - 1);
-                }
+    //                mgfx.DrawRectangle(Color.Black, 0, 0, map.Width - 1, map.Height - 1);
+    //            }
 
-                gfx.DrawImage(tiles, new RectangleF(0, 0, tiles.Width, tiles.Height), new RectangleF(0, 0, tiles.Width, tiles.Height), GraphicsUnit.Pixel);
-            }
-        }
-    }
+    //            gfx.DrawImage(tiles, new RectangleF(0, 0, tiles.Width, tiles.Height), new RectangleF(0, 0, tiles.Width, tiles.Height));
+    //        }
+    //    }
+    //}
 }
