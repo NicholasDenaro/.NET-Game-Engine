@@ -1,6 +1,5 @@
 ﻿using GameEngine;
 using GameEngine._2D;
-using System.Drawing;
 
 namespace AnimationTransitionExample
 {
@@ -25,12 +24,12 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
-                gfx = Graphics.FromImage(bmp);
+                bmp = Bitmap.Create(this.Width, this.Height);
+                gfx = bmp.GetGraphics();
             }
 
-            gfx.DrawLine(Pens.Black, 1, 1, bmp.Width - 2, bmp.Height - 2);
-            gfx.DrawLine(Pens.Black, bmp.Width - 2, 1, 1, bmp.Height - 2);
+            gfx.DrawLine(Color.Black, 1, 1, bmp.Width - 2, bmp.Height - 2);
+            gfx.DrawLine(Color.Black, bmp.Width - 2, 1, 1, bmp.Height - 2);
 
             return bmp;
         }

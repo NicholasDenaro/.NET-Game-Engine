@@ -1,6 +1,6 @@
-﻿using System;
+﻿using GameEngine._2D;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ namespace AnimationTransitionExample
 {
     public interface HotbarAction
     {
-        Image Image();
+        BitmapSection Image();
 
         void Action(LivingEntity entity);
     }

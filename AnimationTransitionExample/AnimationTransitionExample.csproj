@@ -1,15 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net48;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'">
-    <DefineConstants>TRACE;net48</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
-    <DefineConstants>TRACE;netcoreapp31</DefineConstants>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
+    <DefineConstants>TRACE;net6</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
@@ -37,12 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'" Include="System.Windows.Forms" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'" Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
-    <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net48|AnyCPU'" Include="..\GameEngine.Windows\GameEngine.UI.WinForms.csproj" />
+    <ProjectReference Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'" Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
     <ProjectReference Include="..\GameEngine.UI\GameEngine.UI.csproj" />
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>

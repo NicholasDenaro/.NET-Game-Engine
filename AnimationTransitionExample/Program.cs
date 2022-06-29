@@ -2,7 +2,7 @@
 using GameEngine;
 using GameEngine._2D;
 using GameEngine.UI;
-#if netcoreapp31
+#if net6
 using GameEngine.UI.AvaloniaUI;
 #endif
 #if net48
@@ -10,8 +10,6 @@ using GameEngine.UI.WinForms;
 #endif
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,8 +31,6 @@ namespace AnimationTransitionExample
 
         public const int scale = 4;
 
-        public static readonly PrivateFontCollection FontCollection = new PrivateFontCollection();
-
         public static GameEngine.GameEngine Engine { get; private set; }
         public static GameFrame Frame { get; private set; }
 
@@ -43,8 +39,10 @@ namespace AnimationTransitionExample
             builder = new GameBuilder();
 
             IGameWindowBuilder windowBuilder;
-#if netcoreapp31
+#if net6
             windowBuilder = new AvaloniaWindowBuilder();
+            ((AvaloniaWindowBuilder)windowBuilder).CanResize(true);
+            Bitmap.SetBitmapImpl(new AvaloniaBitmapCreator());
 #endif
 #if net48
             windowBuilder = new WinFormWindowBuilder();
@@ -52,11 +50,11 @@ namespace AnimationTransitionExample
 
             builder
                 .GameEngine(new FixedTickEngine(TPS))
-                .GameView(new GameView2D(SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray))
+                .GameView(new GameView2D(new Drawer2DAvalonia(), SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray))
                 .GameFrame(new GameFrame(windowBuilder, 0, 0, 160, 144, scale, scale))
                 .Controller(new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value)))
                 .Controller(new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value)))
-                .StartingLocation(new Location(new Description2D(0, 0, 100, 100)))
+                .StartingLocation(new Location(new Description2D(0, 0, 160, 144)))
                 .Build();
 
             Engine = builder.Engine;
@@ -70,20 +68,20 @@ namespace AnimationTransitionExample
             SetupSkills();
 
             Entity marker = Marker.Create(new Marker(0, 0));
-            Engine.AddEntity(marker);
+            Engine.AddEntity(0, marker);
 
             Random r = new Random(0);
             for (int i = 0; i < 5; i++)
             {
                 Entity enemy = Enemy.Create(new Enemy(r.Next(8, SCREENWIDTH - 8), r.Next(8, SCREENHEIGHT - 8)));
-                Engine.AddEntity(enemy);
+                Engine.AddEntity(0, enemy);
             }
 
             Entity player = Player.Create(new Player(50, 50, 0, 1));
-            Engine.AddEntity(player);
+            Engine.AddEntity(0, player);
 
-            Entity hud = Hud.Create(new Hud(0, 1, SCREENWIDTH * scale, SCREENHEIGHT * scale));
-            Engine.AddEntity(hud);
+            Entity hud = Hud.Create(new Hud(0, 1, SCREENWIDTH * scale, SCREENHEIGHT * scale, scale));
+            Engine.AddEntity(0, hud);
 
             Engine.Start();
 
@@ -113,7 +111,7 @@ namespace AnimationTransitionExample
         }
 #endif
 
-#if netcoreapp31
+#if net6
         public static Dictionary<Avalonia.Input.Key, Actions> keyMap = new Dictionary<Avalonia.Input.Key, Actions>()
         {
             { Avalonia.Input.Key.Z, Actions.TARGET },
@@ -351,7 +349,7 @@ namespace AnimationTransitionExample
                 IntPtr pointer = handle.AddrOfPinnedObject();
                 try
                 {
-                    FontCollection.AddMemoryFont(pointer, b.Length);
+                    //FontCollection.AddMemoryFont(pointer, b.Length);
                 }
                 finally
                 {

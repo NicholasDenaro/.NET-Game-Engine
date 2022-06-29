@@ -3,7 +3,6 @@ using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
 using System;
-using System.Drawing;
 using System.Linq;
 
 namespace AnimationTransitionExample
@@ -30,8 +29,9 @@ namespace AnimationTransitionExample
             return entity;
         }
 
-        public new void Tick(Location location, Entity entity)
+        public void Tick(GameState state, Entity entity)
         {
+            Location location = state.Location;
             if (base.Tick(location, entity))
             {
                 return;
@@ -112,12 +112,12 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
-                gfx = Graphics.FromImage(bmp);
+                bmp = Bitmap.Create(this.Width, this.Height);
+                gfx = bmp.GetGraphics();
             }
 
             gfx.Clear(Color.Transparent);
-            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), GraphicsUnit.Pixel);
+            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height));
             Color color = Color.Black;
 
             if (animations.Any() && animations.Peek().Peek() is AttackAnimation)
@@ -164,7 +164,7 @@ namespace AnimationTransitionExample
                     for (int j = 0; j < bmp.Height; j++)
                     {
                         Color c = bmp.GetPixel(i, j);
-                        Color n = Color.FromArgb(c.A, (c.R + color.R) / 2, (c.G + color.G) / 2, (c.B + color.B) / 2);
+                        Color n = new Color((byte)((c.R + color.R) / 2), (byte)((c.G + color.G) / 2), (byte)((c.B + color.B) / 2), c.A);
                         bmp.SetPixel(i, j, n);
                     }
                 }

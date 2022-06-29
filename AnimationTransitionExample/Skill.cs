@@ -2,7 +2,6 @@
 using GameEngine._2D;
 using GameEngine.Interfaces;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace AnimationTransitionExample
 {
@@ -79,7 +78,7 @@ namespace AnimationTransitionExample
             return CreateNew(skill);
         }
 
-        public Image Image()
+        public BitmapSection Image()
         {
             return Icon.Image();
         }
@@ -87,10 +86,9 @@ namespace AnimationTransitionExample
 
     public class SkillIcon : Description2D
     {
-        public SkillIcon(int xIndex, int yIndex)
+        public SkillIcon(int xIndex, int yIndex) : base(Sprite.Sprites["skills"], 0, 0)
         {
-            Sprite sprite = Sprite.Sprites["skills"];
-            this.DrawAction = () => sprite.GetImage(yIndex * sprite.HImages + xIndex);
+            ImageIndex = xIndex % Sprite.HImages + yIndex * Sprite.HImages;
         }
     }
 

@@ -3,8 +3,6 @@ using GameEngine._2D;
 using GameEngine.UI;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Linq;
 
 namespace AnimationTransitionExample
@@ -16,11 +14,14 @@ namespace AnimationTransitionExample
         private Bitmap bmp;
         private Graphics gfx;
 
-        public Hud (int keyControllerIndex, int mouseControllerIndex, int width, int height) : base(Sprite.Sprites["hud"], 0, 0, width, height)
+        private int windowScale;
+
+        public Hud (int keyControllerIndex, int mouseControllerIndex, int width, int height, int scale) : base(Sprite.Sprites["hud"], 0, 0, width, height)
         {
             keyController = keyControllerIndex;
             mouseController = mouseControllerIndex;
             DrawInOverlay = true;
+            this.windowScale = scale;
         }
 
         public static Entity Create(Hud hud)
@@ -34,94 +35,91 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
-                gfx = Graphics.FromImage(bmp);
+                bmp = Bitmap.Create(this.Width, this.Height, true);
+                gfx = bmp.GetGraphics();
             }
 
+            int size = 18;
             gfx.Clear(Color.Transparent);
-            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            gfx.ScaleTransform(4, 4);
+            using (gfx.ScaleTransform(windowScale, windowScale))
+            {
+                Player player = Program.Engine.Location(0).GetEntities<Player>().FirstOrDefault();
 
-            Font f = new Font(Program.FontCollection.Families[0], 18);
-            Player player = Program.Engine.Location.GetEntities<Player>().FirstOrDefault();
+                DrawEntityHealth(gfx);
 
-            DrawEntityHealth(gfx);
+                DrawSkills(gfx, Program.Engine.Location(0).GetEntities<LivingEntity>());
 
-            DrawSkills(gfx, Program.Engine.Location.GetEntities<LivingEntity>());
+                DrawPlayerSkill(gfx, player);
 
-            DrawPlayerSkill(gfx, player);
+                DrawTargetLine(gfx, player);
 
-            DrawTargetLine(gfx, player);
+                DrawHotbar(gfx, player, size);
+                DrawPlayerHud(gfx, player, size);
+            }
 
-            DrawHotbar(gfx, player, f);
-            DrawPlayerHud(gfx, player, f);
-
-            gfx.ScaleTransform((float)0.25, (float)0.25);
-
-            DrawDevInfo(gfx, f);
+            DrawDevInfo(gfx, size);
             string targetKey = Program.keyMap.First(kvp => kvp.Value == Actions.TARGET).Key.ToString();
             string moveKey = Program.mouseMap.First(kvp => kvp.Value == Actions.MOVE).Key.ToString();
+            string attackKey = Program.mouseMap.First(kvp => kvp.Value == Actions.CANCEL).Key.ToString();
 
-            MouseControllerInfo movepmci = (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
-            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
+            MouseControllerInfo movepmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
+            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
+            gfx.FillRectangle(Color.Black, 0, 0, Width, 52);
+            gfx.DrawText($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", new Point(0, 0), Color.White, size);
+            gfx.DrawText($"{Program.drawTime}", new Point(0, 16), Color.White, size);
+            gfx.DrawText($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks / Program.TPS):##}%", new Point(0, 32), Color.White, size);
 
-            gfx.FillRectangle(Brushes.Black, 0, 0, Width, 52);
-            gfx.DrawString($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", f, Brushes.White, new Point(0, 0));
-            gfx.DrawString($"{Program.drawTime}", f, Brushes.White, new Point(0, 16));
-            gfx.DrawString($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks/Program.TPS):##}%", f, Brushes.White, new Point(0, 32));
-
-            gfx.FillRectangle(Brushes.Black, 0, Height - 52, Width, 52);
-            gfx.DrawString($"{moveKey} click to move", f, Brushes.White, new Point(0, Height - 52));
-            gfx.DrawString($"Hold {targetKey} to target", f, Brushes.White, new Point(0, Height - 36));
-            gfx.DrawString($"{targetKey} + {moveKey} click to attack", f, Brushes.White, new Point(0, Height - 20));
-
+            gfx.FillRectangle(Color.Red, 0, Height - 52, Width, 52);
+            gfx.DrawText($"{moveKey} click to move", new Point(0, Height - 52), Color.White, size);
+            gfx.DrawText($"Hold {targetKey} to target", new Point(0, Height - 36), Color.White, size);
+            gfx.DrawText($"{targetKey} + {attackKey} click to attack", new Point(0, Height - 20), Color.White, size);
             return bmp;
         }
 
-        private void DrawDevInfo(Graphics gfx, Font f)
+        private void DrawDevInfo(Graphics gfx, int size)
         {
             string targetKey = Program.keyMap.First(kvp => kvp.Value == Actions.TARGET).Key.ToString();
             string moveKey = Program.mouseMap.First(kvp => kvp.Value == Actions.MOVE).Key.ToString();
 
-            MouseControllerInfo movepmci = (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
-            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
+            MouseControllerInfo movepmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
+            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
 
-            gfx.FillRectangle(Brushes.Black, 0, 0, Width, 52);
-            gfx.DrawString($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", f, Brushes.White, new Point(0, 0));
-            gfx.DrawString($"{Program.drawTime}", f, Brushes.White, new Point(0, 16));
-            gfx.DrawString($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks / Program.TPS):##}%", f, Brushes.White, new Point(0, 32));
+            gfx.FillRectangle(Color.Black, 0, 0, Width, 52);
+            gfx.DrawText($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", new Point(0, 0), Color.White, size);
+            gfx.DrawText($"{Program.drawTime}", new Point(0, 16), Color.White, size);
+            gfx.DrawText($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks / Program.TPS):##}%", new Point(0, 32), Color.White, size);
 
-            gfx.FillRectangle(Brushes.Black, 0, Height - 52, Width, 52);
-            gfx.DrawString($"{moveKey} click to move", f, Brushes.White, new Point(0, Height - 52));
-            gfx.DrawString($"Hold {targetKey} to target", f, Brushes.White, new Point(0, Height - 36));
-            gfx.DrawString($"{targetKey} + {moveKey} click to attack", f, Brushes.White, new Point(0, Height - 20));
+            gfx.FillRectangle(Color.Black, 0, Height - 52, Width, 52);
+            gfx.DrawText($"{moveKey} click to move", new Point(0, Height - 52), Color.White, size);
+            gfx.DrawText($"Hold {targetKey} to target", new Point(0, Height - 36), Color.White, size);
+            gfx.DrawText($"{targetKey} + {moveKey} click to attack", new Point(0, Height - 20), Color.White, size);
         }
 
         private void DrawTargetLine(Graphics gfx, Player player)
         {
             LivingEntity le = player.LockTarget;
 
-            if (le != null && Program.Engine.Controllers[keyController][(int)Actions.TARGET].IsDown())
+            if (le != null && Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].IsDown())
             {
-                gfx.DrawEllipse(Pens.Cyan, (float)le.X - le.Sprite.X - 2, (float)le.Y - le.Sprite.Y - 2, le.Width + 4, le.Height + 4);
+                gfx.DrawEllipse(Color.Cyan, (int)le.X - le.Sprite.X - 2, (int)le.Y - le.Sprite.Y - 2, le.Width + 4, le.Height + 4);
                 MouseControllerInfo mci;
-                if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsDown())
+                if (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].IsDown())
                 {
-                    mci = Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
+                    mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
                 }
                 else
                 {
-                    mci = Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
+                    mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
                 }
 
                 Point center = new Point((int)(le.X - le.Sprite.X - 2 + (le.Width + 4) / 2), (int)(le.Y - le.Sprite.Y - 2 + (le.Height + 4) / 2));
-                gfx.DrawLine(Pens.Cyan, mci.X, mci.Y, center.X, center.Y);
+                gfx.DrawLine(Color.Cyan, mci.X, mci.Y, center.X, center.Y);
             }
 
             if (player.Target != null)
             {
                 le = player.Target;
-                gfx.DrawArc(Pens.Red, (float)le.X - 4, (float)le.Y - 3, 8, 4, 180, -180);
+                gfx.DrawArc(Color.Red, (float)le.X - 4, (float)le.Y - 3, 8, 4, 180, -180);
             }
         }
 
@@ -135,10 +133,10 @@ namespace AnimationTransitionExample
                     float scale = 1;
                     if (skill == entity.PreppedSkill)
                     {
-                        scale = (AnimationManager.Instance["activateskill"].Duration - entity.SkillActivationTime) * 1.0f / AnimationManager.Instance["activateskill"].Duration / 2 + 0.6f;
+                        scale = (AnimationManager.Instance["activateskill"].Duration - entity.SkillActivationTime) * 1.0f / AnimationManager.Instance["activateskill"].Duration / 2 + 0.6f;                    
                     }
 
-                    gfx.DrawImage(skill.Icon.Image(), (int)entity.X - 2, (int)entity.Y - 24, 8 * scale, 8 * scale);
+                    gfx.DrawImage(skill.Icon.Image(), new Rectangle((int)entity.X - 2, (int)entity.Y - 24, (int)(8 * scale), (int)(8 * scale)));
                 }
             }
         }
@@ -155,65 +153,66 @@ namespace AnimationTransitionExample
                 }
                 if (skill == player.ActiveSkill)
                 {
-                    Pen outline = new Pen(Brushes.Yellow);
-                    outline.Width = 0.25f;
-                    gfx.DrawRectangle(outline, (int)player.X - 2.25f, (int)player.Y - 24.25f, 8.25f, 8.25f);
+                    Color outline = Color.Yellow;
+                    gfx.DrawRectangle(outline, (int)(player.X - 2.25f), (int)(player.Y - 24.25f), (int)8.25f, (int)8.25f);
                 }
-                gfx.DrawImage(skill.Icon.Image(), (int)player.X - 2, (int)player.Y - 24, 8 * scale, 8 * scale);
+                gfx.DrawImage(skill.Icon.Image(), new Rectangle((int)player.X - 2, (int)player.Y - 24, (int)(8 * scale), (int)(8 * scale)));
             }
         }
 
         private void DrawEntityHealth(Graphics gfx)
         {
-            foreach (LivingEntity e in Program.Engine.Location.GetEntities<LivingEntity>())
+            foreach (LivingEntity e in Program.Engine.Location(0).GetEntities<LivingEntity>())
             {
-                gfx.FillRectangle(Brushes.White, new Rectangle(e.Position.X - 10, e.Position.Y + 2, 20, 4));
-                gfx.FillRectangle(Brushes.MediumPurple, new Rectangle(e.Position.X - 9, e.Position.Y + 3, 18 * e.balance / 100, 2));
-                gfx.FillRectangle(Brushes.White, new Rectangle(e.Position.X - 10, e.Position.Y + 5, 20, 4));
-                gfx.FillRectangle(Brushes.IndianRed, new Rectangle(e.Position.X - 9, e.Position.Y + 6, 18 * e.health / 100, 2));
+                gfx.FillRectangle(Color.White, new Rectangle(e.Position.X - 10, e.Position.Y + 2, 20, 4));
+                gfx.FillRectangle(Color.MediumPurple, new Rectangle(e.Position.X - 9, e.Position.Y + 3, 18 * e.balance / 100, 2));
+                gfx.FillRectangle(Color.White, new Rectangle(e.Position.X - 10, e.Position.Y + 5, 20, 4));
+                gfx.FillRectangle(Color.IndianRed, new Rectangle(e.Position.X - 9, e.Position.Y + 6, 18 * e.health / 100, 2));
             }
         }
 
-        private void DrawHotbar(Graphics gfx, Player player, Font f)
+        private void DrawHotbar(Graphics gfx, Player player, int size)
         {
             gfx.DrawImage(player.Hotbar.Image(), 0, bmp.Height / 4 - 16 * 2);
 
-            gfx.ScaleTransform(0.25f, 0.25f);
-
-            for (int i = (int)Actions.HOTBAR1; i <= (int)Actions.HOTBAR4; i++)
+            using (gfx.ScaleTransform(1.0f / windowScale, 1.0f / windowScale))
             {
-                string key = Program.keyMap.First(kvp => (int)kvp.Value == i).Key.ToString();
-                gfx.FillRectangle(Brushes.Black, 16 * 4 * (i - (int)Actions.HOTBAR1), bmp.Height - 16 * 4 * 2, f.Size, f.Size);
-                gfx.DrawString(key, f, Brushes.White, 16 * 4 * (i - (int)Actions.HOTBAR1), bmp.Height - 16 * 4 * 2);
+                for (int i = (int)Actions.HOTBAR1; i <= (int)Actions.HOTBAR4; i++)
+                {
+                    string key = Program.keyMap.First(kvp => (int)kvp.Value == i).Key.ToString();
+                    gfx.FillRectangle(Color.Black, 16 * 4 * (i - (int)Actions.HOTBAR1), bmp.Height - 16 * 4 * 2, size, size);
+                    gfx.DrawText(key, 16 * 4 * (i - (int)Actions.HOTBAR1), bmp.Height - 16 * 4 * 2, Color.White, size);
+                }
             }
-
-            gfx.ScaleTransform(4, 4);
         }
 
-        private void DrawPlayerHud(Graphics gfx, Player player, Font f)
+        private void DrawPlayerHud(Graphics gfx, Player player, int size)
         {
-            gfx.FillRectangle(Brushes.DarkSlateGray, 0, bmp.Height / 4 - 16, bmp.Width / 4, f.Size);
-            gfx.ScaleTransform(0.25f, 0.25f);
-            // HP
-            gfx.DrawString("HP", f, Brushes.White, 8, bmp.Height - 16 * 4 - 4);
-            gfx.ScaleTransform(4, 4);
+            gfx.FillRectangle(Color.DarkSlateGray, 0, bmp.Height / 4 - 16, bmp.Width / 4, size);
+            using (gfx.ScaleTransform(1.0f / windowScale, 1.0f / windowScale))
+            {
+                // HP
+                gfx.DrawText("HP", 8, bmp.Height - 16 * 4 - 4, Color.White, size);
+            }
 
             DrawBar(gfx, player.health / 100f, 8, bmp.Height / 4 - 16 - 2, 5, 0);
 
-            gfx.ScaleTransform(0.25f, 0.25f);
-            StringFormat format = new StringFormat();
-            format.Alignment = StringAlignment.Center;
-            gfx.DrawString($"{player.health:0}/{100}", f, Brushes.White, 8 + 8 * 6 * 4 / 2, bmp.Height - 16 * 4 - 4, format);
+            using (gfx.ScaleTransform(1.0f / windowScale, 1.0f / windowScale))
+            {
+                //StringFormat format = new StringFormat();
+                //format.Alignment = StringAlignment.Center;
+                gfx.DrawText($"{player.health:0}/{100}", 8 + 8 * 6 * 4 / 2, bmp.Height - 16 * 4 - 4, Color.White, size);
 
-            // Stamina
-            gfx.DrawString("SP", f, Brushes.White, 8 + 8 * 6 * 4, bmp.Height - 16 * 4 - 4);
-            gfx.ScaleTransform(4, 4);
+                // Stamina
+                gfx.DrawText("SP", 8 + 8 * 6 * 4, bmp.Height - 16 * 4 - 4, Color.White, size);
+            }
 
             DrawBar(gfx, player.stamina / 30, 8 + 8 * 6, bmp.Height / 4 - 16 - 2, 5, 1);
 
-            gfx.ScaleTransform(0.25f, 0.25f);
-            gfx.DrawString($"{player.stamina:0}/{30}", f, Brushes.Black, 8 + 8 * 6 * 4 + 8 * 6 * 4 / 2, bmp.Height - 16 * 4 - 4, format);
-            gfx.ScaleTransform(4, 4);
+            using (gfx.ScaleTransform(1.0f / windowScale, 1.0f / windowScale))
+            {
+                gfx.DrawText($"{player.stamina:0}/{30}", 8 + 8 * 6 * 4 + 8 * 6 * 4 / 2, bmp.Height - 16 * 4 - 4, Color.Black, size);
+            }
         }
 
         private void DrawBar(Graphics gfx, float percent, float x, float y, int segments, int imageIndex)
@@ -225,28 +224,28 @@ namespace AnimationTransitionExample
             float incr = 7.5f;
             float over;
 
-            gfx.DrawImage(s.GetImage(0 + imageIndex * 6), x + i, y);
+            gfx.DrawImage(s.GetImage(0 + imageIndex * 6), (int)(x + i), (int)y);
             if (percent > i / max)
             {
                 over = Math.Min(percent - i / max, (1.0f / segments)) / (1.0f / segments) * 8;
-                gfx.DrawImage(s.GetImage(3 + imageIndex * 6), new RectangleF(x + i, y, over, 8), new RectangleF(0, 0, over, 8), GraphicsUnit.Pixel);
+                gfx.DrawImage(s.GetImage(3 + imageIndex * 6), new RectangleF(x + i, y, over, 8));
             }
 
             for (i = incr; i < max - incr - 1; i += incr)
             {
-                gfx.DrawImage(s.GetImage(1 + imageIndex * 6), x + i, y);
+                gfx.DrawImage(s.GetImage(1 + imageIndex * 6), (int)(x + i), (int)y);
                 if (percent > i / max)
                 {
                     over = Math.Min(percent - i / max, (1.0f / segments)) / (1.0f / segments) * 8;
-                    gfx.DrawImage(s.GetImage(4 + imageIndex * 6), new RectangleF(x + i, y, over, 8), new RectangleF(0, 0, over, 8), GraphicsUnit.Pixel);
+                    gfx.DrawImage(s.GetImage(4 + imageIndex * 6), new RectangleF(x + i, y, over, 8));
                 }
             }
 
-            gfx.DrawImage(s.GetImage(2 + imageIndex * 6), x + i, y);
+            gfx.DrawImage(s.GetImage(2 + imageIndex * 6), (int)(x + i), (int)y);
             if (percent >= i / max)
             {
                 over = Math.Min(percent - i / max, (1.0f / segments)) / (1.0f / segments) * 8;
-                gfx.DrawImage(s.GetImage(5 + imageIndex * 6), new RectangleF(x + i, y, over, 8), new RectangleF(0, 0, over, 8), GraphicsUnit.Pixel);
+                gfx.DrawImage(s.GetImage(5 + imageIndex * 6), new RectangleF(x + i, y, over, 8));
             }
         }
     }

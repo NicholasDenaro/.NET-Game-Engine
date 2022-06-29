@@ -4,7 +4,6 @@ using GameEngine._2D;
 using GameEngine.Interfaces;
 using GameEngine.UI;
 using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -50,27 +49,28 @@ namespace AnimationTransitionExample
             return entity;
         }
 
-        public new void Tick(Location location, Entity entity)
+        public void Tick(GameState state, Entity entity)
         {
+            Location location = state.Location;
             if (base.Tick(location, entity))
             {
                 return;
             }
 
-            Marker markerD = Program.Engine.Location.GetEntities<Marker>().First();
+            Marker markerD = Program.Engine.Location(0).GetEntities<Marker>().First();
 
-            if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].State == HoldState.PRESS)
+            if (Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].State == HoldState.PRESS)
             {
                 LockTarget = GetLivingEntityNearestMouse(location);
             }
-            else if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].State == HoldState.RELEASE)
+            else if (Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].State == HoldState.RELEASE)
             {
                 LockTarget = null;
             }
 
             for (int i = (int)Actions.HOTBAR1; i <= (int)Actions.HOTBAR4; i++)
             {
-                if (Program.Engine.Controllers[keyController][i].State == HoldState.PRESS)
+                if (Program.Engine.Controllers(0)[keyController][i].State == HoldState.PRESS)
                 {
                     Skill skill = Hotbar[i - (int)Actions.HOTBAR1] as Skill;
                     if (skill != null && skill.CooldownTime == 0)
@@ -84,21 +84,21 @@ namespace AnimationTransitionExample
             }
 
             MouseControllerInfo mci;
-            MouseControllerInfo info = Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
+            MouseControllerInfo info = Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
             
 
-            if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsDown())
+            if (Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].IsDown())
             {
                 if (info.X > X - 4 && info.X < X + 4 && info.Y > Y - 24 && info.Y < Y - 16)
                 {
-                    if (Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].IsPress())
+                    if (Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].IsPress())
                     {
                         base.CancelSkill();
                     }
                 }
                 else
                 {
-                    if (Program.Engine.Controllers[keyController][(int)Actions.TARGET].IsDown())
+                    if (Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].IsDown())
                     {
                         if (LockTarget != null)
                         {
@@ -142,15 +142,15 @@ namespace AnimationTransitionExample
                 }
             }
 
-            if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsDown())
+            if (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].IsDown())
             {
-                mci = Program.Engine.Controllers[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
+                mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
                 Point p = new Point(mci.X, mci.Y);
 
                 if (p.Y > Program.SCREENHEIGHT - 16 * 2 && p.Y < Program.SCREENHEIGHT - 16)
                 {
                     int i = p.X / 16;
-                    if (Program.Engine.Controllers[mouseController][(int)Actions.MOVE].IsPress())
+                    if (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].IsPress())
                     {
                         Skill skill = Hotbar[i] as Skill;
                         if (skill != null && skill.CooldownTime == 0 && stamina >= skill.Stamina)
@@ -180,7 +180,7 @@ namespace AnimationTransitionExample
 
         private LivingEntity GetLivingEntityAtMouse(Location location)
         {
-            MouseControllerInfo info = Program.Engine.Controllers[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
+            MouseControllerInfo info = Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
             double dist = double.MaxValue;
             return location.GetEntities<Enemy>().Where(e =>
             {
@@ -197,7 +197,7 @@ namespace AnimationTransitionExample
 
         private LivingEntity GetLivingEntityNearestMouse(Location location)
         {
-            MouseControllerInfo mci = Program.Engine.Controllers[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
+            MouseControllerInfo mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
             Enemy nearest = null;
             return location.GetEntities<Enemy>().Where(
                 e =>
@@ -249,12 +249,12 @@ namespace AnimationTransitionExample
         {
             if (bmp == null)
             {
-                bmp = BitmapExtensions.CreateBitmap(this.Width, this.Height);
-                gfx = Graphics.FromImage(bmp);
+                bmp = Bitmap.Create(this.Width, this.Height);
+                gfx = bmp.GetGraphics();
             }
 
             gfx.Clear(Color.Transparent);
-            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height), GraphicsUnit.Pixel);
+            gfx.DrawImage(this.Sprite.GetImage(this.ImageIndex), new Rectangle(0, 0, this.Sprite.Width, this.Sprite.Height));
 
             Color color = Color.Black;
 
@@ -302,7 +302,7 @@ namespace AnimationTransitionExample
                     for (int j = 0; j < bmp.Height; j++)
                     {
                         Color c = bmp.GetPixel(i, j);
-                        Color n = Color.FromArgb(c.A, (c.R + color.R) / 2, (c.G + color.G) / 2, (c.B + color.B) / 2);
+                        Color n = new Color((byte)((c.R + color.R) / 2), (byte)((c.G + color.G) / 2), (byte)((c.B + color.B) / 2), c.A);
                         bmp.SetPixel(i, j, n);
                     }
                 }

@@ -1,14 +1,20 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
+using GameEngine._2D;
 using System;
 
 namespace GameEngine.UI.AvaloniaUI
 {
     public class AvaloniaWindow : Window, IGameWindow
     {
+        public static double DesktopScaling;
+        public static double Dpi;
+
         public AvaloniaWindow(int width, int height)
         {
             ClientSize = new Avalonia.Size(width / PlatformImpl.DesktopScaling, height / PlatformImpl.DesktopScaling);
+            DesktopScaling = PlatformImpl.DesktopScaling;
+            Dpi = ((AvaloniaGameBitmap)Bitmap.Create(1, 1)).GetDpi();
         }
 
         private GamePanel panel;

@@ -1,6 +1,5 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Visuals.Media.Imaging;
 using GameEngine._2D;
 using GameEngine._2D.Interfaces;
 using System;
@@ -42,9 +41,27 @@ namespace GameEngine.UI.AvaloniaUI
             return gpx;
         }
 
-        internal void Clear()
+        internal void Clear(_2D.Color color)
         {
-            gfx.PlatformImpl.Clear(Avalonia.Media.Color.FromArgb(0, 0, 0, 0));
+            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                gfx.PlatformImpl.Clear(Avalonia.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
+            });
+        }
+
+        public override _2D.Color GetPixel(int x, int y)
+        {
+            return new _2D.Color(0, 0, 0);
+        }
+
+        public override void SetPixel(int x, int y, _2D.Color color)
+        {
+            this.GetGraphics().FillRectangle(color, x, y, 1, 1);
+        }
+
+        public double GetDpi()
+        {
+            return bmp.Dpi.X;
         }
     }
 
@@ -70,55 +87,105 @@ namespace GameEngine.UI.AvaloniaUI
 
         public override void Clear(_2D.Color color)
         {
-            container.Clear();
+            container.Clear(color);
         }
 
         public override void DrawImage(_2D.Bitmap bmp, RectangleF source, RectangleF dest)
         {
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                gfx.DrawImage(
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DrawImageImpl(bmp, source, dest);
+                });
+            }
+            else
+            {
+                DrawImageImpl(bmp, source, dest);
+            }
+        }
+
+        private void DrawImageImpl(_2D.Bitmap bmp, RectangleF source, RectangleF dest)
+        {
+            gfx.DrawImage(
                 bmp.Image<RenderTargetBitmap>(),
                 new Avalonia.Rect(source.X, source.Y, source.Width, source.Height),
                 new Avalonia.Rect(dest.X, dest.Y, dest.Width, dest.Height));
-            });
         }
 
         public override void DrawText(string text, int x, int y, _2D.Color color, int size)
         {
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                gfx.DrawText(
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DrawTextImpl(text, x, y, color, size);
+                });
+            }
+            else
+            {
+                DrawTextImpl(text, x, y, color, size);
+            }
+        }
+
+        private void DrawTextImpl(string text, int x, int y, _2D.Color color, int size)
+        {
+            gfx.DrawText(
                     new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B)),
                     new Avalonia.Point(x, y),
-                    new FormattedText(text, new Typeface("consola", FontStyle.Normal, FontWeight.Bold), size, TextAlignment.Left, TextWrapping.NoWrap, new Avalonia.Size(100, 100)));
-            });
+                    new FormattedText(text, new Typeface("consola", FontStyle.Normal, FontWeight.Bold), size, TextAlignment.Left, TextWrapping.NoWrap, new Avalonia.Size(1000, 1000)));
         }
 
         public override void DrawRectangle(_2D.Color color, int x, int y, int width, int height)
         {
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                gfx.DrawRectangle(
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DrawRectangleImpl(color, x, y, width, height);
+                });
+            }
+            else
+            {
+                DrawRectangleImpl(color, x, y, width, height);
+            }
+        }
+
+        private void DrawRectangleImpl(_2D.Color color, int x, int y, int width, int height)
+        {
+            gfx.DrawRectangle(
+                null,
                 new Pen(new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B))),
                 new Avalonia.Rect(x, y, width, height));
-            });
         }
 
         public override void FillRectangle(_2D.Color color, int x, int y, int width, int height)
         {
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                gfx.FillRectangle(
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    FillRectangleImpl(color, x, y, width, height);
+                });
+            }
+            else
+            {
+                FillRectangleImpl(color, x, y, width, height);
+            }
+        }
+
+        private void FillRectangleImpl(_2D.Color color, int x, int y, int width, int height)
+        {
+            gfx.DrawRectangle(
                 new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B)),
+                null,
                 new Avalonia.Rect(x, y, width, height));
-            });
         }
 
         public override void FillEllipse(_2D.Color color, int x, int y, int width, int height)
         {
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-            {
+            {   
                 gfx.DrawEllipse(
                     new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B)),
                     null,
@@ -130,20 +197,75 @@ namespace GameEngine.UI.AvaloniaUI
 
         public override void DrawEllipse(_2D.Color color, int x, int y, int width, int height)
         {
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                gfx.DrawEllipse(
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DrawEllipseImpl(color, x, y, width, height);
+                });
+            }
+            else
+            {
+                DrawEllipseImpl(color, x, y, width, height);
+            }
+        }
+
+        public void DrawEllipseImpl(_2D.Color color, int x, int y, int width, int height)
+        {
+            gfx.DrawEllipse(
                     null,
                     new Pen(new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B))),
                     new Avalonia.Point(x + width / 2, y + height / 2),
                     width / 2,
                     height / 2);
-            });
         }
 
-        public override void TranslateTransform(int x, int y)
+        public override void DrawArc(_2D.Color color, float v1, float v2, int v3, int v4, int v5, int v6)
         {
-            throw new NotImplementedException();
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    DrawArcImpl(color, v1, v2, v3, v4, v5, v6);
+                });
+            }
+            else
+            {
+                DrawArcImpl(color, v1, v2, v3, v4, v5, v6);
+            }
+        }
+
+        public void DrawArcImpl(_2D.Color color, float v1, float v2, int v3, int v4, int v5, int v6)
+        {
+            ArcSegment arc = new ArcSegment();
+            PathGeometry pg = new PathGeometry();
+            PathFigure pf = new PathFigure();
+            pf.Segments.Add(arc);
+            pg.Figures.Add(pf);
+
+            gfx.DrawGeometry(
+                new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B)),
+                new Pen(new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B))),
+                pg
+                );
+        }
+
+        public override void DrawLine(_2D.Color color, int x1, int y1, int x2, int y2)
+        {
+            gfx.DrawLine(
+                new Pen(new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B))),
+                new Avalonia.Point(x1, y1),
+                new Avalonia.Point(x2, y2));
+        }
+
+        public override IDisposable TranslateTransform(int x, int y)
+        {
+            return gfx.PushPreTransform(new Avalonia.Matrix(1, 0, 0, 1, x, y));
+        }
+
+        public override IDisposable ScaleTransform(float x, float y)
+        {
+            return gfx.PushPreTransform(new Avalonia.Matrix(x, 0, 0, y , 0, 0));
         }
     }
 
@@ -152,6 +274,11 @@ namespace GameEngine.UI.AvaloniaUI
         public _2D.Bitmap Create(int width, int height)
         {
             return new AvaloniaGameBitmap(new RenderTargetBitmap(new Avalonia.PixelSize(width, height)));
+        }
+        public _2D.Bitmap Create(int width, int height, bool dpiMode)
+        {
+            double dpi = dpiMode ? AvaloniaWindow.Dpi / AvaloniaWindow.DesktopScaling : AvaloniaWindow.Dpi;
+            return new AvaloniaGameBitmap(new RenderTargetBitmap(new Avalonia.PixelSize(width, height), new Avalonia.Vector(dpi, dpi)));
         }
 
         public _2D.Bitmap Create(Stream stream)

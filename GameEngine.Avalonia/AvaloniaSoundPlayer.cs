@@ -33,7 +33,9 @@ namespace GameEngine.UI.AvaloniaUI
             }
 
             WaveFileReader reader = new WaveFileReader(stream);
-            provider.AddMixerInput(reader);
+            var wms = new WaveMixerStream32();
+            provider.AddMixerInput(wms);
+            wms.AddInputStream(new WaveChannel32(reader));
             //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
             player.Play();
         }

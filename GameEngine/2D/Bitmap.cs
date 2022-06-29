@@ -20,6 +20,11 @@ namespace GameEngine._2D
             return bitmapCreator.Create(Width, Height);
         }
 
+        public static Bitmap Create(int Width, int Height, bool mode)
+        {
+            return bitmapCreator.Create(Width, Height, mode);
+        }
+
         public static Bitmap Create(Stream stream)
         {
             return bitmapCreator.Create(stream);
@@ -31,11 +36,15 @@ namespace GameEngine._2D
         public abstract T Image<T>() where T : class;
 
         public abstract Graphics GetGraphics();
+
+        public abstract Color GetPixel(int x, int y);
+        public abstract void SetPixel(int x, int y, Color color);
     }
 
     public interface IBitmapCreator
     {
         public Bitmap Create(int width, int height);
+        public Bitmap Create(int width, int height, bool dpiMode);
         public Bitmap Create(Stream stream);
     }
 

@@ -3,7 +3,6 @@ using GameEngine;
 using GameEngine._2D;
 using GameEngine.Interfaces;
 using System;
-using System.Drawing;
 using System.Linq;
 
 namespace AnimationTransitionExample
@@ -39,7 +38,7 @@ namespace AnimationTransitionExample
             health = 100;
             stamina = 30;
             balance = 100;
-            knockbackFrom = Point.Empty;
+            knockbackFrom = new Point();
             animations = new AnimationStack();
             this.onMove += LivingEntity.WalkIndexing;
             skillActivation = AnimationManager.Instance["activateskill"].CreateNew();
@@ -188,7 +187,7 @@ namespace AnimationTransitionExample
             {
                 if (ActiveSkill.Name == "block")
                 {
-                    Program.Frame.PlaySound("Sounds.GAME_MENU_SCORE_SFX001755.wav");
+                    Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001755.wav");
                     ActiveSkill.Cooldown();
                     if (balanceDiff != 100)
                     {
@@ -208,7 +207,7 @@ namespace AnimationTransitionExample
                 }
             }
 
-            Program.Frame.PlaySound("Sounds.GAME_MENU_SCORE_SFX001771.wav");
+            Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001771.wav");
             this.PreppedSkill = null;
             this.skillActivation?.Reset();
             stun = 15;

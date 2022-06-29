@@ -107,11 +107,11 @@ namespace GameEngine._2D
 
             if (bmp != null)
             {
-                return new BitmapSection(bmp, new Rectangle(0, 0, this.Width, this.Height));
+                return new BitmapSection(bmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
             }
             else
             {
-                return new BitmapSection(Sprite?.GetImage(ImageIndex), new Rectangle((ImageIndex % this.Sprite.HImages) * this.Sprite.Width, (ImageIndex / this.Sprite.HImages) * this.Sprite.Height, this.Sprite.Width, this.Sprite.Height));
+                return Sprite?.GetImage(ImageIndex);
             }
         }
 

@@ -22,7 +22,7 @@ namespace GameEngine._2D
 
         public BitmapSection Image(int tile)
         {
-            return new BitmapSection(Sprite.GetImage(tile), new Rectangle((tile % Sprite.HImages) * Sprite.Width, (tile / Sprite.HImages) * Sprite.Height, Sprite.Width, Sprite.Height));
+            return Sprite.GetImage(tile);
         }
 
         public int this[int x, int y]
