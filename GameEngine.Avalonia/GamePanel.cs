@@ -5,6 +5,7 @@ using GameEngine._2D;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GameEngine.UI.AvaloniaUI
 {
@@ -64,7 +65,14 @@ namespace GameEngine.UI.AvaloniaUI
                 {
                     try
                     {
-                        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(DrawScreen).Wait();
+                        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+                        {
+                            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(DrawScreen).Wait();
+                        }
+                        else
+                        {
+                            DrawScreen();
+                        }
                     }
                     finally
                     {

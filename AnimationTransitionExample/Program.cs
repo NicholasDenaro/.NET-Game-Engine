@@ -10,10 +10,13 @@ using GameEngine.UI.WinForms;
 #endif
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AnimationTransitionExample
 {
@@ -27,6 +30,7 @@ namespace AnimationTransitionExample
         public static long tickTime => builder.tickTime;
         public static long drawTime => builder.drawTime;
         public static long tps => builder.tps;
+        public static long frameTime => builder.frameTime;
         private static GameBuilder builder;
 
         public const int scale = 4;
@@ -34,14 +38,14 @@ namespace AnimationTransitionExample
         public static GameEngine.GameEngine Engine { get; private set; }
         public static GameFrame Frame { get; private set; }
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             builder = new GameBuilder();
 
             IGameWindowBuilder windowBuilder;
 #if net6
             windowBuilder = new AvaloniaWindowBuilder();
-            ((AvaloniaWindowBuilder)windowBuilder).CanResize(true);
+            ((AvaloniaWindowBuilder)windowBuilder).CanResize(false);
             Bitmap.SetBitmapImpl(new AvaloniaBitmapCreator());
 #endif
 #if net48
@@ -83,9 +87,20 @@ namespace AnimationTransitionExample
             Entity hud = Hud.Create(new Hud(0, 1, SCREENWIDTH * scale, SCREENHEIGHT * scale, scale));
             Engine.AddEntity(0, hud);
 
+            watchSecond = new Stopwatch();
+            watchSecond.Start();
+            watchTickTime = new Stopwatch();
+
+            Engine.TickEnd(0) += TickInfo;
+            Engine.TickStart(0) += TickTimer;
+            Engine.DrawEnd(0) += (s, v) => TickTimer(null, null);
+
             Engine.Start();
 
-            while (true) { };
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            };
         }
 
 #if net48
@@ -189,7 +204,7 @@ namespace AnimationTransitionExample
             new Sprite("bars", "Sprites/bars.png", 8, 8);
 
             //http://www.pentacom.jp/pentacom/bitfontmaker2/gallery/?id=102
-            AddFont("Sprites/BetterPixels.ttf");
+            //AddFont("Sprites/BetterPixels.ttf");
         }
 
         private static void SetupAnimations()
@@ -338,23 +353,55 @@ namespace AnimationTransitionExample
                 final: LivingEntity.ActivateSkill);
         }
 
-        public static void AddFont(string fullFileName)
+        private static Stopwatch watchSecond;
+        private static int ticks;
+        private static int hudTicks = 1;
+        private static long hudMinTime;
+        private static long hudMaxTime;
+        private static long hudTotalTime;
+        public static void TickInfo(object sender, GameState state)
         {
-            using (Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{fullFileName.Replace("/", ".")}"))
+            ticks++;
+            if (watchSecond.ElapsedMilliseconds >= 1000)
             {
-                byte[] b = new byte[stream.Length];
-                stream.Read(b, 0, b.Length);
+                Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime} avg remaining: {((int)TimeSpan.FromSeconds(1).Ticks - TPS) - (totalTime / ticks)}");
 
-                var handle = GCHandle.Alloc(b, GCHandleType.Pinned);
-                IntPtr pointer = handle.AddrOfPinnedObject();
-                try
+                hudTicks = ticks;
+                hudMinTime = minTime;
+                hudMaxTime = maxTime;
+                hudTotalTime = totalTime;
+
+                ticks = 0;
+                minTime = long.MaxValue;
+                maxTime = long.MinValue;
+                totalTime = 0;
+                watchSecond.Restart();
+            }
+        }
+
+        private static Stopwatch watchTickTime;
+        private static long minTime;
+        private static long maxTime;
+        private static long totalTime;
+        public static void TickTimer(object sender, GameState state)
+        {
+            if (watchTickTime.IsRunning)
+            {
+                long time = watchTickTime.ElapsedTicks;
+                totalTime += time;
+                if (time < minTime)
                 {
-                    //FontCollection.AddMemoryFont(pointer, b.Length);
+                    minTime = time;
                 }
-                finally
+                if (time > maxTime)
                 {
-                    handle.Free();
+                    maxTime = time;
                 }
+                watchTickTime.Stop();
+            }
+            else
+            {
+                watchTickTime.Restart();
             }
         }
     }

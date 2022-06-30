@@ -3,6 +3,7 @@ using GameEngine._2D;
 using GameEngine.UI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace AnimationTransitionExample
@@ -58,21 +59,6 @@ namespace AnimationTransitionExample
             }
 
             DrawDevInfo(gfx, size);
-            string targetKey = Program.keyMap.First(kvp => kvp.Value == Actions.TARGET).Key.ToString();
-            string moveKey = Program.mouseMap.First(kvp => kvp.Value == Actions.MOVE).Key.ToString();
-            string attackKey = Program.mouseMap.First(kvp => kvp.Value == Actions.CANCEL).Key.ToString();
-
-            MouseControllerInfo movepmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
-            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
-            gfx.FillRectangle(Color.Black, 0, 0, Width, 52);
-            gfx.DrawText($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", new Point(0, 0), Color.White, size);
-            gfx.DrawText($"{Program.drawTime}", new Point(0, 16), Color.White, size);
-            gfx.DrawText($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks / Program.TPS):##}%", new Point(0, 32), Color.White, size);
-
-            gfx.FillRectangle(Color.Red, 0, Height - 52, Width, 52);
-            gfx.DrawText($"{moveKey} click to move", new Point(0, Height - 52), Color.White, size);
-            gfx.DrawText($"Hold {targetKey} to target", new Point(0, Height - 36), Color.White, size);
-            gfx.DrawText($"{targetKey} + {attackKey} click to attack", new Point(0, Height - 20), Color.White, size);
             return bmp;
         }
 
@@ -85,9 +71,9 @@ namespace AnimationTransitionExample
             MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
 
             gfx.FillRectangle(Color.Black, 0, 0, Width, 52);
-            gfx.DrawText($"{Program.tickTime}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", new Point(0, 0), Color.White, size);
-            gfx.DrawText($"{Program.drawTime}", new Point(0, 16), Color.White, size);
-            gfx.DrawText($"{Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (TimeSpan.FromSeconds(1).Ticks / Program.TPS):##}%", new Point(0, 32), Color.White, size);
+            gfx.DrawText($"{Program.tickTime:0000000000}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", new Point(0, 0), Color.White, size);
+            gfx.DrawText($"{Program.drawTime:0000000000}", new Point(0, 16), Color.White, size);
+            gfx.DrawText($"{Program.frameTime:0000000000} | {Program.tps} | {(Program.tickTime + Program.drawTime) * 100.0 / (Stopwatch.Frequency / Program.TPS):000}%", new Point(0, 32), Color.White, size);
 
             gfx.FillRectangle(Color.Black, 0, Height - 52, Width, 52);
             gfx.DrawText($"{moveKey} click to move", new Point(0, Height - 52), Color.White, size);

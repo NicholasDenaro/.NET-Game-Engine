@@ -1,4 +1,5 @@
 ﻿using GameEngine.UI;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -16,6 +17,7 @@ namespace GameEngine
         public long tickTime;
         public long drawTime;
         public long tps;
+        public long frameTime;
 
         public GameBuilder Build(int stateKey = 0)
         {
@@ -27,7 +29,7 @@ namespace GameEngine
             Engine.SetView(stateKey, view);
 
             Frame.Start();
-            Engine.DrawEnd(stateKey) += Frame.DrawHandle;
+            Engine.Draw(stateKey) += Frame.DrawHandle;
             
             Engine.SetLocation(stateKey, location);
 
@@ -39,19 +41,20 @@ namespace GameEngine
             }
 
             Stopwatch swTick = new Stopwatch();
-            Engine.TickStart(stateKey) += (e, o) => swTick.Restart();
-            Engine.TickEnd(stateKey) += (e, o) => { swTick.Stop(); ; tickTime = swTick.ElapsedTicks; };
+            Stopwatch swFrame = new Stopwatch();
+            Engine.TickStart(stateKey) += (e, o) => { swTick.Restart(); swFrame.Restart(); };
+            Engine.TickEnd(stateKey) += (e, o) => { swTick.Stop(); tickTime = swTick.ElapsedTicks; };
 
             Stopwatch swDraw = new Stopwatch();
             Engine.DrawStart(stateKey) += (e, o) => swDraw.Restart();
-            Engine.DrawEnd(stateKey) += (e, o) => { swDraw.Stop(); drawTime = swDraw.ElapsedTicks; };
+            Engine.DrawEnd(stateKey) += (e, o) => { swDraw.Stop(); drawTime = swDraw.ElapsedTicks; swFrame.Stop(); frameTime = swFrame.ElapsedTicks; };
 
             int ticks = 0;
             Stopwatch tpsWatch = Stopwatch.StartNew();
             Engine.TickStart(stateKey) += (e, o) => ticks++;
             Engine.TickEnd(stateKey) += (e, o) =>
             {
-                if (tpsWatch.ElapsedMilliseconds >= 1000)
+                if (tpsWatch.ElapsedTicks >= Stopwatch.Frequency)
                 {
                     tpsWatch.Restart();
                     tps = ticks;

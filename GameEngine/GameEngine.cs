@@ -18,6 +18,7 @@ namespace GameEngine
         public ref TickHandler TickEnd(int stateKey) => ref this.states[stateKey].TickEnd;
 
         public ref DrawHandler DrawStart(int stateKey) => ref this.states[stateKey].DrawStart;
+        public ref DrawHandler Draw(int stateKey) => ref this.states[stateKey].Draw;
         public ref DrawHandler DrawEnd(int stateKey) => ref this.states[stateKey].DrawEnd;
 
         public Location Location(int stateKey) => this.states[stateKey].Location ?? this.states[stateKey].NextLocation;
@@ -152,6 +153,11 @@ namespace GameEngine
                 {
                     state?.View.Draw(state.Location);
                 }
+            }
+
+            foreach (var state in states.Values)
+            {
+                state.Draw?.Invoke(this, state.View);
             }
 
 

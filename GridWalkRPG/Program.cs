@@ -17,6 +17,9 @@ namespace GridWalkRPG
     public class Program
     {
         public static GameEngine.GameEngine Engine { get; private set; }
+
+        public static int TPS = 30;
+        public static bool playmusic = false;
         public static GameFrame Frame { get; private set; }
         public static Queue<string> states = new Queue<string>();
 
@@ -24,7 +27,7 @@ namespace GridWalkRPG
 
         public static async Task Main(string[] args)
         {
-            Engine = new FixedTickEngine(60);
+            Engine = new FixedTickEngine(TPS);
 
 #if WinForm
             GameView2D view = new GameView2D(new Drawer2DSystemDrawing(), 240, 160, 4, 4, Color.FromArgb(0, Color.Magenta), 2);
@@ -55,7 +58,7 @@ namespace GridWalkRPG
                 0, 0, 240, 160, 4, 4);
 
 #endif 
-            Engine.DrawEnd(0) += (o, v) => { Frame.DrawHandle(o, v); };
+            Engine.Draw(0) += (o, v) => { Frame.DrawHandle(o, v); };
             Frame.Start();
 
             //await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
@@ -76,7 +79,7 @@ namespace GridWalkRPG
                         .TopMost(true)
                         .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
                     0, 0, 240, 160, 4, 4);
-                Engine.DrawEnd(0) += (s, v) => frame2.DrawHandle(s, v);
+                Engine.Draw(0) += (s, v) => frame2.DrawHandle(s, v);
                 frame2?.Start();
                 frame2?.Window.Hook(controller);
             }
@@ -243,7 +246,10 @@ namespace GridWalkRPG
                 "l16o5frarb4frarb4frarbr>erd4<b8>cr<brgre2&e8drergre2&e4frarb4frarb4frarbr>erd4<b8>crer<brg2&g8brgrdre2&e4r1r1frgra4br>crd4e8frg2&g4r1r1<f8era8grb8ar>c8<br>d8cre8drf8er<b>cr<ab1&b2r4e&e&er",
                 "l16r1r1r1r1r1r1r1r1o4drerf4grarb4>c8<bre2&e4drerf4grarb4>c8dre2&e4<drerf4grarb4>c8<bre2&e4d8crf8erg8fra8grb8ar>c8<br>d8crefrde1&e2r4"
             });
-            Frame.PlayTrack(new AvaloniaTrack(mml));
+            if (playmusic)
+            {
+                Frame.PlayTrack(new AvaloniaTrack(mml));
+            }
 
             TileMap map = Engine.Location(0).Description as TileMap;
 
@@ -302,7 +308,7 @@ namespace GridWalkRPG
             ticks++;
             if (watchSecond.ElapsedMilliseconds >= 1000)
             {
-                Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime}");
+                Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime} avg remaining: {((int)TimeSpan.FromSeconds(1).Ticks - TPS) -  (totalTime / ticks)}");
 
                 hudTicks = ticks;
                 hudMinTime = minTime;

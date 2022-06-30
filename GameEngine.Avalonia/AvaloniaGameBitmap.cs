@@ -43,10 +43,22 @@ namespace GameEngine.UI.AvaloniaUI
 
         internal void Clear(_2D.Color color)
         {
-            Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
-                gfx.PlatformImpl.Clear(Avalonia.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
-            });
+                Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ClearImpl(color);
+                });
+            }
+            else
+            {
+                ClearImpl(color);
+            }
+        }
+
+        private void ClearImpl(_2D.Color color)
+        {
+            gfx.PlatformImpl.Clear(Avalonia.Media.Color.FromArgb(color.A, color.R, color.G, color.B));
         }
 
         public override _2D.Color GetPixel(int x, int y)

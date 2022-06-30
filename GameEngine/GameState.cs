@@ -11,6 +11,7 @@ namespace GameEngine
         public TickHandler TickEnd;
 
         public DrawHandler DrawStart;
+        public DrawHandler Draw;
         public DrawHandler DrawEnd;
 
         public List<Controller> Controllers { get; internal set; } = new List<Controller>();
