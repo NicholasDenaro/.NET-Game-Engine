@@ -222,55 +222,11 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
                     //TODO: free prms using Alsa free
 
-                    IntPtr buffA = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(byte)) * (int)periodSize);
-
-
                     Console.WriteLine($"Sample rate: {waveStream.WaveFormat.SampleRate}");
                     Console.WriteLine($"Channels: {waveStream.WaveFormat.Channels}");
                     Console.WriteLine($"Bits per sample: {waveStream.WaveFormat.BitsPerSample}");
 
-                    byte[] readbuffer = new byte[periodSize * sizeof(float)];
-                    byte[] buff = new byte[periodSize];
-                    float[] fbuff = new float[periodSize];
-                    int bytes = 0;
-                    int writeAmount = 0;
-
-                    int ret = Alsa.snd_pcm_start(ptr);
-                    if (ret != 0)
-                    {
-                        Console.WriteLine($"{nameof(Alsa.snd_pcm_start)} failed with return code {ret}");
-                        throw new Exception($"{nameof(Alsa.snd_pcm_start)} failed with return code {ret}");
-                    }
-
-                    Stopwatch sw = Stopwatch.StartNew();
-                    int second = 0;
-                    int loops = 0;
-                    while ((bytes = waveStream.Read(readbuffer, 0, (int)periodSize * sizeof(float))) > 0)
-                    {
-                        loops++;
-                        Buffer.BlockCopy(readbuffer, 0, fbuff, 0, readbuffer.Length);
-                        for (int i = 0; i < bytes / sizeof(float); i++)
-                        {
-                            buff[i] = (byte)((fbuff[i] + 1) * 127);
-                        }
-                        writeAmount += bytes / sizeof(float);
-                        Marshal.Copy(buff, 0, buffA, bytes / sizeof(float));
-                        if ((err = Alsa.snd_pcm_writen(ptr, ref buffA, (ulong)bytes / 2 / sizeof(float))) < 0)
-                        {
-                            Console.WriteLine($"{nameof(Alsa.snd_pcm_writen)} failed with return code {err}");
-                            throw new Exception($"{nameof(Alsa.snd_pcm_writen)} failed with return code {err}");
-                        }
-
-                        if (sw.ElapsedTicks >= Stopwatch.Frequency)
-                        {
-                            Console.WriteLine($"{++second:00} | loops {loops:000}  | {writeAmount:00000000} | {writeAmount * 100.0 / rate:000}% {Stopwatch.Frequency * 1.0 / sw.ElapsedTicks}s");
-                            sw.Restart();
-                        }
-                    }
-
-                    Marshal.FreeHGlobal(buffA);
-
-                    Console.WriteLine($"finished writing audio data; {writeAmount} bytes");
+                    ReadAndWriteToBuffer(periodSize, rate);
 
                 });
 
@@ -288,6 +244,58 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
                 playbackState = PlaybackState.Playing;
             }
+        }
+
+        private void ReadAndWriteToBuffer(ulong periodSize, int rate)
+        {
+            IntPtr buffA = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(byte)) * (int)periodSize);
+
+            // read half the amount of floats, because we need to convert to shorts which are 2 bytes
+            int inputBufferSize = (int)periodSize * sizeof(float) / 2;
+            byte[] inputBuffer = new byte[inputBufferSize];
+            byte[] outBuffer = new byte[periodSize];
+            float[] inputFloatBuffer = new float[inputBufferSize / sizeof(float)];
+            int bytes = 0;
+            int writeAmount = 0;
+
+            Stopwatch sw = Stopwatch.StartNew();
+            int second = 0;
+            int loops = 0;
+            int err = 0;
+
+            short[] vals = new short[1];
+
+            while ((bytes = waveStream.Read(inputBuffer, 0, inputBufferSize)) > 0)
+            {
+                ulong floatsRead = (ulong)bytes / sizeof(float);
+                ulong outputBytes = floatsRead * 2;
+                loops++;
+                Buffer.BlockCopy(inputBuffer, 0, inputFloatBuffer, 0, inputBuffer.Length);
+                for (int i = 0; i < (int)floatsRead; i++)
+                {
+                    // convert float to short and then write
+                    vals[0] = (short)(inputFloatBuffer[i] * short.MaxValue);
+                    // write the vals to the output buffer;
+                    Buffer.BlockCopy(vals, 0, outBuffer, i * 2, 2);
+                }
+                writeAmount += bytes / sizeof(float);
+                Marshal.Copy(outBuffer, 0, buffA, (int)outputBytes );
+                if ((err = Alsa.snd_pcm_writen(ptr, ref buffA, outputBytes / 2)) < 0) // the / 2 here is because of the frame size and must stay
+                {
+                    Console.WriteLine($"{nameof(Alsa.snd_pcm_writen)} failed with return code {err}");
+                    throw new Exception($"{nameof(Alsa.snd_pcm_writen)} failed with return code {err}");
+                }
+
+                if (sw.ElapsedTicks >= Stopwatch.Frequency)
+                {
+                    Console.WriteLine($"{++second:00} | loops {loops:000}  | {writeAmount:00000000} | {writeAmount * 100.0 / rate:000}% {Stopwatch.Frequency * 1.0 / sw.ElapsedTicks}s");
+                    sw.Restart();
+                }
+            }
+
+            Marshal.FreeHGlobal(buffA);
+
+            Console.WriteLine($"finished writing audio data; {writeAmount} bytes");
         }
 
         public void Stop()
