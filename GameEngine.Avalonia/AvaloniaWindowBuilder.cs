@@ -19,6 +19,7 @@ namespace GameEngine.UI.AvaloniaUI
 
             if (Application.Current == null)
             {
+                _2D.Bitmap.SetBitmapImpl(new AvaloniaBitmapCreator());
                 ClassicDesktopStyleApplicationLifetime lifetime = new ClassicDesktopStyleApplicationLifetime { };
                 var builder = AppBuilder.Configure<Application>()
                     .UsePlatformDetect()

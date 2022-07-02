@@ -80,7 +80,7 @@ namespace GameEngine
                     }
                     this.frameTime = sw.ElapsedTicks;
 
-                    Task.Run(Log);
+                    //Task.Run(Log);
                 }
             }
             catch (Exception ex)

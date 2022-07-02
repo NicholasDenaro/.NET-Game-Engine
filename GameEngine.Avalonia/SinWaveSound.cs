@@ -1,6 +1,8 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace GameEngine.UI.AvaloniaUI
@@ -49,10 +51,23 @@ namespace GameEngine.UI.AvaloniaUI
 
         public bool Attenuate { get; set; } = false;
 
+        private bool first = true;
+        private int count = 0;
+        private Stopwatch sw = new Stopwatch();
+
         public override int Read(float[] buffer, int offset, int sampleCount)
         {
+            if (IsFinished)
+            {
+                sw.Stop();
+                Console.WriteLine($"[end] {count} values");
+                Console.WriteLine($"{sw.ElapsedTicks * 1.0 / Stopwatch.Frequency}");
+                return -1;
+            }
+
             int sampleRate = WaveFormat.SampleRate;
-            for (int n = 0; n < sampleCount; n++)
+            int n;
+            for (n = 0; n < sampleCount - offset; n++)
             {
                 index++;
                 if (freq < Frequencies.Length && index > Frequencies[freq + 1])
@@ -70,6 +85,10 @@ namespace GameEngine.UI.AvaloniaUI
                     else
                     {
                         Amplitude = 0;
+                        Console.WriteLine($"number of values in SinWaveSound is {count + n}");
+                        Console.WriteLine($"{sw.ElapsedTicks * 1.0 / Stopwatch.Frequency}");
+                        Console.WriteLine($"finished: {IsFinished}");
+                        break;
                     }
                 }
 
@@ -84,11 +103,25 @@ namespace GameEngine.UI.AvaloniaUI
                     amp = amp * (Frequencies[freq + 1] - index) / Frequencies[freq + 1] * 0.9f;
                 }
 
-                buffer[n + offset] = (float)(amp * Math.Clamp(Math.Sin((2 * Math.PI * sample * f) / sampleRate), -0.5, 0.5) * 2);
+                buffer[n + offset] = (float)(amp * Math.Clamp(Math.Sin((2 * Math.PI * sample * f) / sampleRate), -0.5, 0.5));
                 sample++;
                 if (sample >= sampleRate) sample = 0;
+
             }
-            return sampleCount;
+
+            count += n;
+
+            if (first)
+            {
+                Console.WriteLine($"SinWaveSound:{sampleCount} : {sampleCount * sizeof(float)}bytes");
+                var bbuff = new byte[sampleCount * sizeof(float)];
+                Buffer.BlockCopy(buffer, 0, bbuff, 0, bbuff.Length);
+                Console.WriteLine($"{string.Join("", Convert.ToBase64String(bbuff).Take(20))}");
+                first = false;
+                sw.Start();
+            }
+
+            return n;
         }
     }
 }

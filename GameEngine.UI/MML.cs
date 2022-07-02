@@ -22,17 +22,22 @@ namespace GameEngine.UI
         {
             int octave = 4;
             List<MMLNote> notes = new List<MMLNote>();
-            Regex matcher = new Regex("(?<note>[a-grA-GR][+#-]?[0-9]*\\.?(&[a-grA-GR][+#-]?[0-9]*\\.?)*)|(?<octave>[<>]|o[1-8])|(?<length>l[0-9]+\\.?)");
+            Regex matcher = new Regex("(?<note>[a-grA-GR][+#-]?[0-9]*\\.?(&[a-grA-GR][+#-]?[0-9]*\\.?)*)|(?<octave>[<>]|o[1-8])|(?<length>l[0-9]+\\.?)|(?<tempo>t[0-9]+\\.?)");
             int l = 1;
+            int t = 60;
             foreach (Match match in matcher.Matches(track))
             {
                 if (match.Groups["note"].Success)
                 {
-                    notes.Add(new MMLNote(match.Value, octave, l));
+                    notes.Add(new MMLNote(match.Value, octave, l, t));
                 }
                 else if (match.Groups["length"].Success)
                 {
                     l = int.Parse(string.Join("", match.Groups["length"].Value.Skip(1)));
+                }
+                else if (match.Groups["tempo"].Success)
+                {
+                    t = int.Parse(string.Join("", match.Groups["tempo"].Value.Skip(1)));
                 }
                 else if (match.Groups["octave"].Success)
                 {
@@ -78,11 +83,13 @@ namespace GameEngine.UI
         private string note;
         private int octave;
         private float duration;
+        private int tempo;
 
-        public MMLNote(string note, int octave, float defaultDuration)
+        public MMLNote(string note, int octave, float defaultDuration, int tempo)
         {
             this.note = "" + note.First();
             this.octave = octave;
+            this.tempo = tempo;
             int skip = 1;
             if (note.Length > 1)
             {
@@ -131,7 +138,7 @@ namespace GameEngine.UI
 
         public float GetDuration()
         {
-            return duration;
+            return duration * 4 * 60.0f / tempo;
         }
 
         public float GetTone()

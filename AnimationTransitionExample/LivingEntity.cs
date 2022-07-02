@@ -187,7 +187,7 @@ namespace AnimationTransitionExample
             {
                 if (ActiveSkill.Name == "block")
                 {
-                    Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001755.wav");
+                    //Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001755.wav");
                     ActiveSkill.Cooldown();
                     if (balanceDiff != 100)
                     {
@@ -207,7 +207,8 @@ namespace AnimationTransitionExample
                 }
             }
 
-            Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001771.wav");
+            //Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001771.wav");
+            Program.Frame.PlayTrack(new GameEngine.UI.AvaloniaUI.AvaloniaTrack(new GameEngine.UI.MML(new string[] { "l4cdefg" })));
             this.PreppedSkill = null;
             this.skillActivation?.Reset();
             stun = 15;

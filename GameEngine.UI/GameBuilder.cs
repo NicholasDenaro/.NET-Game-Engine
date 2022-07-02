@@ -7,8 +7,8 @@ namespace GameEngine
 {
     public class GameBuilder
     {
-        public GameEngine Engine { get; private set; }
-        public GameFrame Frame { get; private set; }
+        internal GameEngine Engine { get; private set; }
+        internal GameFrame Frame { get; private set; }
 
         private View view;
         private List<Controller> controllers = new List<Controller>();
@@ -19,7 +19,7 @@ namespace GameEngine
         public long tps;
         public long frameTime;
 
-        public GameBuilder Build(int stateKey = 0)
+        public (GameEngine engine, GameFrame frame) Build(int stateKey = 0)
         {
             if (!Engine.HasState(stateKey))
             {
@@ -62,7 +62,7 @@ namespace GameEngine
                 }
             };
 
-            return this;
+            return (Engine, Frame);
         }
 
         public GameBuilder GameEngine(GameEngine engine)

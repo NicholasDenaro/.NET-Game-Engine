@@ -16,11 +16,11 @@ namespace GameEngine.UI.AvaloniaUI
             foreach (MMLNote note in notes)
             {
                 input[i++] = note.GetTone();
-                input[i++] = 44100.0f * note.GetDuration() * 4;
+                input[i++] = 44100.0f * note.GetDuration();
             }
             wav = new SinWaveSound(input);
             wav.Attenuate = true;
-            wav.SetWaveFormat(44100, 2);
+            wav.SetWaveFormat(44100, 1);
         }
 
         public Stream GetStream()

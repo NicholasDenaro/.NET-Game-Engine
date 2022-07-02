@@ -42,28 +42,21 @@ namespace AnimationTransitionExample
         {
             builder = new GameBuilder();
 
-            IGameWindowBuilder windowBuilder;
-#if net6
-            windowBuilder = new AvaloniaWindowBuilder();
-            ((AvaloniaWindowBuilder)windowBuilder).CanResize(false);
-            Bitmap.SetBitmapImpl(new AvaloniaBitmapCreator());
-#endif
-#if net48
-            windowBuilder = new WinFormWindowBuilder();
-#endif
-
-            builder
+            (Engine, Frame) = builder
                 .GameEngine(new FixedTickEngine(TPS))
                 .GameView(new GameView2D(new Drawer2DAvalonia(), SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray))
-                .GameFrame(new GameFrame(windowBuilder, 0, 0, 160, 144, scale, scale))
+                .GameFrame(new GameFrame(
+#if net6
+                    new AvaloniaWindowBuilder()
+#endif
+#if net48
+                    new WinFormWindowBuilder()
+#endif
+                    , 0, 0, 160, 144, scale, scale))
                 .Controller(new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value)))
                 .Controller(new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value)))
                 .StartingLocation(new Location(new Description2D(0, 0, 160, 144)))
                 .Build();
-
-            Engine = builder.Engine;
-
-            Frame = builder.Frame;
 
             SetupAnimations();
 
@@ -95,12 +88,7 @@ namespace AnimationTransitionExample
             Engine.TickStart(0) += TickTimer;
             Engine.DrawEnd(0) += (s, v) => TickTimer(null, null);
 
-            Engine.Start();
-
-            while (true)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-            };
+            await Engine.Start();
         }
 
 #if net48

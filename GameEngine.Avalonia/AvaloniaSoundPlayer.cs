@@ -1,7 +1,9 @@
-﻿using NAudio.CoreAudioApi;
+﻿using GameEngine.UI.AvaloniaUI.LinuxAudio;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace GameEngine.UI.AvaloniaUI
 {
@@ -13,14 +15,25 @@ namespace GameEngine.UI.AvaloniaUI
 
         public AvaloniaSoundPlayer()
         {
-            if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            Console.WriteLine($"RuntimeIdentifier: {RuntimeInformation.RuntimeIdentifier}\nOSDescription: {RuntimeInformation.OSDescription}");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                player = new WaveOutEvent();
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                player = new LinuxWaveOutEvent();
+            }
+            else
             {
                 return;
             }
 
-            player = new WaveOutEvent();
-            WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
+            WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
+            //WaveFormat format = WaveFormat.CreateCustomFormat(WaveFormatEncoding.Pcm, 44100, 1, 4 * 32, 4, 32);
             provider = new MixingSampleProvider(format);
+            provider.ReadFully = true;
             player.Init(provider);
             initialized = true;
         }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace GameEngine
 {
@@ -54,10 +55,15 @@ namespace GameEngine
 
         public bool Active { get; private set; }
 
-        public void Start()
+        public async Task Start()
         {
             Active = true;
             Control();
+
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            };
         }
         
         public void Pause(int stateKey)
