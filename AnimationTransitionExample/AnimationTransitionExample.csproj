@@ -20,7 +20,13 @@
   
   <ItemGroup>
     <None Remove="Sounds\GAME_MENU_SCORE_SFX001755.wav" />
-    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771.wav" />
+    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-16-1.wav" />
+    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-16-2.wav" />
+    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-24-2.wav" />
+    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-32-2.wav" />
+    <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-48k-24-2.wav" />
+    <None Remove="Sounds\sfxK06.wav" />
+    <None Remove="Sounds\sfxR07.wav" />
     <None Remove="Sprites\bars.png" />
     <None Remove="Sprites\BetterPixels.ttf" />
     <None Remove="Sprites\monster_03.png" />
@@ -32,7 +38,13 @@
   
   <ItemGroup>
     <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001755.wav" />
-    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771.wav" />
+    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771-16-1.wav" />
+    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771-16-2.wav" />
+    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771-24-2.wav" />
+    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771-32-2.wav" />
+    <EmbeddedResource Include="Sounds\GAME_MENU_SCORE_SFX001771-48k-24-2.wav" />
+    <EmbeddedResource Include="Sounds\sfxK06.wav" />
+    <EmbeddedResource Include="Sounds\sfxR07.wav" />
     <EmbeddedResource Include="Sprites\bars.png" />
     <EmbeddedResource Include="Sprites\BetterPixels.ttf" />
     <EmbeddedResource Include="Sprites\monster_03.png" />

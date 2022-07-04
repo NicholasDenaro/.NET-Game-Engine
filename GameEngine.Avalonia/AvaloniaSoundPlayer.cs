@@ -30,8 +30,8 @@ namespace GameEngine.UI.AvaloniaUI
                 return;
             }
 
+            // TODO: change to 2 channel for stero, but first need to fix LinuxWaveOutEvent to support it
             WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
-            //WaveFormat format = WaveFormat.CreateCustomFormat(WaveFormatEncoding.Pcm, 44100, 1, 4 * 32, 4, 32);
             provider = new MixingSampleProvider(format);
             provider.ReadFully = true;
             player.Init(provider);
@@ -46,9 +46,7 @@ namespace GameEngine.UI.AvaloniaUI
             }
 
             WaveFileReader reader = new WaveFileReader(stream);
-            var wms = new WaveMixerStream32();
-            provider.AddMixerInput(wms);
-            wms.AddInputStream(new WaveChannel32(reader));
+            provider.AddMixerInput((ISampleProvider)new AudioConverter(reader));
             //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
             player.Play();
         }

@@ -251,7 +251,7 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
             IntPtr buffA = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(byte)) * (int)periodSize);
 
             // read half the amount of floats, because we need to convert to shorts which are 2 bytes
-            int inputBufferSize = (int)periodSize * sizeof(float) / 2;
+            int inputBufferSize = (int)periodSize * sizeof(float) / sizeof(short);
             byte[] inputBuffer = new byte[inputBufferSize];
             byte[] outBuffer = new byte[periodSize];
             float[] inputFloatBuffer = new float[inputBufferSize / sizeof(float)];
@@ -265,10 +265,12 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
             short[] vals = new short[1];
 
+            ulong magicNumberForOutputFramesOrSomething = 2;
+
             while ((bytes = waveStream.Read(inputBuffer, 0, inputBufferSize)) > 0)
             {
                 ulong floatsRead = (ulong)bytes / sizeof(float);
-                ulong outputBytes = floatsRead * 2;
+                ulong outputBytes = floatsRead * sizeof(short);
                 loops++;
                 Buffer.BlockCopy(inputBuffer, 0, inputFloatBuffer, 0, inputBuffer.Length);
                 for (int i = 0; i < (int)floatsRead; i++)
@@ -276,11 +278,11 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
                     // convert float to short and then write
                     vals[0] = (short)(inputFloatBuffer[i] * short.MaxValue);
                     // write the vals to the output buffer;
-                    Buffer.BlockCopy(vals, 0, outBuffer, i * 2, 2);
+                    Buffer.BlockCopy(vals, 0, outBuffer, i * sizeof(short), vals.Length * sizeof(short));
                 }
                 writeAmount += bytes / sizeof(float);
-                Marshal.Copy(outBuffer, 0, buffA, (int)outputBytes );
-                if ((err = Alsa.snd_pcm_writen(ptr, ref buffA, outputBytes / 2)) < 0) // the / 2 here is because of the frame size and must stay
+                Marshal.Copy(outBuffer, 0, buffA, (int)outputBytes);
+                if ((err = Alsa.snd_pcm_writen(ptr, ref buffA, outputBytes / magicNumberForOutputFramesOrSomething)) < 0)
                 {
                     Console.WriteLine($"{nameof(Alsa.snd_pcm_writen)} failed with return code {err}");
                     throw new Exception($"{nameof(Alsa.snd_pcm_writen)} failed with return code {err}");

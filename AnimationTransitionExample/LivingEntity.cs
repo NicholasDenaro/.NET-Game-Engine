@@ -207,8 +207,8 @@ namespace AnimationTransitionExample
                 }
             }
 
-            //Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001771.wav");
-            Program.Frame.PlayTrack(new GameEngine.UI.AvaloniaUI.AvaloniaTrack(new GameEngine.UI.MML(new string[] { "l4cdefg" })));
+            Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001771-16-1.wav");
+            //Program.Frame.PlayTrack(new GameEngine.UI.AvaloniaUI.AvaloniaTrack(new GameEngine.UI.MML(new string[] { "l4cdefg" })));
             this.PreppedSkill = null;
             this.skillActivation?.Reset();
             stun = 15;
