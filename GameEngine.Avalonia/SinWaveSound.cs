@@ -67,7 +67,7 @@ namespace GameEngine.UI.AvaloniaUI
 
             int sampleRate = WaveFormat.SampleRate;
             int n;
-            for (n = 0; n < sampleCount - offset; n++)
+            for (n = 0; n < (sampleCount - offset) / 2; n++)
             {
                 index++;
                 if (freq < Frequencies.Length && index > Frequencies[freq + 1])
@@ -103,11 +103,14 @@ namespace GameEngine.UI.AvaloniaUI
                     amp = amp * (Frequencies[freq + 1] - index) / Frequencies[freq + 1] * 0.9f;
                 }
 
-                buffer[n + offset] = (float)(amp * Math.Clamp(Math.Sin((2 * Math.PI * sample * f) / sampleRate), -0.5, 0.5));
+                buffer[(n + offset) * 2] = (float)(amp * Math.Clamp(Math.Sin((2 * Math.PI * sample * f) / sampleRate), -0.5, 0.5));
+                buffer[(n + offset) * 2 + 1] = (float)(amp * Math.Clamp(Math.Sin((2 * Math.PI * sample * f) / sampleRate), -0.5, 0.5));
                 sample++;
                 if (sample >= sampleRate) sample = 0;
 
             }
+
+            n *= 2;
 
             count += n;
 

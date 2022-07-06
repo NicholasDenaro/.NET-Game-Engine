@@ -26,6 +26,7 @@
     <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-32-2.wav" />
     <None Remove="Sounds\GAME_MENU_SCORE_SFX001771-48k-24-2.wav" />
     <None Remove="Sounds\sfxK06.wav" />
+    <None Remove="Sounds\sfxR07-left-only.wav" />
     <None Remove="Sounds\sfxR07.wav" />
     <None Remove="Sprites\bars.png" />
     <None Remove="Sprites\BetterPixels.ttf" />
@@ -34,6 +35,10 @@
     <None Remove="Sprites\skills.png" />
     <None Remove="Sprites\TileMap.png" />
     <None Remove="Sprites\_sheet_window_20.png" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="Sounds\sfxR07-left-only.wav" />
   </ItemGroup>
   
   <ItemGroup>

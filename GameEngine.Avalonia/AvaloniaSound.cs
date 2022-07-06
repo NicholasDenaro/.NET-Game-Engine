@@ -20,7 +20,7 @@ namespace GameEngine.UI.AvaloniaUI
             }
             wav = new SinWaveSound(input);
             wav.Attenuate = true;
-            wav.SetWaveFormat(44100, 1);
+            wav.SetWaveFormat(44100, 2);
         }
 
         public Stream GetStream()
