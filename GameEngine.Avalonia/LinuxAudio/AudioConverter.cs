@@ -106,17 +106,36 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
         private int ReadPCMGeneralized2ChannelOut(float[] buffer, int offset, int sampleCount)
         {
+            //Console.WriteLine($"AudioConverter:\n\tsamples:{sampleCount}");
             int sizeofBits = this.format.BitsPerSample / 8;
             int channels = this.format.Channels;
             int sampleRate = this.format.SampleRate;
-            byte[] inputBuffer = new byte[(int)(sampleCount * sizeofBits * channels / 2 * (sampleRate * 1.0f / outputSampleRate))];
+            //Console.WriteLine($"\tsizeofBits:{sizeofBits}");
+            //Console.WriteLine($"\tchannels:{channels}");
+            //Console.WriteLine($"\tsampleRate:{sampleRate}");
+            int bufferSize = (int)(sampleCount * sizeofBits * channels / 2 * (sampleRate * 1.0f / outputSampleRate));
+            //Console.WriteLine($"\tbufferSize:{bufferSize}");
+            int bufferSizeAligned = (bufferSize / this.format.BlockAlign) * this.format.BlockAlign;
+            if (bufferSizeAligned < bufferSize)
+            {
+                bufferSizeAligned += this.format.BlockAlign;
+            }
+            //Console.WriteLine($"\tbufferSizeAligned:{bufferSizeAligned}");
+            byte[] inputBuffer = new byte[bufferSizeAligned];
+            //byte[] inputBuffer = new byte[bufferSize];
+            //Console.WriteLine($"\tinputBuffer.Length:{inputBuffer.Length}");
             int bytes = reader.Read(inputBuffer, 0, inputBuffer.Length);
             if (bytes <= 0)
             {
                 return bytes;
             }
+            //Console.WriteLine($"\tbytes:{bytes}");
 
-            float[] floatBuffer = new float[(int)(sampleCount * channels / 2 * sampleRate * 1.0f / outputSampleRate)];
+            //int floatBufferSize = (int)(sampleCount * channels / 2 * sampleRate * 1.0f / outputSampleRate);
+            int floatBufferSize = inputBuffer.Length * sizeofBits;
+            //Console.WriteLine($"float buffer size: {floatBufferSize}");
+
+            float[] floatBuffer = new float[floatBufferSize];
             int val = 0;
             int maxVal = (int)Math.Pow(2, this.format.BitsPerSample - 1);
             for (int i = 0; i < inputBuffer.Length; i++)
@@ -130,13 +149,17 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
                 }
             }
 
+            //Console.WriteLine("\tfinished writing to float buffer");
+
             // TODO: Fix the offset issue. Right now we're always assuming i = j = 0, but that assuming
             // likely only holds true on the seconds boundaries. We need to store what the curren offset
             // is and the last value, and use that to influence the interpolation
             // As is though, I'm not sure you can tell the difference between 48k and 44.1k
             if (channels == outputChannels)
             {
-                for (int i = 0; i < bytes / sizeofBits * outputSampleRate * 1.0f / sampleRate; i++)
+                int samplesOut = (int)(bytes / sizeofBits * outputSampleRate * 1.0f / sampleRate);
+                //Console.WriteLine($"\tWriting {samplesOut} samples");
+                for (int i = 0; i < samplesOut; i++)
                 {
                     int j = (int)(i * sampleRate * 1.0f / outputSampleRate);
                     if (i % 2 != j % 2)
@@ -152,8 +175,9 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
                     buffer[offset + i] = yc * pc + yd * pd;
                 }
+                //Console.WriteLine($"\twrite :{samplesOut} bytes");
 
-                return (int)(bytes / sizeofBits * outputSampleRate * 1.0f / sampleRate);
+                return samplesOut;
             }
             else if (channels == 1)
             {

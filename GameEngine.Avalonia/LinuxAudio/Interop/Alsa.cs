@@ -74,12 +74,19 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio.Interop
 
         [DllImport(library)]
         public static extern int snd_pcm_hw_params_set_periods(IntPtr ptr, IntPtr prms, uint val, int dir);
+        [DllImport(library)]
+        public static extern int snd_pcm_hw_params_set_period_size(IntPtr ptr, IntPtr prms, IntPtr frames, int dir); // frames is ulong
+        [DllImport(library)]
+        public static extern int snd_pcm_hw_params_set_period_size_near(IntPtr ptr, IntPtr prms, IntPtr frames, IntPtr dir); // frames is ulong, dir is int
 
         [DllImport(library)]
         public static extern int snd_pcm_hw_params_get_period_time(IntPtr prms, IntPtr val, IntPtr dir);
 
         [DllImport(library)]
         public static extern int snd_pcm_hw_params_set_buffer_size_near(IntPtr ptr, IntPtr prms, IntPtr uframes); //uframes ulong
+
+        //[DllImport(library)]
+        //public static extern int snd_pcm_hw_params_get_period_size( IntPtr prms, IntPtr frames, IntPtr dir);
 
         [DllImport(library)]
         public static extern int snd_pcm_hw_params(IntPtr ptr, IntPtr prms);

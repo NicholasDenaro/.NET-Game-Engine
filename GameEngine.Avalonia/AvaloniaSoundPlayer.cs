@@ -30,7 +30,6 @@ namespace GameEngine.UI.AvaloniaUI
                 return;
             }
 
-            // TODO: change to 2 channel for stero, but first need to fix LinuxWaveOutEvent to support it
             WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             provider = new MixingSampleProvider(format);
             provider.ReadFully = true;
