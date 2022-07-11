@@ -67,8 +67,8 @@ namespace AnimationTransitionExample
             string targetKey = Program.keyMap.First(kvp => kvp.Value == Actions.TARGET).Key.ToString();
             string moveKey = Program.mouseMap.First(kvp => kvp.Value == Actions.MOVE).Key.ToString();
 
-            MouseControllerInfo movepmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo);
-            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo);
+            MouseControllerInfo movepmci = (Program.Engine.Controllers(0)[mouseController][Actions.MOVE].Info as MouseControllerInfo);
+            MouseControllerInfo mouseInfopmci = (Program.Engine.Controllers(0)[mouseController][Actions.MOUSEINFO].Info as MouseControllerInfo);
 
             gfx.FillRectangle(Color.Black, 0, 0, Width, 52);
             gfx.DrawText($"{Program.tickTime:0000000000}\t{movepmci?.X ?? 0:000},{movepmci?.Y ?? 0:000}\t{mouseInfopmci?.X ?? 0:000},{mouseInfopmci?.Y ?? 0:000}", new Point(0, 0), Color.White, size);
@@ -85,17 +85,17 @@ namespace AnimationTransitionExample
         {
             LivingEntity le = player.LockTarget;
 
-            if (le != null && Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].IsDown())
+            if (le != null && Program.Engine.Controllers(0)[keyController][Actions.TARGET].IsDown())
             {
                 gfx.DrawEllipse(Color.Cyan, (int)le.X - le.Sprite.X - 2, (int)le.Y - le.Sprite.Y - 2, le.Width + 4, le.Height + 4);
                 MouseControllerInfo mci;
-                if (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].IsDown())
+                if (Program.Engine.Controllers(0)[mouseController][Actions.MOVE].IsDown())
                 {
-                    mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
+                    mci = Program.Engine.Controllers(0)[mouseController][Actions.MOVE].Info as MouseControllerInfo;
                 }
                 else
                 {
-                    mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
+                    mci = Program.Engine.Controllers(0)[mouseController][Actions.MOUSEINFO].Info as MouseControllerInfo;
                 }
 
                 Point center = new Point((int)(le.X - le.Sprite.X - 2 + (le.Width + 4) / 2), (int)(le.Y - le.Sprite.Y - 2 + (le.Height + 4) / 2));

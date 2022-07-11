@@ -6,14 +6,14 @@ namespace GameEngine.UI
 {
     public class WindowsMouseController : Controller
     {
-        private Dictionary<int, int> keymap;
+        private Dictionary<int, object> keymap;
 
         public WindowsMouseController() : base()
         {
 
         }
 
-        public WindowsMouseController(Dictionary<int, int> keymap) : base(keymap.Values)
+        public WindowsMouseController(Dictionary<int, object> keymap) : base(keymap.Values)
         {
             this.keymap = keymap;
         }
@@ -50,7 +50,7 @@ namespace GameEngine.UI
             sb.Append("{");
             sb.Append(base.Serialize());
             sb.Append(",");
-            sb.Append(StringConverter.Serialize<int, int>(keymap));
+            sb.Append(StringConverter.Serialize<int, object>(keymap));
             sb.Append("}");
             return sb.ToString();
         }
@@ -59,7 +59,7 @@ namespace GameEngine.UI
         {
             List<string> tokens = StringConverter.DeserializeTokens(state);
             base.Deserialize(tokens[0]);
-            keymap = StringConverter.Deserialize<int, int>(tokens[1], str => int.Parse(str), str => int.Parse(str));
+            keymap = StringConverter.Deserialize<int, object>(tokens[1], str => int.Parse(str), str => int.Parse(str));
         }
     }
 }

@@ -3,6 +3,7 @@ using GameEngine._2D;
 using GameEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using static GridWalkRPG.Program;
 
 namespace GridWalkRPG
 {
@@ -17,7 +18,8 @@ namespace GridWalkRPG
 
         public void TickAction(GameState state, Entity entity)
         {
-            WindowsKeyController controller = state.Controllers[controllerIndex] as WindowsKeyController;
+            //WindowsKeyController controller = state.Controllers[controllerIndex] as WindowsKeyController;
+            Controller controller = state.Controllers[controllerIndex];
 
             DescriptionPlayer descr = entity.Description as DescriptionPlayer;
             if (descr == null)
@@ -29,12 +31,13 @@ namespace GridWalkRPG
 
             for (int i = descr.controllerWalkChecks.Count - 1; i >= 0; i--)
             {
-                int key = descr.controllerWalkChecks[i];
-                if (descr.walkDuration <= 0 && controller[key].IsDown() && controller[key].Duration > 5)
+                KEYS keys = (KEYS)descr.controllerWalkChecks[i];
+                int key = (int)descr.controllerWalkChecks[i];
+                if (descr.walkDuration <= 0 && controller[keys].IsDown() && controller[keys].Duration > 5)
                 {
                     descr.walkDirection = key;
                     descr.walkDuration = DescriptionPlayer.maxWalkDuration;
-                    descr.run = controller[(int)Program.KEYS.B].IsDown();
+                    descr.run = controller[Program.KEYS.B].IsDown();
                     descr.controllerWalkChecks.RemoveAt(i);
                     descr.controllerWalkChecks.Insert(0, key);
                 }
@@ -87,20 +90,20 @@ namespace GridWalkRPG
                 descr.walkDuration -= dist;
             }
 
-            if (controller[(int)Program.KEYS.X].State == HoldState.PRESS)
-            {
-                oldState = descr.Serialize();
-            }
+            //if (controller[Program.KEYS.X].State == HoldState.PRESS)
+            //{
+            //    oldState = descr.Serialize();
+            //}
 
-            if (controller[(int)Program.KEYS.Y].State == HoldState.PRESS)
-            {
-                descr.Deserialize(oldState);
-            }
+            //if (controller[Program.KEYS.Y].State == HoldState.PRESS)
+            //{
+            //    descr.Deserialize(oldState);
+            //}
 
-            if (controller[(int)Program.KEYS.RESET].State == HoldState.PRESS)
-            {
-                Program.Engine.Deserialize(Program.states.Peek());
-            }
+            //if (controller[Program.KEYS.RESET].State == HoldState.PRESS)
+            //{
+            //    Program.Engine.Deserialize(Program.states.Peek());
+            //}
         }
         private string oldState;
 

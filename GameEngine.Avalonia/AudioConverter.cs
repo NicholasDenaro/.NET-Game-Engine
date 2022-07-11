@@ -2,7 +2,7 @@
 using System;
 using System.Diagnostics;
 
-namespace GameEngine.UI.AvaloniaUI.LinuxAudio
+namespace GameEngine.UI.AvaloniaUI
 {
     internal class AudioConverter : WaveProvider32
     {
@@ -13,112 +13,60 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
         public AudioConverter(WaveFileReader wfr)
         {
-            this.reader = wfr;
-            this.format = wfr.WaveFormat;
-            this.SetWaveFormat(outputSampleRate, outputChannels);
+            reader = wfr;
+            format = wfr.WaveFormat;
+            SetWaveFormat(outputSampleRate, outputChannels);
         }
 
         Stopwatch sw = new Stopwatch();
-        long writtenTotal = 0;
+        //long writtenTotal = 0;
         public override int Read(float[] buffer, int offset, int sampleCount)
         {
             int written;
-            sw.Start();
+            //if (!sw.IsRunning)
+            //{
+            //    sw.Start();
+            //}
+
             if (format.Encoding == WaveFormatEncoding.Pcm)
             {
-                written = this.ReadPCMGeneralized2ChannelOut(buffer, offset, sampleCount);
+                written = ReadPCMGeneralized2ChannelOut(buffer, offset, sampleCount);
             }
             else
             {
                 throw new Exception($"Audio format {format.Encoding} not surpported");
             }
 
-            if (written >= 0)
-            {
-                writtenTotal += written;
-            }
-            if (written < sampleCount)
-            {
-                sw.Stop();
-                Console.WriteLine($"Time: {sw.ElapsedTicks * 1.0f / Stopwatch.Frequency}s");
-                Console.WriteLine($"Time: {(sw.ElapsedTicks + written * Stopwatch.Frequency / outputSampleRate) * 1.0f / Stopwatch.Frequency}s");
-                Console.WriteLine($"Written: {writtenTotal}bytes");
-            }
+            //if (written >= 0)
+            //{
+            //    writtenTotal += written;
+            //}
+            //if (written < sampleCount)
+            //{
+            //    sw.Stop();
+            //    Console.WriteLine($"Time: {sw.ElapsedTicks * 1.0f / Stopwatch.Frequency}s");
+            //    Console.WriteLine($"Time: {(sw.ElapsedTicks + written * Stopwatch.Frequency / outputSampleRate) * 1.0f / Stopwatch.Frequency}s");
+            //    Console.WriteLine($"Written: {writtenTotal}bytes");
+            //}
 
             return written;
-        }
-
-        private int ReadPCMGeneralized1ChannelOut(float[] buffer, int offset, int sampleCount)
-        {
-            int sizeofBits = this.format.BitsPerSample / 8;
-            int channels = this.format.Channels;
-            int sampleRate = this.format.SampleRate;
-            byte[] inputBuffer = new byte[(int)(sampleCount * sizeofBits * channels * (sampleRate * 1.0f / 44100))];
-            int bytes = reader.Read(inputBuffer, 0, inputBuffer.Length);
-            if (bytes <= 0)
-            {
-                return bytes;
-            }
-
-            float[] floatBuffer = new float[(int)(sampleCount * channels * sampleRate * 1.0f / 44100)];
-            int val = 0;
-            int maxVal = (int)Math.Pow(2, this.format.BitsPerSample - 1);
-            for (int i = 0; i < inputBuffer.Length; i++)
-            {
-                val = val + (inputBuffer[i] << ((i % sizeofBits + (sizeof(int) - sizeofBits)) * 8));
-                if (i % sizeofBits == sizeofBits - 1)
-                {
-                    val = val >> ((sizeof(int) - sizeofBits) * 8);
-                    floatBuffer[i / sizeofBits] = val * 1.0f / maxVal;
-                    val = 0;
-                }
-            }
-
-            // TODO: Fix the offset issue. Right now we're always assuming i = j = 0, but that assuming
-            // likely only holds true on the seconds boundaries. We need to store what the curren offset
-            // is and the last value, and use that to influence the interpolation
-            // As is though, I'm not sure you can tell the difference between 48k and 44.1k
-            // TODO: Handle 2 channel output
-            for (int i = 0; i < bytes / sizeofBits / channels * 44100 * 1.0f / sampleRate; i++)
-            {
-                int j = (int)(i * sampleRate * 1.0f / 44100);
-                float pc = 1 - (i * sampleRate * 1.0f / 44100 - j);
-                float pd = 1 - pc;
-
-                float yc = 0;
-                float yd = 0;
-
-                for (int c = 0; c < channels; c++)
-                {
-                    yc += floatBuffer[j * channels + c] / channels;
-                }
-
-                for (int c = 0; c < channels; c++)
-                {
-                    yd += floatBuffer[Math.Min(j * channels + channels, floatBuffer.Length - 2)] / channels;
-                }
-
-                buffer[offset + i] = (yc + yd) / 2;
-            }
-
-            return (int)(bytes / sizeofBits / channels * 44100 * 1.0f / sampleRate);
         }
 
         private int ReadPCMGeneralized2ChannelOut(float[] buffer, int offset, int sampleCount)
         {
             //Console.WriteLine($"AudioConverter:\n\tsamples:{sampleCount}");
-            int sizeofBits = this.format.BitsPerSample / 8;
-            int channels = this.format.Channels;
-            int sampleRate = this.format.SampleRate;
+            int sizeofBits = format.BitsPerSample / 8;
+            int channels = format.Channels;
+            int sampleRate = format.SampleRate;
             //Console.WriteLine($"\tsizeofBits:{sizeofBits}");
             //Console.WriteLine($"\tchannels:{channels}");
             //Console.WriteLine($"\tsampleRate:{sampleRate}");
             int bufferSize = (int)(sampleCount * sizeofBits * channels / 2 * (sampleRate * 1.0f / outputSampleRate));
             //Console.WriteLine($"\tbufferSize:{bufferSize}");
-            int bufferSizeAligned = (bufferSize / this.format.BlockAlign) * this.format.BlockAlign;
+            int bufferSizeAligned = bufferSize / format.BlockAlign * format.BlockAlign;
             if (bufferSizeAligned < bufferSize)
             {
-                bufferSizeAligned += this.format.BlockAlign;
+                bufferSizeAligned += format.BlockAlign;
             }
             //Console.WriteLine($"\tbufferSizeAligned:{bufferSizeAligned}");
             byte[] inputBuffer = new byte[bufferSizeAligned];
@@ -137,13 +85,13 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 
             float[] floatBuffer = new float[floatBufferSize];
             int val = 0;
-            int maxVal = (int)Math.Pow(2, this.format.BitsPerSample - 1);
+            int maxVal = (int)Math.Pow(2, format.BitsPerSample - 1);
             for (int i = 0; i < inputBuffer.Length; i++)
             {
-                val = val + (inputBuffer[i] << ((i % sizeofBits + (sizeof(int) - sizeofBits)) * 8));
+                val = val + (inputBuffer[i] << (i % sizeofBits + (sizeof(int) - sizeofBits)) * 8);
                 if (i % sizeofBits == sizeofBits - 1)
                 {
-                    val = val >> ((sizeof(int) - sizeofBits) * 8);
+                    val = val >> (sizeof(int) - sizeofBits) * 8;
                     floatBuffer[i / sizeofBits] = val * 1.0f / maxVal;
                     val = 0;
                 }

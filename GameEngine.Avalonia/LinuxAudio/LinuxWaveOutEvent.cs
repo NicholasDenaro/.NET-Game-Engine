@@ -1,15 +1,19 @@
 ﻿using GameEngine.UI.AvaloniaUI.LinuxAudio.Interop;
 using NAudio.Wave;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GameEngine.UI.AvaloniaUI.LinuxAudio
 {
+    /* Output buffer:
+     * Buffer hax X periods
+     * period has Y frames
+     * frame has W samples (left + right)
+     * sample has 2 bytes (LSB, MSB)
+     * This has been extremely useful: https://www.linuxjournal.com/article/6735?page=0,1#N0x19ab2890.0x19ba78d8
+    */
     internal class LinuxWaveOutEvent : IWavePlayer, IDisposable, IWavePosition
     {
         private IntPtr ptr;
@@ -78,8 +82,6 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
                     try
                     {
                         (ulong bufferSize, int rate) = SetupDevice();
-
-                        //TODO: free prms using Alsa free
 
                         Console.WriteLine($"Sample rate: {waveStream.WaveFormat.SampleRate}");
                         Console.WriteLine($"Channels: {waveStream.WaveFormat.Channels}");
@@ -232,7 +234,7 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
             Console.WriteLine($"period time: {timespanForPeriod}");
             Console.WriteLine($"time for 1 second: {1000000.0 / timespanForPeriod}");
 
-            //TODO: free prms using Alsa free;
+            Alsa.snd_pcm_hw_params_free(prms);
 
             //sw
             prms = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(IntPtr)));
@@ -270,6 +272,8 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
                 Console.WriteLine($"{nameof(Alsa.snd_pcm_sw_params)} failed with return code {err}");
                 throw new Exception($"{nameof(Alsa.snd_pcm_sw_params)} failed with return code {err}");
             }
+
+            Alsa.snd_pcm_sw_params_free(prms);
 
             return (size, rate);
         }

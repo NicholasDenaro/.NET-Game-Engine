@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
 using GameEngine._2D;
+using GameEngine.UI.AvaloniaUI.Controllers;
 using System;
 
 namespace GameEngine.UI.AvaloniaUI
@@ -45,6 +46,12 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 WindowsKeyController wkc = controller as WindowsKeyController;
                 return HookKeyboard(wkc.Frame_KeyDown, wkc.Frame_KeyUp);
+            }
+            else if (controller is XBoxController)
+            {
+                XBoxController xbc = controller as XBoxController;
+                xbc.Start();
+                return true;
             }
             else
             {

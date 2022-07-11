@@ -12,7 +12,7 @@ namespace GridWalkRPG
     public class DescriptionPlayer : Description2D
     {
         internal int walkDirection;
-        internal List<int> controllerWalkChecks;
+        internal List<object> controllerWalkChecks;
         internal int walkDuration;
         internal bool run;
 
@@ -27,7 +27,7 @@ namespace GridWalkRPG
         {
             walkDirection = 0;
             walkDuration = 0;
-            controllerWalkChecks = new List<int>(new int[] { (int)Program.KEYS.UP, (int)Program.KEYS.LEFT, (int)Program.KEYS.DOWN, (int)Program.KEYS.RIGHT });
+            controllerWalkChecks = new List<object>(new object[] { Program.KEYS.UP, Program.KEYS.LEFT, Program.KEYS.DOWN, Program.KEYS.RIGHT });
         }
 
         public override string Serialize()
@@ -44,7 +44,7 @@ namespace GridWalkRPG
             sb.Append(",");
             sb.Append(run);
             sb.Append(",");
-            sb.Append(StringConverter.Serialize<int>(controllerWalkChecks));
+            sb.Append(StringConverter.Serialize<object>(controllerWalkChecks));
             sb.Append("}");
             return sb.ToString();
         }
@@ -58,7 +58,7 @@ namespace GridWalkRPG
             walkDirection = int.Parse(tokens[1]);
             walkDuration = int.Parse(tokens[2]);
             run = bool.Parse(tokens[3]);
-            controllerWalkChecks = StringConverter.Deserialize<int>(tokens[4], str => int.Parse(str));
+            controllerWalkChecks = StringConverter.Deserialize<object>(tokens[4], str => int.Parse(str));
         }
     }
 }

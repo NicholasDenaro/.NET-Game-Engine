@@ -53,8 +53,8 @@ namespace AnimationTransitionExample
                     new WinFormWindowBuilder()
 #endif
                     , 0, 0, 160, 144, scale, scale))
-                .Controller(new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (int)kvp.Value)))
-                .Controller(new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (int)kvp.Value)))
+                .Controller(new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (object)kvp.Value)))
+                .Controller(new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (object)kvp.Value)))
                 .StartingLocation(new Location(new Description2D(0, 0, 160, 144)))
                 .Build();
 

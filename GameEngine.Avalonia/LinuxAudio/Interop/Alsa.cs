@@ -57,6 +57,10 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio.Interop
         [DllImport(library)]
         public static extern int snd_pcm_hw_params_malloc(ref IntPtr ptr);
 
+
+        [DllImport(library)]
+        public static extern int snd_pcm_hw_params_free(IntPtr ptr);
+
         [DllImport(library)]
         public static extern int snd_pcm_hw_params_any(IntPtr ptr, IntPtr prms); // array snd_pcm_hw_params_t
 
@@ -93,6 +97,10 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio.Interop
 
         [DllImport(library)]
         public static extern int snd_pcm_sw_params_malloc(ref IntPtr ptr);
+
+
+        [DllImport(library)]
+        public static extern int snd_pcm_sw_params_free(IntPtr ptr);
 
         [DllImport(library)]
         public static extern int snd_pcm_sw_params_current(IntPtr ptr, IntPtr prms);

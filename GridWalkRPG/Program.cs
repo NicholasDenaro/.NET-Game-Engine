@@ -3,6 +3,7 @@ using GameEngine._2D;
 using GameEngine.UI;
 #if Avalonia
 using GameEngine.UI.AvaloniaUI;
+using GameEngine.UI.AvaloniaUI.Controllers;
 #endif
 #if WinForm
 using GameEngine.UI.WinForms;
@@ -24,6 +25,8 @@ namespace GridWalkRPG
         public static Queue<string> states = new Queue<string>();
 
         private static Bitmap hudBitmap;
+
+        private const int MAIN_CONTROLLER = 1; //0 is keyboard, 1 is xbox controlelr
 
         public static async Task Main(string[] args)
         {
@@ -56,6 +59,7 @@ namespace GridWalkRPG
                     .ShowInTaskBar(true),
                 0, 0, 240, 160, 4, 4);
 
+
 #endif 
             Engine.Draw(0) += (o, v) => { Frame.DrawHandle(o, v); };
             Frame.Start();
@@ -68,8 +72,11 @@ namespace GridWalkRPG
 
             WindowsKeyController controller = new WindowsKeyController(keymap);
             Engine.AddController(0, controller);
-            
             Frame.Window.Hook(controller);
+
+            XBoxController controller2 = new XBoxController(xboxkeymap);
+            Engine.AddController(0, controller2);
+            Frame.Window.Hook(controller2);
 
             if (false)
             {
@@ -89,7 +96,7 @@ namespace GridWalkRPG
             DescriptionPlayer dp = new DescriptionPlayer(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48);
             Entity player = new Entity(dp);
             Guid playerId = player.Id;
-            PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(0, controller));
+            PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(0, controller2));
             Engine.TickEnd(0) += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
             player.TickAction = pActions.TickAction;
             Engine.AddEntity(0, player);
@@ -114,10 +121,10 @@ namespace GridWalkRPG
                 $"\n\tmin: {hudMinTime}" +
                 $"\n\tavg: {hudTotalTime / hudTicks}" +
                 $"\n\tmax: {hudMaxTime}" +
-                $"\nUP: {state.Controllers[0][(int)KEYS.UP].IsDown()}" +
-                $"\nDOWN: {state.Controllers[0][(int)KEYS.DOWN].IsDown()}" +
-                $"\nLEFT: {state.Controllers[0][(int)KEYS.LEFT].IsDown()}" +
-                $"\nRIGHT: {state.Controllers[0][(int)KEYS.RIGHT].IsDown()}";
+                $"\nUP: {state.Controllers[MAIN_CONTROLLER][KEYS.UP].IsDown()}" +
+                $"\nDOWN: {state.Controllers[MAIN_CONTROLLER][KEYS.DOWN].IsDown()}" +
+                $"\nLEFT: {state.Controllers[MAIN_CONTROLLER][KEYS.LEFT].IsDown()}" +
+                $"\nRIGHT: {state.Controllers[MAIN_CONTROLLER][KEYS.RIGHT].IsDown()}";
                 hudBitmap.GetGraphics().DrawText(info, 0, 0, Color.Black, 20);
             };
             Engine.AddEntity(0, hude);
@@ -207,7 +214,7 @@ namespace GridWalkRPG
             short prevState = AvaloniaWindowBuilder.GetKeyState(0xA1);
             Engine.TickEnd(0) += (object s, GameState e) =>
             {
-                if (e.Controllers[0][(int)KEYS.EXIT].IsDown())
+                if (e.Controllers[MAIN_CONTROLLER][KEYS.EXIT].IsDown())
                 {
                     Environment.Exit(0);
                 }
@@ -281,7 +288,8 @@ namespace GridWalkRPG
             Engine.TickEnd(0) += TickTimer;
             Engine.TickEnd(0) += (s, e) =>
             {
-                states.Enqueue(Engine.Serialize());
+                string state = Engine.Serialize();
+                states.Enqueue(state);
                 if (states.Count > 60)
                 {
                     states.Dequeue();
@@ -345,7 +353,7 @@ namespace GridWalkRPG
 
         public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5, X = 6, Y = 7, RESET = 8, EXIT=9 }
 
-        public static Dictionary<int, int> keymap = new Dictionary<int, int>()
+        public static Dictionary<int, object> keymap = new Dictionary<int, object>()
         {
 #if WinForm
             { (int)System.Windows.Forms.Keys.Up, (int)KEYS.UP},
@@ -359,16 +367,31 @@ namespace GridWalkRPG
             { (int)System.Windows.Forms.Keys.OemOpenBrackets, (int)KEYS.RESET }
 #endif
 #if Avalonia
-            { (int)Avalonia.Input.Key.Up, (int)KEYS.UP},
-            { (int)Avalonia.Input.Key.Down, (int)KEYS.DOWN },
-            { (int)Avalonia.Input.Key.Left, (int)KEYS.LEFT },
-            { (int)Avalonia.Input.Key.Right, (int)KEYS.RIGHT },
-            { (int)Avalonia.Input.Key.X, (int)KEYS.A },
-            { (int)Avalonia.Input.Key.Z, (int)KEYS.B },
-            { (int)Avalonia.Input.Key.A, (int)KEYS.X },
-            { (int)Avalonia.Input.Key.S, (int)KEYS.Y },
-            { (int)Avalonia.Input.Key.OemOpenBrackets, (int)KEYS.RESET },
-            { (int)Avalonia.Input.Key.OemCloseBrackets, (int)KEYS.EXIT },
+            { (int)Avalonia.Input.Key.Up, KEYS.UP},
+            { (int)Avalonia.Input.Key.Down, KEYS.DOWN },
+            { (int)Avalonia.Input.Key.Left, KEYS.LEFT },
+            { (int)Avalonia.Input.Key.Right, KEYS.RIGHT },
+            { (int)Avalonia.Input.Key.X, KEYS.A },
+            { (int)Avalonia.Input.Key.Z, KEYS.B },
+            { (int)Avalonia.Input.Key.A, KEYS.X },
+            { (int)Avalonia.Input.Key.S, KEYS.Y },
+            { (int)Avalonia.Input.Key.OemOpenBrackets, KEYS.RESET },
+            { (int)Avalonia.Input.Key.OemCloseBrackets, KEYS.EXIT },
+#endif
+        };
+        public static Dictionary<XBoxController.Key, object> xboxkeymap = new Dictionary<XBoxController.Key, object>()
+        {
+#if Avalonia
+            { XBoxController.Key.DPAD_UP, KEYS.UP},
+            { XBoxController.Key.DPAD_DOWN, KEYS.DOWN },
+            { XBoxController.Key.DPAD_LEFT, KEYS.LEFT },
+            { XBoxController.Key.DPAD_RIGHT, KEYS.RIGHT },
+            { XBoxController.Key.A, KEYS.A },
+            { XBoxController.Key.B, KEYS.B },
+            { XBoxController.Key.X, KEYS.X },
+            { XBoxController.Key.Y, KEYS.Y },
+            { XBoxController.Key.SELECT, KEYS.RESET },
+            { XBoxController.Key.START, KEYS.EXIT },
 #endif
         };
     }

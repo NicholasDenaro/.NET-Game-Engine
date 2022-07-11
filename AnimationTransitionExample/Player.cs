@@ -4,9 +4,7 @@ using GameEngine._2D;
 using GameEngine.Interfaces;
 using GameEngine.UI;
 using System;
-using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace AnimationTransitionExample
 {
@@ -59,18 +57,18 @@ namespace AnimationTransitionExample
 
             Marker markerD = Program.Engine.Location(0).GetEntities<Marker>().First();
 
-            if (Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].State == HoldState.PRESS)
+            if (Program.Engine.Controllers(0)[keyController][Actions.TARGET].State == HoldState.PRESS)
             {
                 LockTarget = GetLivingEntityNearestMouse(location);
             }
-            else if (Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].State == HoldState.RELEASE)
+            else if (Program.Engine.Controllers(0)[keyController][Actions.TARGET].State == HoldState.RELEASE)
             {
                 LockTarget = null;
             }
 
             for (int i = (int)Actions.HOTBAR1; i <= (int)Actions.HOTBAR4; i++)
             {
-                if (Program.Engine.Controllers(0)[keyController][i].State == HoldState.PRESS)
+                if (Program.Engine.Controllers(0)[keyController][(Actions)i].State == HoldState.PRESS)
                 {
                     Skill skill = Hotbar[i - (int)Actions.HOTBAR1] as Skill;
                     if (skill != null && skill.CooldownTime == 0)
@@ -84,21 +82,21 @@ namespace AnimationTransitionExample
             }
 
             MouseControllerInfo mci;
-            MouseControllerInfo info = Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
+            MouseControllerInfo info = Program.Engine.Controllers(0)[mouseController][Actions.CANCEL].Info as MouseControllerInfo;
             
 
-            if (Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].IsDown())
+            if (Program.Engine.Controllers(0)[mouseController][Actions.CANCEL].IsDown())
             {
                 if (info.X > X - 4 && info.X < X + 4 && info.Y > Y - 24 && info.Y < Y - 16)
                 {
-                    if (Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].IsPress())
+                    if (Program.Engine.Controllers(0)[mouseController][Actions.CANCEL].IsPress())
                     {
                         base.CancelSkill();
                     }
                 }
                 else
                 {
-                    if (Program.Engine.Controllers(0)[keyController][(int)Actions.TARGET].IsDown())
+                    if (Program.Engine.Controllers(0)[keyController][Actions.TARGET].IsDown())
                     {
                         if (LockTarget != null)
                         {
@@ -142,15 +140,15 @@ namespace AnimationTransitionExample
                 }
             }
 
-            if (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].IsDown())
+            if (Program.Engine.Controllers(0)[mouseController][Actions.MOVE].IsDown())
             {
-                mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].Info as MouseControllerInfo;
+                mci = Program.Engine.Controllers(0)[mouseController][Actions.MOVE].Info as MouseControllerInfo;
                 Point p = new Point(mci.X, mci.Y);
 
                 if (p.Y > Program.SCREENHEIGHT - 16 * 2 && p.Y < Program.SCREENHEIGHT - 16)
                 {
                     int i = p.X / 16;
-                    if (Program.Engine.Controllers(0)[mouseController][(int)Actions.MOVE].IsPress())
+                    if (Program.Engine.Controllers(0)[mouseController][Actions.MOVE].IsPress())
                     {
                         Skill skill = Hotbar[i] as Skill;
                         if (skill != null && skill.CooldownTime == 0 && stamina >= skill.Stamina)
@@ -180,7 +178,7 @@ namespace AnimationTransitionExample
 
         private LivingEntity GetLivingEntityAtMouse(Location location)
         {
-            MouseControllerInfo info = Program.Engine.Controllers(0)[mouseController][(int)Actions.CANCEL].Info as MouseControllerInfo;
+            MouseControllerInfo info = Program.Engine.Controllers(0)[mouseController][Actions.CANCEL].Info as MouseControllerInfo;
             double dist = double.MaxValue;
             return location.GetEntities<Enemy>().Where(e =>
             {
@@ -197,7 +195,7 @@ namespace AnimationTransitionExample
 
         private LivingEntity GetLivingEntityNearestMouse(Location location)
         {
-            MouseControllerInfo mci = Program.Engine.Controllers(0)[mouseController][(int)Actions.MOUSEINFO].Info as MouseControllerInfo;
+            MouseControllerInfo mci = Program.Engine.Controllers(0)[mouseController][Actions.MOUSEINFO].Info as MouseControllerInfo;
             Enemy nearest = null;
             return location.GetEntities<Enemy>().Where(
                 e =>

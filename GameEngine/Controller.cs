@@ -7,9 +7,9 @@ namespace GameEngine
 {
     public class Controller : IDescription
     {
-        internal Dictionary<int, ActionState> Actions { get; private set; } = new Dictionary<int, ActionState>();
+        internal Dictionary<object, ActionState> Actions { get; private set; } = new Dictionary<object, ActionState>();
         private readonly NBuffer<List<PendingAction>> actionBuffer = new NBuffer<List<PendingAction>>(2);
-        private List<int> keys;
+        private List<object> keys;
         private object Lock = new object();
 
         public bool IsHooked { get; set; }
@@ -19,13 +19,13 @@ namespace GameEngine
 
         }
 
-        public Controller(IEnumerable<int> keys)
+        public Controller(IEnumerable<object> keys)
         {
             this.keys = keys.ToList();
             Actions = keys.ToDictionary(key => key, key => new ActionState());
         }
 
-        public void ActionInfo(int actionCode, IControllerActionInfo info)
+        public void ActionInfo(object actionCode, IControllerActionInfo info)
         {
             if (Actions.ContainsKey(actionCode))
             {
@@ -37,7 +37,7 @@ namespace GameEngine
             }
         }
 
-        public void ActionStart(int actionCode, IControllerActionInfo info)
+        public void ActionStart(object actionCode, IControllerActionInfo info)
         {
             if (Actions.ContainsKey(actionCode))
             {
@@ -49,7 +49,7 @@ namespace GameEngine
             }
         }
 
-        public void ActionEnd(int actionCode, IControllerActionInfo info)
+        public void ActionEnd(object actionCode, IControllerActionInfo info)
         {
             if (Actions.ContainsKey(actionCode))
             {
@@ -60,7 +60,7 @@ namespace GameEngine
             }
         }
 
-        public ActionState this[int action]
+        public ActionState this[object action]
         {
             get
             {
@@ -72,7 +72,7 @@ namespace GameEngine
         {
 
             ActionState actionstate;
-            foreach (int key in this.keys)
+            foreach (object key in this.keys)
             {
                 actionstate = Actions[key];
                 if (actionstate.State == HoldState.HOLD || actionstate.State == HoldState.UNHELD)
@@ -133,9 +133,9 @@ namespace GameEngine
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("{");
-            sb.Append(StringConverter.Serialize<int>(keys));
+            sb.Append(StringConverter.Serialize<object>(keys));
             sb.Append(",");
-            sb.Append(StringConverter.Serialize<int, ActionState>(Actions));
+            sb.Append(StringConverter.Serialize<object, ActionState>(Actions));
             sb.Append(",");
             sb.Append("[");
             foreach (List<PendingAction> act in actionBuffer.Buffers)
@@ -152,8 +152,8 @@ namespace GameEngine
         public virtual void Deserialize(string state)
         {
             List<string> tokens = StringConverter.DeserializeTokens(state);
-            keys = StringConverter.Deserialize<int>(tokens[0], str => int.Parse(str));
-            Actions = StringConverter.Deserialize<int, ActionState>(tokens[1], str => int.Parse(str), str => { ActionState acts = new ActionState(); acts.Deserialize(str); return acts; });
+            keys = StringConverter.Deserialize<object>(tokens[0], str => int.Parse(str));
+            Actions = StringConverter.Deserialize<object, ActionState>(tokens[1], str => int.Parse(str), str => { ActionState acts = new ActionState(); acts.Deserialize(str); return acts; });
         }
     }
     public enum HoldState { PRESS, HOLD, RELEASE, UNHELD, INFO }
@@ -170,7 +170,7 @@ namespace GameEngine
 
     public class PendingAction : IDescription
     {
-        public int ActionCode { get; private set; }
+        public object ActionCode { get; private set; }
         public HoldState State { get; private set; }
 
         public IControllerActionInfo Info { get; private set; }
@@ -180,7 +180,7 @@ namespace GameEngine
 
         }
 
-        public PendingAction(int actionCode, HoldState state, IControllerActionInfo info)
+        public PendingAction(object actionCode, HoldState state, IControllerActionInfo info)
         {
             this.ActionCode = actionCode;
             this.State = state;

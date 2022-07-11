@@ -19,6 +19,11 @@ namespace GameEngine
         public long tps;
         public long frameTime;
 
+        public (GameEngine engine, GameFrame frame) Build(BuildInfo buildInfo, int stateKey = 0)
+        {
+            return Build(stateKey);
+        }
+
         public (GameEngine engine, GameFrame frame) Build(int stateKey = 0)
         {
             if (!Engine.HasState(stateKey))
@@ -99,5 +104,14 @@ namespace GameEngine
 
             return this;
         }
+    }
+
+    public class BuildInfo
+    {
+        public Type EngineType { get; set; }
+        public Type FrameBuilderType { get; set; }
+
+        public Type ViewType { get; set; }
+        public Type ViewDrawerType { get; set; }
     }
 }
