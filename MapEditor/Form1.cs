@@ -5,6 +5,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using Bitmap = System.Drawing.Bitmap;
+using Graphics = System.Drawing.Graphics;
+using Point = System.Drawing.Point;
+using Rectangle = System.Drawing.Rectangle;
+using RectangleF = System.Drawing.RectangleF;
+using Size = System.Drawing.Size;
 
 namespace MapEditor
 {
@@ -23,9 +29,10 @@ namespace MapEditor
             InitializeComponent();
             this.anyChanges = false;
             tile = 0;
-            this.buffer = BitmapExtensions.CreateBitmap(this.Width, this.Height);
-            this.gfx = Graphics.FromImage(buffer);
-            this.drawer = new Drawer2D();
+            this.buffer = new Bitmap(this.Width, this.Height);
+            this.gfx = Graphics.FromImage(this.buffer);
+            this.drawer = new Drawer2DSystemDrawing();
+            ((Drawer2DSystemDrawing)this.drawer).Init(this.Width, this.Height, 1, 1);
             this.location = new GameEngine.Location(new TileMap(null, int.Parse(this.tWidth.Text), int.Parse(this.tHeight.Text)));
         }
 
@@ -60,8 +67,10 @@ namespace MapEditor
             List<IDescription> descriptions = location.Draw();
             foreach(IDescription description in descriptions)
             {
-                drawer.Draw(gfx, description);
+                drawer.Draw(0, description);
             }
+
+            gfx.DrawImage(((Drawer2DSystemDrawing)drawer).GetImage(), new Point(0, 0));
 
             e.Graphics.DrawImage(buffer, 0, 0);
         }
@@ -72,7 +81,7 @@ namespace MapEditor
             TileMap map = this.location.Description as TileMap;
             if (map.Sprite != null)
             {
-                e.Graphics.DrawImage(map.Image(tile), new Rectangle(new Point(1, 1), new Size(this.pTilePreview.Size.Width - 1, this.pTilePreview.Size.Height - 1)));
+                e.Graphics.DrawImage(map.Image(tile).Bitmap.Image<Bitmap>(), new Rectangle(new Point(1, 1), new Size(this.pTilePreview.Size.Width - 1, this.pTilePreview.Size.Height - 1)));
             }
         }
 
@@ -82,7 +91,7 @@ namespace MapEditor
             {
                 return;
             }
-
+            
             using (FileStream stream = File.OpenWrite(this.saveFileDialog1.FileName))
             {
                 byte[] data = GameEngine.Location.Save(this.location);
@@ -162,7 +171,16 @@ namespace MapEditor
                 return;
             }
 
-            FormTileSelector tileSelector = new FormTileSelector(map.Sprite.Images);
+            var bmp = map.Sprite.GetImage();
+            List<Bitmap> bmps = new List<Bitmap>();
+            for (int y = 0; y < map.Sprite.VImages; y++)
+            {
+                for (int x = 0; x < map.Sprite.HImages; x++)
+                {
+                    bmps.Add(bmp.Image<Bitmap>().Clone(new RectangleF(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height), System.Drawing.Imaging.PixelFormat.DontCare));
+                }
+            }
+            FormTileSelector tileSelector = new FormTileSelector(bmps.ToArray());
             if (tileSelector.ShowDialog() == DialogResult.OK)
             {
                 tile = tileSelector.ImageIndex;
@@ -208,7 +226,7 @@ namespace MapEditor
             if (description[x, y] != tile)
             {
                 description[x, y] = tile;
-                (this.drawer as Drawer2D).RedrawTiles();
+                (this.drawer as Drawer2DSystemDrawing).RedrawTiles();
                 this.panel1.Refresh();
             }
         }

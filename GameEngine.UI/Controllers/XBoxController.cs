@@ -6,9 +6,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static GameEngine.UI.AvaloniaUI.Controllers.XInputWindows;
+using static GameEngine.UI.Controllers.XInputWindows;
 
-namespace GameEngine.UI.AvaloniaUI.Controllers
+namespace GameEngine.UI.Controllers
 {
     public class XBoxController : Controller
     {

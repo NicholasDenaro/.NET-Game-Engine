@@ -2,6 +2,6 @@
 {
     public interface IGameWindowBuilder
     {
-        (IGameWindow, ISoundPlayer) Run(IGameFrame frame);
+        IGameWindow Run(IGameUI frame);
     }
 }

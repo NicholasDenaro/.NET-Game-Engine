@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameEngine.UI.AvaloniaUI.LinuxAudio.Interop
+namespace GameEngine.UI.NAudio.LinuxAudio.Interop
 {
     static class Alsa
     {

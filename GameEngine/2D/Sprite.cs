@@ -29,7 +29,7 @@ namespace GameEngine._2D
         public int HImages => hSubImages;
         public int VImages => vSubImages;
 
-        public Sprite(string name, string bmpFile, int tileWidth, int tileHeight, int x = 0, int y = 0) : this(name, Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{bmpFile.Replace("/", ".")}"), x, y)
+        public Sprite(string name, string bmpFile, int tileWidth, int tileHeight, int x = 0, int y = 0) : this(name, Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{bmpFile.Replace("/", ".")}") ?? File.OpenRead(bmpFile), x, y)
         {
             Width = tileWidth;
             Height = tileHeight;
@@ -90,7 +90,7 @@ namespace GameEngine._2D
             Y = y;
             Sprites.Add(name, this);
         }
-        public Bitmap getImage()
+        public Bitmap GetImage()
         {
             return image;
         }

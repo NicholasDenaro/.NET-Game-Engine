@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
+    <ProjectReference Include="..\GameEngine.UI.NAudio\GameEngine.UI.NAudio.csproj" />
     <!--<ProjectReference Include="..\GameEngine.Windows\GameEngine.UI.WinForms.csproj" />-->
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace GameEngine.UI
+namespace GameEngine.UI.Audio
 {
     public class MML
     {
@@ -15,7 +15,7 @@ namespace GameEngine.UI
         public MML(params string[] mml)
         {
 
-            this.channels = mml.Select(ParseTrack).ToArray();
+            channels = mml.Select(ParseTrack).ToArray();
         }
 
         private MMLNote[] ParseTrack(string track)
@@ -99,7 +99,7 @@ namespace GameEngine.UI
                 }
                 else if (note.Skip(skip).First() == '+' || note.Skip(skip).First() == '#')
                 {
-                    note = note.Replace("#","+");
+                    note = note.Replace("#", "+");
                     skip++;
                 }
 
@@ -118,21 +118,21 @@ namespace GameEngine.UI
                     }
                     if (dur.Length > skip)
                     {
-                        this.duration += 1.0f / int.Parse(string.Join("", dur.Skip(skip)));
+                        duration += 1.0f / int.Parse(string.Join("", dur.Skip(skip)));
                         if (dotted)
                         {
-                            this.duration += this.duration + this.duration / 2.0f;
+                            duration += duration + duration / 2.0f;
                         }
                     }
                     else
                     {
-                        this.duration += 1.0f / defaultDuration;
+                        duration += 1.0f / defaultDuration;
                     }
                 }
             }
             else
             {
-                this.duration = 1.0f / defaultDuration;
+                duration = 1.0f / defaultDuration;
             }
         }
 
@@ -145,7 +145,7 @@ namespace GameEngine.UI
         {
             int shift = octave - 4;
             int tone;
-            switch (this.note)
+            switch (note)
             {
                 case "c-":
                     tone = 247;
@@ -221,7 +221,7 @@ namespace GameEngine.UI
             }
             else if (shift < 0)
             {
-                tone = tone >> (4 - octave);
+                tone = tone >> 4 - octave;
             }
 
             return tone;

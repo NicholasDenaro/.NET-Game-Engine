@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameEngine.UI
+namespace GameEngine.UI.Controllers
 {
     public class WindowsMouseController : Controller
     {
@@ -45,12 +45,12 @@ namespace GameEngine.UI
         public override string Serialize()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(this.GetType().FullName);
+            sb.Append(GetType().FullName);
             sb.Append(":");
             sb.Append("{");
             sb.Append(base.Serialize());
             sb.Append(",");
-            sb.Append(StringConverter.Serialize<int, object>(keymap));
+            sb.Append(StringConverter.Serialize(keymap));
             sb.Append("}");
             return sb.ToString();
         }

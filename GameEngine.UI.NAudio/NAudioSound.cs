@@ -1,15 +1,16 @@
-﻿using System;
+﻿using GameEngine.UI.Audio;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace GameEngine.UI.AvaloniaUI
+namespace GameEngine.UI.NAudio
 {
-    public class AvaloniaSound : ISound
+    public class NAudioSound : ISound
     {
         private SinWaveSound wav;
 
-        public AvaloniaSound(MMLNote[] notes)
+        public NAudioSound(MMLNote[] notes)
         {
             float[] input = new float[notes.Length * 2];
             int i = 0;

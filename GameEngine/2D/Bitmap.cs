@@ -43,9 +43,9 @@ namespace GameEngine._2D
 
     public interface IBitmapCreator
     {
-        public Bitmap Create(int width, int height);
-        public Bitmap Create(int width, int height, bool dpiMode);
-        public Bitmap Create(Stream stream);
+        Bitmap Create(int width, int height);
+        Bitmap Create(int width, int height, bool dpiMode);
+        Bitmap Create(Stream stream);
     }
 
     public class BitmapSection

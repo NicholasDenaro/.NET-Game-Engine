@@ -61,6 +61,7 @@
   
   <ItemGroup>
     <ProjectReference Condition="'$(TargetFramework)|$(Platform)'=='net6.0|AnyCPU'" Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
+    <ProjectReference Include="..\GameEngine.UI.NAudio\GameEngine.UI.NAudio.csproj" />
     <ProjectReference Include="..\GameEngine.UI\GameEngine.UI.csproj" />
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>

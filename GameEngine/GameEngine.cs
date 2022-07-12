@@ -25,6 +25,7 @@ namespace GameEngine
         public Location Location(int stateKey) => this.states[stateKey].Location ?? this.states[stateKey].NextLocation;
 
         public List<Controller> Controllers(int stateKey) => this.states[stateKey].Controllers;
+        public View Views(int stateKey) => this.states[stateKey].View;
 
         public int GetControllerIndex(int stateKey, Controller controller)
         {

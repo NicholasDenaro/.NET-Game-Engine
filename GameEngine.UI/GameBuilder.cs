@@ -1,4 +1,6 @@
-﻿using GameEngine.UI;
+﻿using GameEngine.Interfaces;
+using GameEngine.UI;
+using GameEngine.UI.Audio;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,23 +10,24 @@ namespace GameEngine
     public class GameBuilder
     {
         internal GameEngine Engine { get; private set; }
-        internal GameFrame Frame { get; private set; }
+        internal GameUI Frame { get; private set; }
 
         private View view;
         private List<Controller> controllers = new List<Controller>();
         private Location location;
+        private ISoundPlayer soundPlayer;
 
         public long tickTime;
         public long drawTime;
         public long tps;
         public long frameTime;
 
-        public (GameEngine engine, GameFrame frame) Build(BuildInfo buildInfo, int stateKey = 0)
+        public (GameEngine engine, GameUI frame) Build(BuildInfo buildInfo, int stateKey = 0)
         {
             return Build(stateKey);
         }
 
-        public (GameEngine engine, GameFrame frame) Build(int stateKey = 0)
+        public (GameEngine engine, GameUI frame) Build(int stateKey = 0)
         {
             if (!Engine.HasState(stateKey))
             {
@@ -32,7 +35,12 @@ namespace GameEngine
             }
 
             Engine.SetView(stateKey, view);
+            if (view is ITicker)
+            {
+                Engine.TickEnd(stateKey) += (sender, state) => (view as ITicker).Tick(state);
+            }
 
+            Frame.SetSoundPlayer(this.soundPlayer);
             Frame.Start();
             Engine.Draw(stateKey) += Frame.DrawHandle;
             
@@ -77,6 +85,13 @@ namespace GameEngine
             return this;
         }
 
+        public GameBuilder SoundPlayer(ISoundPlayer soundPlayer)
+        {
+            this.soundPlayer = soundPlayer;
+
+            return this;
+        }
+
         public GameBuilder GameView(View view)
         {
             this.view = view;
@@ -84,7 +99,7 @@ namespace GameEngine
             return this;
         }
 
-        public GameBuilder GameFrame(GameFrame frame)
+        public GameBuilder GameFrame(GameUI frame)
         {
             this.Frame = frame;
 

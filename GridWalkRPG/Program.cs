@@ -1,9 +1,11 @@
 ﻿using GameEngine;
 using GameEngine._2D;
 using GameEngine.UI;
+using GameEngine.UI.Audio;
+using GameEngine.UI.Controllers;
+using GameEngine.UI.NAudio;
 #if Avalonia
 using GameEngine.UI.AvaloniaUI;
-using GameEngine.UI.AvaloniaUI.Controllers;
 #endif
 #if WinForm
 using GameEngine.UI.WinForms;
@@ -21,7 +23,7 @@ namespace GridWalkRPG
 
         public static int TPS = 60;
         public static bool playmusic = true;
-        public static GameFrame Frame { get; private set; }
+        public static GameUI UI { get; private set; }
         public static Queue<string> states = new Queue<string>();
 
         private static Bitmap hudBitmap;
@@ -30,64 +32,44 @@ namespace GridWalkRPG
 
         public static async Task Main(string[] args)
         {
-            Engine = new FixedTickEngine(TPS);
-
+            (Engine, UI) = new GameBuilder()
+                .GameEngine(new FixedTickEngine(TPS))
+#if Avalonia
+                .GameView(new GameView2D(new Drawer2DAvalonia(), 240, 160, 4, 4, Color.FromArgb(0, Color.Transparent)))
+                .GameFrame(new GameUI(
+                    new AvaloniaWindowBuilder()
+                        .Transparency(Avalonia.Controls.WindowTransparencyLevel.Transparent)
+                        .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen)
+                        .CanResize(false)
+                        .ShowInTaskBar(true)
+                    , 0, 0, 240, 160, 4, 4))
+#endif
+                .SoundPlayer(new NAudioSoundPlayer())
+                .Controller(new WindowsKeyController(keymap))
+                .Controller(new XBoxController(xboxkeymap))
+                .Build();
 #if WinForm
             GameView2D view = new GameView2D(new Drawer2DSystemDrawing(), 240, 160, 4, 4, Color.FromArgb(0, Color.Magenta), 2);
 #endif
-#if Avalonia
-            var drawer = new Drawer2DAvalonia();
-            GameView2D view = new GameView2D(drawer, 240, 160, 4, 4, Color.FromArgb(0, Color.Transparent));
-#endif
+
+            GameView2D view = Engine.Views(0) as GameView2D;
             view.ScrollTop = view.Height / 2;
             view.ScrollBottom = view.Height / 2 - 16;
             view.ScrollLeft = view.Width / 2;
             view.ScrollRight = view.Width / 2 - 16;
-            Engine.TickEnd(0) += view.Tick;
-            Engine.SetView(0, view);
 #if WinForm
             Frame = new GameFrame(new WinFormWindowBuilder(), 0, 0, 240, 160, 4, 4);
 #endif 
-#if Avalonia
-            Frame = new GameFrame(
-                new AvaloniaWindowBuilder()
-                    //.TopMost(true)
-                    //.Decorations(Avalonia.Controls.SystemDecorations.None)
-                    .Transparency(Avalonia.Controls.WindowTransparencyLevel.Transparent)
-                    .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen)
-                    .CanResize(false)
-                    .ShowInTaskBar(true),
-                0, 0, 240, 160, 4, 4);
 
-
-#endif 
-            Engine.Draw(0) += (o, v) => { Frame.DrawHandle(o, v); };
-            Frame.Start();
-
-            //await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-            //{
-            //    Frame.SetBounds(0, 0, 2560, 1440);
-            //    view.Resize(2560, 1440);
-            //});
-
-            WindowsKeyController controller = new WindowsKeyController(keymap);
-            Engine.AddController(0, controller);
-            Frame.Window.Hook(controller);
-
-            XBoxController controller2 = new XBoxController(xboxkeymap);
-            Engine.AddController(0, controller2);
-            Frame.Window.Hook(controller2);
-
-            if (false)
+            if (true)
             {
-                var frame2 = new GameFrame(
+                GameUI.OpenNewWindow(
+                    Engine,
                     new AvaloniaWindowBuilder()
                         .TopMost(true)
                         .StartupLocation(Avalonia.Controls.WindowStartupLocation.CenterScreen),
-                    0, 0, 240, 160, 4, 4);
-                Engine.Draw(0) += (s, v) => frame2.DrawHandle(s, v);
-                frame2?.Start();
-                frame2?.Window.Hook(controller);
+                    0, 0, 240, 160, 4, 4,
+                    new []{ Engine.Controllers(0)[MAIN_CONTROLLER] });
             }
 
             Engine.SetLocation(0, Location.Load("GridWalkRPG.Maps.map.dat"));
@@ -96,7 +78,7 @@ namespace GridWalkRPG
             DescriptionPlayer dp = new DescriptionPlayer(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48);
             Entity player = new Entity(dp);
             Guid playerId = player.Id;
-            PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(0, controller2));
+            PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(0, Engine.Controllers(0)[MAIN_CONTROLLER]));
             Engine.TickEnd(0) += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
             player.TickAction = pActions.TickAction;
             Engine.AddEntity(0, player);
@@ -108,7 +90,7 @@ namespace GridWalkRPG
             Entity circlee = new Entity(circled);
             Engine.AddEntity(0, circlee);
 
-            hudBitmap = Bitmap.Create(Frame.Bounds.Width, Frame.Bounds.Height);
+            hudBitmap = Bitmap.Create(UI.Bounds.Width, UI.Bounds.Height);
             hudBitmap.GetGraphics().FillRectangle(new Color(0, 255, 255), 0, 0, 16, 16);
             Sprite huds = new Sprite("hud", hudBitmap, 0, 0);
             Description2D hudd = new HudDescription(huds, 0, 0);
@@ -225,11 +207,11 @@ namespace GridWalkRPG
                     Console.WriteLine(state);
                     if (state != 0 && state != 1)
                     {
-                        AvaloniaWindowBuilder.MakeTransparent(Frame, false);
+                        AvaloniaWindowBuilder.MakeTransparent(UI, false);
                     }
                     else
                     {
-                        AvaloniaWindowBuilder.MakeTransparent(Frame, true);
+                        AvaloniaWindowBuilder.MakeTransparent(UI, true);
                     }
                 }
 
@@ -254,7 +236,7 @@ namespace GridWalkRPG
             });
             if (playmusic)
             {
-                Frame.PlayTrack(new AvaloniaTrack(mml));
+                UI.PlayTrack(new NAudioMMLTrack(mml));
             }
 
             TileMap map = Engine.Location(0).Description as TileMap;

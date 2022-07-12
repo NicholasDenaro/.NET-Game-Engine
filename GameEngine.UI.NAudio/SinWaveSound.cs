@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace GameEngine.UI.AvaloniaUI
+namespace GameEngine.UI.NAudio
 {
     // https://markheath.net/post/playback-of-sine-wave-in-naudio
     public class SinWaveSound : WaveProvider32

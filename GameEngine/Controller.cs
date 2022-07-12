@@ -98,7 +98,21 @@ namespace GameEngine
                 if (System.Environment.OSVersion.Platform == System.PlatformID.Unix)
                 {
                     actions.Reverse();
+#if net60
                     List<PendingAction> temp = actions.DistinctBy(action => action.ActionCode).ToList();
+#endif
+#if net48
+                    List<object> actionCodes = new List<object>();
+                    List<PendingAction> outActions = new List<PendingAction>();
+                    for (int i = 0; i < actions.Count; i++)
+                    {
+                        if (!actionCodes.Contains(actions[i].ActionCode))
+                        {
+                            outActions.Add(actions[i]);
+                        }
+                    }
+                    List<PendingAction> temp = outActions;
+#endif
                     actions.Clear();
                     actions.AddRange(temp);
                     actions.Reverse();

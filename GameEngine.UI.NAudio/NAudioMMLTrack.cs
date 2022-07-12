@@ -1,19 +1,20 @@
-﻿using System;
+﻿using GameEngine.UI.Audio;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace GameEngine.UI.AvaloniaUI
+namespace GameEngine.UI.NAudio
 {
-    public class AvaloniaTrack : ITrack
+    public class NAudioMMLTrack : ITrack
     {
         private MML mml;
-        private IEnumerable<AvaloniaSound> channels;
+        private IEnumerable<NAudioSound> channels;
 
-        public AvaloniaTrack(MML mml)
+        public NAudioMMLTrack(MML mml)
         {
             this.mml = mml;
-            this.channels = mml.Channels.Select(channel => new AvaloniaSound(channel));
+            this.channels = mml.Channels.Select(channel => new NAudioSound(channel));
         }
 
         public int Length => mml.Channels.Count();

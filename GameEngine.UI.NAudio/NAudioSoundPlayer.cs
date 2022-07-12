@@ -1,19 +1,20 @@
-﻿using GameEngine.UI.AvaloniaUI.LinuxAudio;
+﻿using GameEngine.UI.Audio;
+using GameEngine.UI.NAudio.LinuxAudio;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace GameEngine.UI.AvaloniaUI
+namespace GameEngine.UI.NAudio
 {
-    public class AvaloniaSoundPlayer : ISoundPlayer
+    public class NAudioSoundPlayer : ISoundPlayer
     {
         private IWavePlayer player;
         private MixingSampleProvider provider;
         private bool initialized = false;
 
-        public AvaloniaSoundPlayer()
+        public NAudioSoundPlayer()
         {
             Console.WriteLine($"RuntimeIdentifier: {RuntimeInformation.RuntimeIdentifier}\nOSDescription: {RuntimeInformation.OSDescription}");
 
@@ -57,7 +58,7 @@ namespace GameEngine.UI.AvaloniaUI
                 return;
             }
 
-            AvaloniaSound sound = s as AvaloniaSound;
+            NAudioSound sound = s as NAudioSound;
             provider.AddMixerInput((ISampleProvider)sound.GetOutput());
             //player.Volume = 0.8f; // Don't do this, it changes the entire system volume
             player.Play();

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace GameEngine.UI.AvaloniaUI.Controllers
+namespace GameEngine.UI.Controllers
 {
     internal static class XInputWindows
     {

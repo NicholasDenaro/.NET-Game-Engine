@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net48</TargetFrameworks>
     <Authors>Nicholas Denaro</Authors>
     <RepositoryUrl>https://github.com/NicholasDenaro/.NET-Game-Engine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -17,6 +17,13 @@
     <None Remove="Maps\**" />
     <None Remove="Sprites\**" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net6.0'">
+    <DefineConstants>net60</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net48'">
+    <DefineConstants>net48</DefineConstants>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <IncludeSymbols>true</IncludeSymbols>

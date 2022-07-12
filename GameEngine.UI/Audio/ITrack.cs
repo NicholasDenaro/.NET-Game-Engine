@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameEngine.UI
+namespace GameEngine.UI.Audio
 {
     public interface ITrack
     {

@@ -1,8 +1,9 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
 using GameEngine._2D;
-using GameEngine.UI.AvaloniaUI.Controllers;
+using GameEngine.UI.Controllers;
 using System;
+using KeyEventArgs = GameEngine.UI.Controllers.KeyEventArgs;
 
 namespace GameEngine.UI.AvaloniaUI
 {

@@ -3,7 +3,7 @@ using GameEngine;
 using GameEngine._2D;
 using GameEngine.UI;
 #if net6
-using GameEngine.UI.AvaloniaUI;
+using GameEngine.UI.NAudio;
 #endif
 #if net48
 using GameEngine.UI.WinForms;
@@ -36,7 +36,7 @@ namespace AnimationTransitionExample
         public const int scale = 4;
 
         public static GameEngine.GameEngine Engine { get; private set; }
-        public static GameFrame Frame { get; private set; }
+        public static GameUI Frame { get; private set; }
 
         public static async Task Main(string[] args)
         {
@@ -45,7 +45,7 @@ namespace AnimationTransitionExample
             (Engine, Frame) = builder
                 .GameEngine(new FixedTickEngine(TPS))
                 .GameView(new GameView2D(new Drawer2DAvalonia(), SCREENWIDTH, SCREENHEIGHT, scale, scale, Color.DarkSlateGray))
-                .GameFrame(new GameFrame(
+                .GameFrame(new GameUI(
 #if net6
                     new AvaloniaWindowBuilder()
 #endif
@@ -53,6 +53,7 @@ namespace AnimationTransitionExample
                     new WinFormWindowBuilder()
 #endif
                     , 0, 0, 160, 144, scale, scale))
+                .SoundPlayer(new NAudioSoundPlayer())
                 .Controller(new WindowsKeyController(keyMap.ToDictionary(kvp => (int)kvp.Key, kvp => (object)kvp.Value)))
                 .Controller(new WindowsMouseController(mouseMap.ToDictionary(kvp => Convert(kvp.Key), kvp => (object)kvp.Value)))
                 .StartingLocation(new Location(new Description2D(0, 0, 160, 144)))

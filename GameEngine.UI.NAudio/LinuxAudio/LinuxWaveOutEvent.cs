@@ -1,11 +1,11 @@
-﻿using GameEngine.UI.AvaloniaUI.LinuxAudio.Interop;
+﻿using GameEngine.UI.NAudio.LinuxAudio.Interop;
 using NAudio.Wave;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace GameEngine.UI.AvaloniaUI.LinuxAudio
+namespace GameEngine.UI.NAudio.LinuxAudio
 {
     /* Output buffer:
      * Buffer hax X periods
@@ -179,7 +179,8 @@ namespace GameEngine.UI.AvaloniaUI.LinuxAudio
             }
 
             //uint periods = 1;
-            uint framesInPeriod = 32;
+            //uint framesInPeriod = 32; // This works
+            uint framesInPeriod = 1000;
             Console.WriteLine($"request frames in period near: {framesInPeriod}");
             IntPtr framesInPeriodA = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(ulong))); ;
             Marshal.StructureToPtr(framesInPeriod, framesInPeriodA, false);

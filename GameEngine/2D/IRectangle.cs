@@ -8,11 +8,11 @@ namespace GameEngine._2D
 {
     public interface IRectangle<Type>
     {
-        public Type X { get; set; }
-        public Type Y { get; set; }
-        public Type Width { get; set; }
-        public Type Height { get; set; }
+        Type X { get; set; }
+        Type Y { get; set; }
+        Type Width { get; set; }
+        Type Height { get; set; }
 
-        public bool IntersectsWith(Rectangle rect);
+        bool IntersectsWith(Rectangle rect);
     }
 }

@@ -11,9 +11,7 @@ namespace GameEngine.UI.AvaloniaUI
 {
     public class AvaloniaWindowBuilder : IGameWindowBuilder
     {
-        private AvaloniaSoundPlayer soundPlayer;
-
-        public (IGameWindow, ISoundPlayer) Run(IGameFrame frame)
+        public IGameWindow Run(IGameUI frame)
         {
             AvaloniaWindow window = null;
 
@@ -61,11 +59,10 @@ namespace GameEngine.UI.AvaloniaUI
                     Thread.Yield();
                 }
 
-                return (win, soundPlayer);
+                return win;
             }
 
-            soundPlayer = new AvaloniaSoundPlayer();
-            return (window, soundPlayer);
+            return window;
         }
 
         private string title = "Game Window";
@@ -84,7 +81,7 @@ namespace GameEngine.UI.AvaloniaUI
         public AvaloniaWindowBuilder CanResize(bool canResize) { this.canResize = canResize; return this; }
         public AvaloniaWindowBuilder ShowInTaskBar(bool showInTaskBar) { this.showInTaskBar = showInTaskBar; return this; }
 
-        private AvaloniaWindow CreateWindow(IGameFrame frame)
+        private AvaloniaWindow CreateWindow(IGameUI frame)
         {
             AvaloniaWindow window = new AvaloniaWindow(frame.Bounds.Width, frame.Bounds.Height);
             
@@ -103,7 +100,7 @@ namespace GameEngine.UI.AvaloniaUI
             return window;
         }
 
-        public static void MakeTransparent(GameFrame frame, bool transparent)
+        public static void MakeTransparent(GameUI frame, bool transparent)
         {
             var win = frame.Window as AvaloniaWindow;
             IntPtr winHandle = win.PlatformImpl.Handle.Handle;
@@ -139,7 +136,7 @@ namespace GameEngine.UI.AvaloniaUI
             //throw new NotImplementedException($"Platform '{Environment.OSVersion.Platform}' not supported.");
         }
 
-        public static void SetWindowRegion(GameFrame frame, double x, double y, double w, double h)
+        public static void SetWindowRegion(GameUI frame, double x, double y, double w, double h)
         {
             var win = frame.Window as AvaloniaWindow;
             IntPtr winHandle = win.PlatformImpl.Handle.Handle;
@@ -156,7 +153,7 @@ namespace GameEngine.UI.AvaloniaUI
             }
         }
 
-        public static void SetWindowRegion(GameFrame frame, ref Point[] points)
+        public static void SetWindowRegion(GameUI frame, ref Point[] points)
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
@@ -192,7 +189,7 @@ namespace GameEngine.UI.AvaloniaUI
         static IntPtr hPoints;
         static IntPtr hCount;
 
-        public static void SetWindowRegion(GameFrame frame, ref Point[][] points)
+        public static void SetWindowRegion(GameUI frame, ref Point[][] points)
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {

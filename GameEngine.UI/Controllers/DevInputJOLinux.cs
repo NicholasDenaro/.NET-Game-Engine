@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static GameEngine.UI.AvaloniaUI.Controllers.XInputWindows;
+using static GameEngine.UI.Controllers.XInputWindows;
 
-namespace GameEngine.UI.AvaloniaUI.Controllers
+namespace GameEngine.UI.Controllers
 {
     internal class DevInputJSLinux
     {

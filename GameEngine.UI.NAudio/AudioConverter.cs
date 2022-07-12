@@ -2,7 +2,7 @@
 using System;
 using System.Diagnostics;
 
-namespace GameEngine.UI.AvaloniaUI
+namespace GameEngine.UI.NAudio
 {
     internal class AudioConverter : WaveProvider32
     {

@@ -1,7 +1,7 @@
 ﻿using GameEngine._2D;
 using System;
 
-namespace GameEngine.UI
+namespace GameEngine.UI.Controllers
 {
     public class MouseControllerInfo : IControllerActionInfo
     {
@@ -35,7 +35,7 @@ namespace GameEngine.UI
 
         public void AlterButton(int button)
         {
-            this.Button = button;
+            Button = button;
         }
     }
 }

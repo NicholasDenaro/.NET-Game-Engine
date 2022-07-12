@@ -1,10 +1,13 @@
 ﻿using GameEngine._2D;
+using GameEngine.UI.Audio;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
 namespace GameEngine.UI
 {
-    public class GameFrame : IGameFrame
+    public class GameUI : IGameUI
     {
         private bool started = false;
 
@@ -21,7 +24,7 @@ namespace GameEngine.UI
 
         private ISoundPlayer soundPlayer;
 
-        public GameFrame(IGameWindowBuilder windowBuilder, int x, int y, int width, int height, int xScale, int yScale)
+        public GameUI(IGameWindowBuilder windowBuilder, int x, int y, int width, int height, int xScale, int yScale)
         {
             ScaleX = xScale;
             ScaleY = yScale;
@@ -29,12 +32,36 @@ namespace GameEngine.UI
             this.windowBuilder = windowBuilder;
         }
 
+        public static void OpenNewWindow(
+            GameEngine engine,
+            IGameWindowBuilder windowBuilder,
+            int x, int y, int width, int height, int xScale, int yScale,
+            IEnumerable<Controller> controllers = null,
+            int state = 0)
+        {
+            GameUI ui = new GameUI(windowBuilder, x, y, width, height, xScale, yScale);
+            engine.Draw(state) += (s, v) => ui.DrawHandle(s, v);
+            ui?.Start();
+            if (controllers != null)
+            {
+                foreach (Controller controller in controllers)
+                {
+                    ui?.Window.Hook(controller);
+                }
+            }
+        }
+
+        internal void SetSoundPlayer(ISoundPlayer soundPlayer)
+        {
+            this.soundPlayer = soundPlayer;
+        }
+
         public void Start()
         {
             if (!started)
             {
                 started = true;
-                (Window, this.soundPlayer) = this.windowBuilder.Run(this);
+                Window = this.windowBuilder.Run(this);
             }
         }
 

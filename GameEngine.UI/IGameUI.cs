@@ -1,4 +1,5 @@
 ﻿using GameEngine._2D;
+using GameEngine.UI.Audio;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace GameEngine.UI
 {
-    public interface IGameFrame
+    public interface IGameUI
     {
         void Start();
 
