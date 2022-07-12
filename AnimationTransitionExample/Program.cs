@@ -2,8 +2,10 @@
 using GameEngine;
 using GameEngine._2D;
 using GameEngine.UI;
-#if net6
+using GameEngine.UI.Controllers;
 using GameEngine.UI.NAudio;
+#if net6
+using GameEngine.UI.AvaloniaUI;
 #endif
 #if net48
 using GameEngine.UI.WinForms;

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static GameEngine.UI.NAudio.SinWaveSound;
 
 namespace GameEngine.UI.NAudio
 {
@@ -11,10 +12,10 @@ namespace GameEngine.UI.NAudio
         private MML mml;
         private IEnumerable<NAudioSound> channels;
 
-        public NAudioMMLTrack(MML mml)
+        public NAudioMMLTrack(Waves wave, MML mml)
         {
             this.mml = mml;
-            this.channels = mml.Channels.Select(channel => new NAudioSound(channel));
+            this.channels = mml.Channels.Select(channel => new NAudioSound(wave, channel));
         }
 
         public int Length => mml.Channels.Count();

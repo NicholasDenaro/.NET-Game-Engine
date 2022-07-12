@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using static GameEngine.UI.NAudio.SinWaveSound;
 
 namespace GameEngine.UI.NAudio
 {
@@ -10,7 +11,7 @@ namespace GameEngine.UI.NAudio
     {
         private SinWaveSound wav;
 
-        public NAudioSound(MMLNote[] notes)
+        public NAudioSound(Waves wave, MMLNote[] notes)
         {
             float[] input = new float[notes.Length * 2];
             int i = 0;
@@ -19,7 +20,7 @@ namespace GameEngine.UI.NAudio
                 input[i++] = note.GetTone();
                 input[i++] = 44100.0f * note.GetDuration();
             }
-            wav = new SinWaveSound(input);
+            wav = new SinWaveSound(wave, input);
             wav.Attenuate = true;
             wav.SetWaveFormat(44100, 2);
         }

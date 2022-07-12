@@ -211,7 +211,7 @@ namespace AnimationTransitionExample
             //Program.Frame.PlayResource("Sounds.GAME_MENU_SCORE_SFX001771-24-2.wav");
             Program.Frame.PlayResource("Sounds.sfxR07.wav");
             //Program.Frame.PlayResource("Sounds.sfxR07-left-only.wav");
-            //Program.Frame.PlayTrack(new GameEngine.UI.AvaloniaUI.AvaloniaTrack(new GameEngine.UI.MML(new string[] { "l4cdefg" })));
+            //Program.Frame.PlayTrack(new GameEngine.UI.NAudio.NAudioMMLTrack(GameEngine.UI.NAudio.SinWaveSound.Waves.ZINGY, new GameEngine.UI.Audio.MML(new string[] { "l4cdefg" })));
             this.PreppedSkill = null;
             this.skillActivation?.Reset();
             stun = 15;
