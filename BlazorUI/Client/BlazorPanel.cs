@@ -12,9 +12,14 @@ namespace BlazorUI.Client
 
         public double ScaleY => throw new NotImplementedException();
 
+        public void SetLayout(MainLayout layout)
+        {
+            this.layout = layout;
+        }
+
         public void DrawHandle(object sender, View view)
         {
-            //layout.Draw();
+            Task.Run(async () => await layout?.Draw());
         }
 
         public void Resize(int width, int height)

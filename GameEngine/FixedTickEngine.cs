@@ -82,7 +82,7 @@ namespace GameEngine
                         }
                         else
                         {
-                            await Task.Delay(100);
+                            await Task.Delay(TimeSpan.FromTicks((int)(diff / stopwatchToThreadRatio * 0.95)));
                         }
                     }
 
@@ -94,7 +94,7 @@ namespace GameEngine
                         }
                         else
                         {
-                            await Task.Delay(10);
+                            await Task.Delay(TimeSpan.FromTicks(100));
                         }
                     }
 
@@ -102,11 +102,11 @@ namespace GameEngine
                     {
                         if (isThreading)
                         {
-                            Thread.Sleep(TimeSpan.FromTicks(10));
+                            Thread.Sleep(TimeSpan.FromTicks(1));
                         }
                         else
                         {
-                            await Task.Delay(1);
+                            await Task.Delay(TimeSpan.FromTicks(1));
                         }
                     }
                     this.frameTime = sw.ElapsedTicks;

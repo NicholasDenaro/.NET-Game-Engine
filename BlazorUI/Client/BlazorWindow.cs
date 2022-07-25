@@ -1,4 +1,5 @@
-﻿using GameEngine;
+﻿using BlazorUI.Shared;
+using GameEngine;
 using GameEngine.UI;
 using GameEngine.UI.Controllers;
 
@@ -6,9 +7,20 @@ namespace BlazorUI.Client
 {
     public class BlazorWindow : IGameWindow
     {
+        public static BlazorWindow Instance;
+
         private BlazorPanel panel = new BlazorPanel();
         public IGamePanel Panel => panel;
 
+        public BlazorWindow()
+        {
+            Instance = this;
+        }
+
+        public void Init(MainLayout layout)
+        {
+            panel.SetLayout(layout);
+        }
         
 
         public bool Hook(Controller controller)

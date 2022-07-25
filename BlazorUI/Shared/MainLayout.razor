@@ -1,12 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using BlazorUI.Client
+@using System.Diagnostics
+@inherits LayoutComponentBase
 
 <div class="page">
-    @*<canvas @ref="canvas"
-        width="@width"
-        height="@height"
-        style="@style"
-    ></canvas>*@
-
     <div class="canvas" style="@style">
         <BECanvas Width=@width Height=@height @ref=canvas></BECanvas>
     </div>
@@ -26,10 +22,21 @@
         style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
     }
 
-    public void Draw()
+    int x = 0;
+    int timer = 0;
+    Stopwatch sw = new Stopwatch();
+    public async Task Draw()
     {
-        this._context.SetFillStyleAsync("green").Wait();
-        this._context.FillRectAsync(10, 100, 100, 100).Wait();
+        await this._context.ClearRectAsync(0, 0, width, height);
+        await this._context.SetFillStyleAsync("green");
+        await this._context.FillRectAsync(x++, 100, 100, 100);
+        await this._context.StrokeTextAsync($"{x}", 0, 20);
+        if (sw.ElapsedTicks >= Stopwatch.Frequency)
+        {
+            Console.WriteLine($"x={x}");
+            x = 0;
+            sw.Restart();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -38,6 +45,8 @@
         if (firstRender)
         {
             this._context = await this.canvas.CreateCanvas2DAsync();
+            BlazorWindow.Instance.Init(this);
+            sw.Start();
             //await this._context.SetFillStyleAsync("green");
 
             //await this._context.FillRectAsync(10, 100, 100, 100);
