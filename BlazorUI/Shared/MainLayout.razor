@@ -1,0 +1,40 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    @*<canvas @ref="canvas"
+        width="@width"
+        height="@height"
+        style="@style"
+    ></canvas>*@
+
+    <div class="canvas" style="@style">
+        <BECanvas Width=@width Height=@height @ref=canvas></BECanvas>
+    </div>
+</div>
+
+@code
+{
+    private Canvas2DContext _context;
+    BECanvasComponent canvas;
+    int width = 320;
+    int height = 240;
+    string style = "";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        this._context = await this.canvas.CreateCanvas2DAsync();
+        await this._context.SetFillStyleAsync("green");
+
+        await this._context.FillRectAsync(10, 100, 100, 100);
+
+        await this._context.SetFontAsync("48px serif");
+        await this._context.StrokeTextAsync("Hello Blazor!!!", 10, 100);
+    }
+}
