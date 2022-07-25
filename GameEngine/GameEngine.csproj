@@ -4,7 +4,7 @@
     <Authors>Nicholas Denaro</Authors>
     <RepositoryUrl>https://github.com/NicholasDenaro/.NET-Game-Engine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <DebugSymbols>true</DebugSymbols>
     <OutputType>Library</OutputType>
   </PropertyGroup>

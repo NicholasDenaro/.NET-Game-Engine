@@ -4,6 +4,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace GameEngine.UI.NAudio
@@ -18,9 +19,24 @@ namespace GameEngine.UI.NAudio
         {
             Console.WriteLine($"RuntimeIdentifier: {RuntimeInformation.RuntimeIdentifier}\nOSDescription: {RuntimeInformation.OSDescription}");
 
+            Init();
+        }
+
+        private void Init(int deviceIndex = -1)
+        {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                player = new WaveOutEvent();
+                if (deviceIndex > -1)
+                {
+                    player = new WaveOutEvent()
+                    {
+                        DeviceNumber = deviceIndex
+                    };
+                }
+                else
+                {
+                    player = new WaveOutEvent();
+                }
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -36,6 +52,15 @@ namespace GameEngine.UI.NAudio
             provider.ReadFully = true;
             player.Init(provider);
             initialized = true;
+        }
+
+        public NAudioSoundPlayer(int deviceIndex)
+        {
+            Console.WriteLine($"RuntimeIdentifier: {RuntimeInformation.RuntimeIdentifier}\nOSDescription: {RuntimeInformation.OSDescription}");
+
+            Console.WriteLine($"{string.Join("\n", DirectSoundOut.Devices.Select((dev, i) => (i, dev.Description)))}");
+
+            Init(deviceIndex);
         }
 
         public void PlayStream(Stream stream)

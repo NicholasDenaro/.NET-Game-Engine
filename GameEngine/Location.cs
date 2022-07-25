@@ -74,7 +74,7 @@ namespace GameEngine
         public static Location Load(string fname)
         {
             Assembly assembly = Assembly.GetCallingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(fname))
+            using (Stream stream = assembly.GetManifestResourceStream(fname) ?? File.OpenRead(fname))
             using (BinaryReader reader = new BinaryReader(stream))
             {
                 int width = reader.ReadInt32();
@@ -82,6 +82,10 @@ namespace GameEngine
                 string spName = reader.ReadString();
                 int tileWidth = reader.ReadInt32();
                 int tileHeight = reader.ReadInt32();
+                //if (assembly.GetManifestResourceStream(spName) == null)
+                //{
+                //    spName = Path.Combine(Path.GetDirectoryName(fname), "Sprites", Path.GetFileName(spName));
+                //}
                 Sprite sprite = new Sprite(Path.GetFileNameWithoutExtension(spName), spName, tileWidth, tileHeight);
                 TileMap map = new TileMap(sprite, width, height);
                 Location location = new Location(map);

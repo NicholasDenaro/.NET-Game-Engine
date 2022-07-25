@@ -45,7 +45,7 @@ namespace GridWalkRPG
                         .ShowInTaskBar(true)
                     , 0, 0, 240, 160, 4, 4))
 #endif
-                .SoundPlayer(new NAudioSoundPlayer())
+                .SoundPlayer(new NAudioSoundPlayer(7))
                 .Controller(new WindowsKeyController(keymap))
                 .Controller(new XBoxController(xboxkeymap))
                 .Build();
