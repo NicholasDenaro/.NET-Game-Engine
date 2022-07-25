@@ -26,15 +26,24 @@
         style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
     }
 
+    public void Draw()
+    {
+        this._context.SetFillStyleAsync("green").Wait();
+        this._context.FillRectAsync(10, 100, 100, 100).Wait();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        this._context = await this.canvas.CreateCanvas2DAsync();
-        await this._context.SetFillStyleAsync("green");
+        if (firstRender)
+        {
+            this._context = await this.canvas.CreateCanvas2DAsync();
+            //await this._context.SetFillStyleAsync("green");
 
-        await this._context.FillRectAsync(10, 100, 100, 100);
+            //await this._context.FillRectAsync(10, 100, 100, 100);
 
-        await this._context.SetFontAsync("48px serif");
-        await this._context.StrokeTextAsync("Hello Blazor!!!", 10, 100);
+            //await this._context.SetFontAsync("48px serif");
+            //await this._context.StrokeTextAsync("Hello Blazor!!!", 10, 100);
+        }
     }
 }

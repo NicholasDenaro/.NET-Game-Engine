@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A4136326-3AFD-48B5-8268-2DF32A644505}</ProjectGuid>
+    <ProjectGuid>{890D24B7-BD9A-4A4B-A094-4C4372C1A1FA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>GridWalkRPG</RootNamespace>
     <AssemblyName>GridWalkRPG</AssemblyName>
@@ -11,18 +11,9 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <Configurations>Release;DebugAvalonia;DebugBlazor</Configurations>
+    <Configurations>Release;DebugBlazor</Configurations>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugAvalonia|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CONSOLE;Avalonia</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugBlazor|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
@@ -41,9 +32,10 @@
     <DefineConstants>TRACE;Avalonia</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-	<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	  <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <StaticWebAssetBasePath>game</StaticWebAssetBasePath>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Maps\map.dat" />
@@ -77,7 +69,6 @@
     <ProjectReference Include="..\BlazorUI\BlazorUI.csproj" />
     <ProjectReference Include="..\GameEngine.Avalonia\GameEngine.UI.AvaloniaUI.csproj" />
     <ProjectReference Include="..\GameEngine.UI.NAudio\GameEngine.UI.NAudio.csproj" />
-    <!--<ProjectReference Include="..\GameEngine.Windows\GameEngine.UI.WinForms.csproj" />-->
     <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugBlazor|AnyCPU' ">

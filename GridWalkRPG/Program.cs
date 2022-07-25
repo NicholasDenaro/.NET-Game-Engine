@@ -7,6 +7,9 @@ using GameEngine.UI.NAudio;
 #if Avalonia
 using GameEngine.UI.AvaloniaUI;
 #endif
+#if Blazor
+using BlazorUI;
+#endif
 #if WinForm
 using GameEngine.UI.WinForms;
 #endif
@@ -15,6 +18,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using static GameEngine.UI.NAudio.SinWaveSound;
+using BlazorUI.Client;
 
 namespace GridWalkRPG
 {
@@ -23,16 +27,17 @@ namespace GridWalkRPG
         public static GameEngine.GameEngine Engine { get; private set; }
 
         public static int TPS = 60;
-        public static bool playmusic = true;
+        public static bool playmusic = false;
         public static GameUI UI { get; private set; }
         public static Queue<string> states = new Queue<string>();
 
         private static Bitmap hudBitmap;
 
-        private const int MAIN_CONTROLLER = 1; //0 is keyboard, 1 is xbox controlelr
+        private const int MAIN_CONTROLLER = 0; //0 is keyboard, 1 is xbox controlelr
 
         public static async Task Main(string[] args)
         {
+            Console.WriteLine("ExampleMain");
             (Engine, UI) = new GameBuilder()
                 .GameEngine(new FixedTickEngine(TPS))
 #if Avalonia
@@ -45,9 +50,17 @@ namespace GridWalkRPG
                         .ShowInTaskBar(true)
                     , 0, 0, 240, 160, 4, 4))
 #endif
+#if Blazor
+                .GameView(new GameView2D(new Drawer2DBlazor(), 240, 160, 4, 4, Color.FromArgb(0, Color.Transparent)))
+                .GameFrame(new GameUI(
+                    new BlazorUI.Client.BlazorWindowBuilder()
+                    , 0, 0, 240, 160, 4, 4))
+#endif
                 .SoundPlayer(new NAudioSoundPlayer())
                 .Controller(new WindowsKeyController(keymap))
+#if Avalonia
                 .Controller(new XBoxController(xboxkeymap))
+#endif
                 .Build();
 #if WinForm
             GameView2D view = new GameView2D(new Drawer2DSystemDrawing(), 240, 160, 4, 4, Color.FromArgb(0, Color.Magenta), 2);
@@ -60,8 +73,9 @@ namespace GridWalkRPG
             view.ScrollRight = view.Width / 2 - 16;
 #if WinForm
             Frame = new GameFrame(new WinFormWindowBuilder(), 0, 0, 240, 160, 4, 4);
-#endif 
+#endif
 
+#if Avalonia
             if (false)
             {
                 GameUI.OpenNewWindow(
@@ -72,6 +86,7 @@ namespace GridWalkRPG
                     0, 0, 240, 160, 4, 4,
                     new []{ Engine.Controllers(0)[MAIN_CONTROLLER] });
             }
+#endif
 
             Engine.SetLocation(0, Location.Load("GridWalkRPG.Maps.map.dat"));
 
@@ -371,6 +386,18 @@ namespace GridWalkRPG
             { (int)Avalonia.Input.Key.S, KEYS.Y },
             { (int)Avalonia.Input.Key.OemOpenBrackets, KEYS.RESET },
             { (int)Avalonia.Input.Key.OemCloseBrackets, KEYS.EXIT },
+#endif
+#if Blazor
+            { (int)0, KEYS.UP},
+            { (int)1, KEYS.DOWN },
+            { (int)2, KEYS.LEFT },
+            { (int)3, KEYS.RIGHT },
+            { (int)4, KEYS.A },
+            { (int)5, KEYS.B },
+            { (int)6, KEYS.X },
+            { (int)7, KEYS.Y },
+            { (int)8, KEYS.RESET },
+            { (int)9, KEYS.EXIT },
 #endif
         };
         public static Dictionary<XBoxController.Key, object> xboxkeymap = new Dictionary<XBoxController.Key, object>()

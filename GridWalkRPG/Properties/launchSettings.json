@@ -8,7 +8,12 @@
     }
   },
   "profiles": {
-    "BlazorUI": {
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
+    },
+    "GridWalkRPGExampleBlazor": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
@@ -16,16 +21,9 @@
       },
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "http://localhost:5119",
+      "workingDirectory": "./bin/debug/net6.0/",
       "dotnetRunMessages": true,
       "nativeDebugging": true
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
     }
   }
 }

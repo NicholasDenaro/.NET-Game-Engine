@@ -83,7 +83,7 @@ namespace GameEngine
             Active = false;
         }
 
-        public abstract void Control();
+        public abstract Task Control();
 
         public void Tick()
         {

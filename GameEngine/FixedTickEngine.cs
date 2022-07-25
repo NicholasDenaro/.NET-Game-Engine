@@ -33,12 +33,22 @@ namespace GameEngine
             stopwatchToThreadRatio = Stopwatch.Frequency / TimeSpan.FromSeconds(1).Ticks;
         }
 
-        public override void Control()
+        private bool isThreading = true;
+        public override async Task Control()
         {
-            new Thread(() => Run()).Start();
+            try
+            {
+                new Thread(() => { }).Start();
+                new Thread(() => Run()).Start();
+            }
+            catch (PlatformNotSupportedException)
+            {
+                isThreading = false;
+                await Task.Run(() => Run());
+            }
         }
 
-        private void Run()
+        private async Task Run()
         {
             try
             {
@@ -66,17 +76,38 @@ namespace GameEngine
                     if (diff > 10000)
                     {
                         this.longwait = true;
-                        Thread.Sleep(TimeSpan.FromTicks((int)(diff / stopwatchToThreadRatio * 0.95)));
+                        if (isThreading)
+                        {
+                            Thread.Sleep(TimeSpan.FromTicks((int)(diff / stopwatchToThreadRatio * 0.95)));
+                        }
+                        else
+                        {
+                            await Task.Delay(100);
+                        }
                     }
 
                     while (this.period - sw.ElapsedTicks > 200 * stopwatchToThreadRatio)
                     {
-                        Thread.Sleep(TimeSpan.FromTicks(100));
+                        if (isThreading)
+                        {
+                            Thread.Sleep(TimeSpan.FromTicks(100));
+                        }
+                        else
+                        {
+                            await Task.Delay(10);
+                        }
                     }
 
                     while (this.period - sw.ElapsedTicks > 15 * stopwatchToThreadRatio)
                     {
-                        Thread.Sleep(TimeSpan.FromTicks(10));
+                        if (isThreading)
+                        {
+                            Thread.Sleep(TimeSpan.FromTicks(10));
+                        }
+                        else
+                        {
+                            await Task.Delay(1);
+                        }
                     }
                     this.frameTime = sw.ElapsedTicks;
 
