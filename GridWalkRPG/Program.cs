@@ -9,6 +9,7 @@ using GameEngine.UI.AvaloniaUI;
 #endif
 #if Blazor
 using BlazorUI;
+using BlazorUI.Client;
 #endif
 #if WinForm
 using GameEngine.UI.WinForms;
@@ -18,7 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using static GameEngine.UI.NAudio.SinWaveSound;
-using BlazorUI.Client;
+using System.Reflection;
 
 namespace GridWalkRPG
 {
@@ -88,27 +89,32 @@ namespace GridWalkRPG
             }
 #endif
 
-            Engine.SetLocation(0, Location.Load("GridWalkRPG.Maps.map.dat"));
+            Assembly assembly = Assembly.GetAssembly(typeof(Program));
+            Sprite.loadingAssembly = assembly;
+            Engine.SetLocation(0, await Location.Load(Assembly.GetAssembly(typeof(Program)), "GridWalkRPG.Maps.map.dat"));
 
 
-            DescriptionPlayer dp = new DescriptionPlayer(new Sprite("circle", "Sprites.circle.png", 16, 16), 48, 48);
+            DescriptionPlayer dp = new DescriptionPlayer(await Sprite.Create("circle", "Sprites.circle.png", 16, 16), 48, 48);
             Entity player = new Entity(dp);
             Guid playerId = player.Id;
             PlayerActions pActions = new PlayerActions(Engine.GetControllerIndex(0, Engine.Controllers(0)[MAIN_CONTROLLER]));
             Engine.TickEnd(0) += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
             player.TickAction = pActions.TickAction;
             Engine.AddEntity(0, player);
+            Engine.TickEnd(0) += (s, e) => dp.ImageIndex++;
 
-            Bitmap circleb = Bitmap.Create(16, 16);
-            circleb.GetGraphics().DrawEllipse(new Color(255, 0, 0), 0, 0, 16, 16);
-            Sprite circles = new Sprite("circles", circleb, 0, 0);
+            Bitmap circleb = await Bitmap.CreateAsync("circleb", 16, 16);
+            hudBitmap = await Bitmap.CreateAsync("hudb", UI.Bounds.Width, UI.Bounds.Height);
+
+            await circleb.GetGraphics().DrawEllipseAsync(new Color(255, 0, 0), 0, 0, 16, 8);
+            await hudBitmap.GetGraphics().FillRectangleAsync(new Color(0, 255, 255), 0, 0, 16, 16);
+
+            Sprite circles = await Sprite.Create("circles", circleb, 0, 0);
             Description2D circled = new Description2D(circles, 64, 64, 16, 16);
             Entity circlee = new Entity(circled);
             Engine.AddEntity(0, circlee);
 
-            hudBitmap = Bitmap.Create(UI.Bounds.Width, UI.Bounds.Height);
-            hudBitmap.GetGraphics().FillRectangle(new Color(0, 255, 255), 0, 0, 16, 16);
-            Sprite huds = new Sprite("hud", hudBitmap, 0, 0);
+            Sprite huds = await Sprite.Create("hud", hudBitmap, 0, 0);
             Description2D hudd = new HudDescription(huds, 0, 0);
             Entity hude = new Entity(hudd);
             hude.TickAction += (state, entity) =>
@@ -305,7 +311,15 @@ namespace GridWalkRPG
                 }
             };
 
-            await Engine.Start();
+            try
+            {
+                await Engine.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
         }
 
         private static Stopwatch watchSecond;
@@ -319,7 +333,7 @@ namespace GridWalkRPG
             ticks++;
             if (watchSecond.ElapsedMilliseconds >= 1000)
             {
-                Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime} avg remaining: {((int)TimeSpan.FromSeconds(1).Ticks - TPS) -  (totalTime / ticks)}");
+                //Console.WriteLine($"TPS: {ticks} | Timings: min: {minTime} avg: {totalTime / ticks} max: {maxTime} avg remaining: {((int)TimeSpan.FromSeconds(1).Ticks - TPS) -  (totalTime / ticks)}");
 
                 hudTicks = ticks;
                 hudMinTime = minTime;

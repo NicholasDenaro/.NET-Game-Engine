@@ -16,7 +16,7 @@ namespace GameEngine.UI.AvaloniaUI
         {
             ClientSize = new Avalonia.Size(width / PlatformImpl.DesktopScaling, height / PlatformImpl.DesktopScaling);
             DesktopScaling = PlatformImpl.DesktopScaling;
-            Dpi = ((AvaloniaGameBitmap)Bitmap.Create(1, 1)).GetDpi();
+            Dpi = (Bitmap.CreateAsync("_", 1, 1).Result as AvaloniaGameBitmap).GetDpi();
         }
 
         private GamePanel panel;

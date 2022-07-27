@@ -1,4 +1,5 @@
-﻿using BlazorUI.Shared;
+﻿using Blazor.Extensions.Canvas.Canvas2D;
+using BlazorUI.Shared;
 using GameEngine;
 using GameEngine.UI;
 
@@ -17,9 +18,13 @@ namespace BlazorUI.Client
             this.layout = layout;
         }
 
+        private SortedDictionary<int, List<Action<Canvas2DContext>>> drawings;
+        private SortedDictionary<int, List<Action<Canvas2DContext>>> overlays;
+
         public void DrawHandle(object sender, View view)
         {
-            Task.Run(async () => await layout?.Draw());
+            Drawer2DBlazor d = view.Drawer as Drawer2DBlazor;
+            Task.Run(async () => await layout?.Draw(d));
         }
 
         public void Resize(int width, int height)

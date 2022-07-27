@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace GameEngine._2D
 {
@@ -31,19 +32,19 @@ namespace GameEngine._2D
 
         protected abstract void disposeUnmanaged();
 
-        public abstract void DrawImage(Bitmap bmp, RectangleF source, RectangleF dest);
-        public void DrawImage(Bitmap bmp, int x, int y)
+        public abstract Task DrawImageAsync(Bitmap bmp, RectangleF source, RectangleF dest);
+        public async Task DrawImageAsync(Bitmap bmp, int x, int y)
         {
-            DrawImage(bmp, new RectangleF(0, 0, bmp.Width, bmp.Height), new RectangleF(x, y, bmp.Width, bmp.Height));
+            await DrawImageAsync(bmp, new RectangleF(0, 0, bmp.Width, bmp.Height), new RectangleF(x, y, bmp.Width, bmp.Height));
         }
-        public void DrawImage(BitmapSection bmp, int x, int y)
+        public async Task DrawImageAsync(BitmapSection bmp, int x, int y)
         {
-            DrawImage(bmp.Bitmap, bmp.Bounds, new Rectangle(x, y, bmp.Bounds.Width, bmp.Bounds.Height));
+            await DrawImageAsync(bmp.Bitmap, bmp.Bounds, new Rectangle(x, y, bmp.Bounds.Width, bmp.Bounds.Height));
         }
 
-        public void DrawImage(BitmapSection bmp, RectangleF dest)
+        public async Task DrawImageAsync(BitmapSection bmp, RectangleF dest)
         {
-            DrawImage(bmp.Bitmap, bmp.Bounds, dest);
+            await DrawImageAsync(bmp.Bitmap, bmp.Bounds, dest);
         }
 
         public abstract void Clear(Color color);
@@ -53,12 +54,12 @@ namespace GameEngine._2D
             DrawText(text, point.X, point.Y, color, size);
         }
         public abstract void DrawRectangle(Color color, int x, int y, int width, int height);
-        public abstract void FillRectangle(Color color, int x, int y, int width, int height);
-        public void FillRectangle(Color color, Rectangle rect)
+        public abstract Task FillRectangleAsync(Color color, int x, int y, int width, int height);
+        public async Task FillRectangleAsync(Color color, Rectangle rect)
         {
-            FillRectangle(color, rect.X, rect.Y, rect.Width, rect.Height);
+            await FillRectangleAsync(color, rect.X, rect.Y, rect.Width, rect.Height);
         }
-        public abstract void DrawEllipse(Color color, int x, int y, int width, int height);
+        public abstract Task DrawEllipseAsync(Color color, int x, int y, int width, int height);
         public abstract void FillEllipse(Color color, int x, int y, int width, int height);
         public abstract void DrawLine(Color color, int x1, int y1, int x2, int y2);
         public abstract void DrawArc(Color color, float v1, float v2, int v3, int v4, int v5, int v6);

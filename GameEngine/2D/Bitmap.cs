@@ -1,10 +1,12 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace GameEngine._2D
 {
     public abstract class Bitmap
     {
         private static IBitmapCreator bitmapCreator;
+
         public static void SetBitmapImpl(IBitmapCreator bitmapCreator)
         {
             if (Bitmap.bitmapCreator != null)
@@ -15,23 +17,25 @@ namespace GameEngine._2D
             Bitmap.bitmapCreator = bitmapCreator;
         }
 
-        public static Bitmap Create(int Width, int Height)
+        public static async Task<Bitmap> CreateAsync(string name, int Width, int Height)
         {
-            return bitmapCreator.Create(Width, Height);
+            return await bitmapCreator.CreateAsync(name, Width, Height);
         }
 
-        public static Bitmap Create(int Width, int Height, bool mode)
+        public static async Task<Bitmap> CreateAsync(string name, int Width, int Height, bool mode)
         {
-            return bitmapCreator.Create(Width, Height, mode);
+            return await bitmapCreator.CreateAsync(name, Width, Height, mode);
         }
 
-        public static Bitmap Create(Stream stream)
+        public static async Task<Bitmap> CreateAsync(string name, Stream stream)
         {
-            return bitmapCreator.Create(stream);
+            return await bitmapCreator.CreateAsync(name, stream);
         }
 
         public int Width { get; protected set; }
         public int Height { get; protected set; }
+
+        public bool IsInitialized { get; protected set; }
 
         public abstract T Image<T>() where T : class;
 
@@ -43,9 +47,9 @@ namespace GameEngine._2D
 
     public interface IBitmapCreator
     {
-        Bitmap Create(int width, int height);
-        Bitmap Create(int width, int height, bool dpiMode);
-        Bitmap Create(Stream stream);
+        Task<Bitmap> CreateAsync(string name, int width, int height);
+        Task<Bitmap> CreateAsync(string name, int width, int height, bool dpiMode);
+        Task<Bitmap> CreateAsync(string name, Stream stream);
     }
 
     public class BitmapSection

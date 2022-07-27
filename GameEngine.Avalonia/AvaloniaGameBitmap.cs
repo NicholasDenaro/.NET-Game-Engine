@@ -4,6 +4,7 @@ using GameEngine._2D;
 using GameEngine._2D.Interfaces;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace GameEngine.UI.AvaloniaUI
 {
@@ -68,7 +69,7 @@ namespace GameEngine.UI.AvaloniaUI
 
         public override void SetPixel(int x, int y, _2D.Color color)
         {
-            this.GetGraphics().FillRectangle(color, x, y, 1, 1);
+            this.GetGraphics().FillRectangleAsync(color, x, y, 1, 1);
         }
 
         public double GetDpi()
@@ -102,7 +103,7 @@ namespace GameEngine.UI.AvaloniaUI
             container.Clear(color);
         }
 
-        public override void DrawImage(_2D.Bitmap bmp, RectangleF source, RectangleF dest)
+        public override Task DrawImageAsync(_2D.Bitmap bmp, RectangleF source, RectangleF dest)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -115,6 +116,8 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 DrawImageImpl(bmp, source, dest);
             }
+
+            return Task.CompletedTask;
         }
 
         private void DrawImageImpl(_2D.Bitmap bmp, RectangleF source, RectangleF dest)
@@ -171,7 +174,7 @@ namespace GameEngine.UI.AvaloniaUI
                 new Avalonia.Rect(x, y, width, height));
         }
 
-        public override void FillRectangle(_2D.Color color, int x, int y, int width, int height)
+        public override Task FillRectangleAsync(_2D.Color color, int x, int y, int width, int height)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -184,6 +187,8 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 FillRectangleImpl(color, x, y, width, height);
             }
+
+            return Task.CompletedTask;
         }
 
         private void FillRectangleImpl(_2D.Color color, int x, int y, int width, int height)
@@ -207,7 +212,7 @@ namespace GameEngine.UI.AvaloniaUI
             });
         }
 
-        public override void DrawEllipse(_2D.Color color, int x, int y, int width, int height)
+        public override Task DrawEllipseAsync(_2D.Color color, int x, int y, int width, int height)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -220,6 +225,8 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 DrawEllipseImpl(color, x, y, width, height);
             }
+
+            return Task.CompletedTask;
         }
 
         public void DrawEllipseImpl(_2D.Color color, int x, int y, int width, int height)
@@ -283,23 +290,23 @@ namespace GameEngine.UI.AvaloniaUI
 
     public class AvaloniaBitmapCreator : IBitmapCreator
     {
-        public _2D.Bitmap Create(int width, int height)
+        public Task<_2D.Bitmap> CreateAsync(string name, int width, int height)
         {
-            return new AvaloniaGameBitmap(new RenderTargetBitmap(new Avalonia.PixelSize(width, height)));
+            return Task.FromResult<_2D.Bitmap>(new AvaloniaGameBitmap(new RenderTargetBitmap(new Avalonia.PixelSize(width, height))));
         }
-        public _2D.Bitmap Create(int width, int height, bool dpiMode)
+        public Task<_2D.Bitmap> CreateAsync(string name,int width, int height, bool dpiMode)
         {
             double dpi = dpiMode ? AvaloniaWindow.Dpi / AvaloniaWindow.DesktopScaling : AvaloniaWindow.Dpi;
-            return new AvaloniaGameBitmap(new RenderTargetBitmap(new Avalonia.PixelSize(width, height), new Avalonia.Vector(dpi, dpi)));
+            return Task.FromResult<_2D.Bitmap>(new AvaloniaGameBitmap(new RenderTargetBitmap(new Avalonia.PixelSize(width, height), new Avalonia.Vector(dpi, dpi))));
         }
 
-        public _2D.Bitmap Create(Stream stream)
+        public Task<_2D.Bitmap> CreateAsync(string name, Stream stream)
         {
             var bmps = new Avalonia.Media.Imaging.Bitmap(stream);
             var bmp = new RenderTargetBitmap(new Avalonia.PixelSize(bmps.PixelSize.Width, bmps.PixelSize.Height));
             using DrawingContext mgfx = new DrawingContext(bmp.CreateDrawingContext(null));
             mgfx.DrawImage(bmps, new Avalonia.Rect(0, 0, bmps.PixelSize.Width, bmps.PixelSize.Height));
-            return new AvaloniaGameBitmap(bmp);
+            return Task.FromResult<_2D.Bitmap>(new AvaloniaGameBitmap(bmp));
         }
     }
 }

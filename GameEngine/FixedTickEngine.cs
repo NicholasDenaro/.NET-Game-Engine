@@ -57,9 +57,26 @@ namespace GameEngine
                 while (true)
                 {
                     sw.Restart();
-                    Tick();
+                    try
+                    {
+                        Tick();
+                    }
+                    catch(Exception ex)
+                    {
+
+                        Console.WriteLine(ex);
+                        throw;
+                    }
                     this.tickTime = sw.ElapsedTicks;
-                    Draw();
+                    try
+                    {
+                        Draw();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        throw;
+                    }
                     this.drawTime = sw.ElapsedTicks - tickTime;
 
                     diff = this.period - sw.ElapsedTicks;

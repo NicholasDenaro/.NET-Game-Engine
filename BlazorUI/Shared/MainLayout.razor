@@ -1,41 +1,165 @@
 ﻿@using BlazorUI.Client
 @using System.Diagnostics
+@using Microsoft.JSInterop.Implementation
+@inject IJSRuntime JS
 @inherits LayoutComponentBase
 
-<div class="page">
+<div class="page" @onkeydown=@Pressed @onkeyup=@Released tabindex="0">
+    <div class="sprites" style="height: 0px; overflow:hidden;">
+        @foreach (var bmp in bitmaps)
+        {
+            var bmpId = bmp;
+            <img id="@bmpId" @ref="@bmpRefs[bmpId]"/>
+        }
+        @foreach (var cv in canvases)
+        {
+            var bmpId = cv.Item1;
+            var width = cv.Item2;
+            var height = cv.Item3;
+            <BECanvas Width=width Height=height @ref="@cvRefs[bmpId]"></BECanvas>
+        }
+    </div>
     <div class="canvas" style="@style">
         <BECanvas Width=@width Height=@height @ref=canvas></BECanvas>
     </div>
 </div>
 
+
 @code
 {
+    public static MainLayout Instance;
     private Canvas2DContext _context;
     BECanvasComponent canvas;
-    int width = 320;
-    int height = 240;
+    List<string> bitmaps = new List<string>();
+    Dictionary<string, ElementReference> bmpRefs = new Dictionary<string, ElementReference>();
+    List<(string, int, int)> canvases = new List<(string, int, int)>();
+    Dictionary<string, BECanvasComponent> cvRefs = new Dictionary<string, BECanvasComponent>();
+    int width = (int)(320 * 1);
+    int height = (int)(240 * 1);
+    double scale = 1;
     string style = "";
+
+    public void Pressed(KeyboardEventArgs args)
+    {
+        Console.WriteLine(args.Key);
+    }
+
+    public void Released(KeyboardEventArgs args)
+    {
+        Console.WriteLine(args.Key);
+    }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
+        Instance = this;
+    }
+
+    public static async Task WaitInitialized()
+    {
+        while (Instance == null)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+        }
     }
 
     int x = 0;
-    int timer = 0;
     Stopwatch sw = new Stopwatch();
-    public async Task Draw()
+    public async Task Draw(Drawer2DBlazor drawer)
     {
         await this._context.ClearRectAsync(0, 0, width, height);
-        await this._context.SetFillStyleAsync("green");
-        await this._context.FillRectAsync(x++, 100, 100, 100);
-        await this._context.StrokeTextAsync($"{x}", 0, 20);
+        await this._context.SetFillStyleAsync("white");
+        await this._context.SetStrokeStyleAsync("white");
+        await this._context.StrokeRectAsync(0, 0, width, height);
+
+
+        //Console.WriteLine("Attempting to draw");
+        try
+        {
+            await this._context.StrokeTextAsync($"{x}", 4, 16);
+            await drawer.Draw(this._context);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            //throw;
+        }
+        //Console.WriteLine("Finished drawing");
+
+        await this._context.StrokeTextAsync($"{x}", 4, 16);
+        x++;
+
         if (sw.ElapsedTicks >= Stopwatch.Frequency)
         {
-            Console.WriteLine($"x={x}");
+            //Console.WriteLine($"x={x}");
             x = 0;
             sw.Restart();
+        }
+    }
+
+    public async Task<BECanvasComponent> AddBitmap(string name, int width, int height)
+    {
+        if (bitmaps.Contains(name))
+        {
+            return cvRefs[name];
+        }
+
+        Console.WriteLine($"adding new canvas {name}");
+        canvases.Add((name, width, height));
+        this.StateHasChanged();
+        //this.OnInitialized();
+
+        while (!cvRefs.ContainsKey(name))
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+        }
+
+        await Task.Delay(TimeSpan.FromMilliseconds(10));
+
+        //return new ElementReference(name);
+        return cvRefs[name];
+    }
+
+    public async Task<ElementReference> AddBitmap(string name, DotNetStreamReference stream)
+    {
+        if (bitmaps.Contains(name))
+        {
+            return bmpRefs[name];
+        }
+
+        Console.WriteLine($"adding new bitmap {name}");
+        bitmaps.Add(name);
+        this.StateHasChanged();
+        //this.OnInitialized();
+
+        try
+        {
+            while (!bmpRefs.ContainsKey(name))
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(10));
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
+
+            try
+            {
+                await JS.InvokeVoidAsync("setImage", name, stream);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"failed to setImage {name}");
+                Console.WriteLine(ex);
+                throw;
+            }
+
+            //eref = new ElementReference(name);
+            return bmpRefs[name];
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
         }
     }
 
@@ -45,6 +169,7 @@
         if (firstRender)
         {
             this._context = await this.canvas.CreateCanvas2DAsync();
+            await this._context.ScaleAsync(scale, scale);
             BlazorWindow.Instance.Init(this);
             sw.Start();
             //await this._context.SetFillStyleAsync("green");

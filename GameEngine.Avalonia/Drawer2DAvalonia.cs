@@ -142,7 +142,7 @@ namespace GameEngine.UI.AvaloniaUI
                 {
                     //tiles = new RenderTargetBitmap(new PixelSize(map.Width, map.Height));
                     //using DrawingContext mgfx = new DrawingContext(tiles.CreateDrawingContext(null));
-                    tiles = (AvaloniaGameBitmap)_2D.Bitmap.Create(map.Width, map.Height);
+                    tiles = (AvaloniaGameBitmap)_2D.Bitmap.CreateAsync("_tiles", map.Width, map.Height).Result;
                     var mgfx = tiles.GetGraphics();
                     int x = 0;
                     int y = 0;
@@ -152,7 +152,7 @@ namespace GameEngine.UI.AvaloniaUI
                         _2D.BitmapSection bmpSection = map.Image(tile);
                         _2D.Bitmap img = bmpSection.Bitmap as AvaloniaGameBitmap;
 
-                        mgfx.DrawImage(img, bmpSection.Bounds, new Rectangle(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height));
+                        mgfx.DrawImageAsync(img, bmpSection.Bounds, new Rectangle(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height));
                         x++;
                         if (x >= map.Columns)
                         {

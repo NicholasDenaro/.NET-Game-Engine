@@ -10,6 +10,20 @@
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="BlazorUI.styles.css" rel="stylesheet" />
+
+    <script>
+        window.setImage = async (imageElementId, imageStream) => {
+            const arrayBuffer = await imageStream.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            const url = URL.createObjectURL(blob);
+            document.getElementById(imageElementId).src = url;
+            URL.revokeObjectURL(url);
+        }
+
+        function GetElementById(id) {
+            return document.getElementById(id);
+        }
+    </script>
 </head>
 
 <body>
