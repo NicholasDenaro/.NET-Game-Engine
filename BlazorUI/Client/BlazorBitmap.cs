@@ -25,7 +25,7 @@ namespace BlazorUI.Client
         {
             Width = width;
             Height = height;
-            this.graphics = new BlazorGraphics();
+            this.graphics = new BlazorGraphics(this);
         }
 
         public void Init(ElementReference bitmap)
@@ -70,12 +70,10 @@ namespace BlazorUI.Client
             {
                 if (IsInitialized)
                 {
-                    Console.WriteLine("canvas reference returned");
                     return canvas.CanvasReference;
                 }
                 else
                 {
-                    Console.WriteLine("empty is returned");
                     return new ElementReference();
                 }
             }
@@ -94,8 +92,10 @@ namespace BlazorUI.Client
     public class BlazorGraphics : GameEngine._2D.Graphics
     {
         private Canvas2DContext context;
-        public BlazorGraphics()
+        private BlazorBitmap bitmap;
+        public BlazorGraphics(BlazorBitmap bmp)
         {
+            bitmap = bmp;
         }
 
         private async Task WaitForGraphics()
@@ -104,6 +104,11 @@ namespace BlazorUI.Client
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(10));
             }
+        }
+
+        private static string ColorToString(Color color)
+        {
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}{color.A:X2}";
         }
 
         public void Init(Canvas2DContext context)
@@ -121,29 +126,27 @@ namespace BlazorUI.Client
             await this.context.EndBatchAsync();
         }
 
-        public override void Clear(Color color)
+        public override async Task Clear(Color color)
         {
-            //throw new NotImplementedException();
+            await this.context.ClearRectAsync(0, 0, bitmap.Width, bitmap.Height);
+            await DrawRectangle(color, 0, 0, bitmap.Width, bitmap.Height);
         }
 
-        public override void DrawArc(Color color, float v1, float v2, int v3, int v4, int v5, int v6)
+        public override async Task DrawArc(Color color, float v1, float v2, int v3, int v4, int v5, int v6)
         {
             //throw new NotImplementedException();
         }
 
         public override async Task DrawEllipseAsync(Color color, int x, int y, int width, int height)
         {
-            await this.context.SetStrokeStyleAsync($"#{color.R:X2}{color.G:X2}{color.B:X2}");
-            await this.context.SetFillStyleAsync($"#{color.R:X2}{color.G:X2}{color.B:X2}");
-            //await this.context.TransformAsync(width * 1.0 / Math.Max(width, height), 0, 0, height * 1.0 / Math.Max(width, height), 0, 0);
-            Console.WriteLine($"{x}, {y}, {width}, {height} -> {x + width / 2}, {y + height / 2}, {height / 2}");
+            await this.context.SetStrokeStyleAsync(ColorToString(color));
+            await this.context.SetFillStyleAsync(ColorToString(Color.Transparent));
             await this.context.BeginBatchAsync();
             await this.context.TransformAsync(width * 1.0 / Math.Max(width, height), 0, 0, height * 1.0 / Math.Max(width, height), 0, 0);
             await this.context.ArcAsync(x + width / 2, y + height / 2, height / 2, 0, Math.PI * 2, false);
             await this.context.StrokeAsync();
             await this.context.TransformAsync(Math.Max(width, height) * 1.0 / width, 0, 0, Math.Max(width, height) * 1.0 / height, 0, 0);
             await this.context.EndBatchAsync();
-            //await this.context.TransformAsync(1, 0, 0, 1, 0, 0);
         }
 
         public override async Task DrawImageAsync(Bitmap bmp, RectangleF source, RectangleF dest)
@@ -151,47 +154,62 @@ namespace BlazorUI.Client
             await context.DrawImageAsync((bmp as BlazorBitmap).Image(), source.X, source.Y, source.Width, source.Height, dest.X, dest.Y, dest.Width, dest.Height);
         }
 
-        public override void DrawLine(Color color, int x1, int y1, int x2, int y2)
+        public override async Task DrawLine(Color color, int x1, int y1, int x2, int y2)
         {
-            //throw new NotImplementedException();
+            await this.context.LineToAsync(x1, y1);
+            await this.context.SetStrokeStyleAsync(ColorToString(color));
+            await this.context.SetFillStyleAsync(ColorToString(color));
+            await this.context.BeginBatchAsync();
+            await this.context.LineToAsync(x2, y2);
+            await this.context.StrokeAsync();
+            await this.context.EndBatchAsync();
         }
 
-        public override void DrawRectangle(Color color, int x, int y, int width, int height)
+        public override async Task DrawRectangle(Color color, int x, int y, int width, int height)
         {
-            //throw new NotImplementedException();
+            await this.context.SetStrokeStyleAsync(ColorToString(color));
+            await this.context.SetFillStyleAsync(ColorToString(Color.Transparent));
+            await this.context.FillRectAsync(x, y, width, height);
         }
 
-        public override void DrawText(string text, int x, int y, Color color, int size)
+        public override async Task DrawText(string text, int x, int y, Color color, int size)
         {
-            //throw new NotImplementedException();
+            await this.context.SetStrokeStyleAsync(ColorToString(color));
+            await this.context.SetFillStyleAsync(ColorToString(color));
+            // TODO: set font size
+            foreach (string line in text.Split('\n'))
+            {
+                await this.context.FillTextAsync(line, x + 1, y + 10);
+                y += 10;
+            }
         }
 
-        public override void FillEllipse(Color color, int x, int y, int width, int height)
+        public override async Task FillEllipse(Color color, int x, int y, int width, int height)
         {
-            //throw new NotImplementedException();
-            Console.WriteLine("drawing ellipse");
-            this.context.SetStrokeStyleAsync($"#{color.R:X2}{color.G:X2}{color.B:X2}").Wait();
-            this.context.TransformAsync(width * 1.0 / Math.Max(width, height), 0, 0, height * 1.0 / Math.Max(width, height), 0, 0).Wait();
-            this.context.ArcAsync(x + width / 2 , y + height / 2, height / 2, 0, Math.PI).Wait();
-            this.context.TransformAsync(1, 0, 0, 1, 0, 0).Wait();
-            Console.WriteLine("drawing ellipse finished");
+            await this.context.SetStrokeStyleAsync(ColorToString(color));
+            await this.context.SetFillStyleAsync(ColorToString(color));
+            await this.context.TransformAsync(width * 1.0 / Math.Max(width, height), 0, 0, height * 1.0 / Math.Max(width, height), 0, 0);
+            await this.context.ArcAsync(x + width / 2 , y + height / 2, height / 2, 0, Math.PI);
+            await this.context.TransformAsync(1, 0, 0, 1, 0, 0);
         }
 
         public override async Task FillRectangleAsync(Color color, int x, int y, int width, int height)
         {
-            //throw new NotImplementedException();
+            await this.context.SetStrokeStyleAsync(ColorToString(color));
+            await this.context.SetFillStyleAsync(ColorToString(color));
+            await this.context.FillRectAsync(x, y, width, height);
         }
 
-        public override IDisposable ScaleTransform(float x, float y)
+        public override async Task<IAsyncDisposable> ScaleTransform(float x, float y)
         {
-            //throw new NotImplementedException();
-            return new Disposeable();
+            await this.context.TransformAsync(x, 0, 0, y, 0, 0);
+            return new TransformDisposeable(async () => await this.context.TransformAsync(1.0 / x, 0, 0, 1.0 / y, 0, 0));
         }
 
-        public override IDisposable TranslateTransform(int x, int y)
+        public override async Task<IAsyncDisposable> TranslateTransform(int x, int y)
         {
-            //throw new NotImplementedException();
-            return new Disposeable();
+            await this.context.TransformAsync(1, 0, 0, 1, x, y);
+            return new TransformDisposeable(async () => await this.context.TransformAsync(1, 0, 0, 1, -x, -y));
         }
 
         protected override void disposeManaged()
@@ -205,11 +223,18 @@ namespace BlazorUI.Client
         }
     }
 
-    public class Disposeable : IDisposable
+    public class TransformDisposeable : IAsyncDisposable
     {
-        public void Dispose()
+        private Func<Task> revert;
+
+        public TransformDisposeable(Func<Task> revert)
         {
-            throw new NotImplementedException();
+            this.revert = revert;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await revert();
         }
     }
 
@@ -259,8 +284,6 @@ namespace BlazorUI.Client
             ms.Read(bint, 0, bint.Length);
 
             int height = BitConverter.ToInt32(bint.Reverse().ToArray());
-
-            Console.WriteLine($"{name} w{width} h{height}");
 
             var bmp = new BlazorBitmap(width, height);
 

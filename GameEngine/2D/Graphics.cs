@@ -47,23 +47,52 @@ namespace GameEngine._2D
             await DrawImageAsync(bmp.Bitmap, bmp.Bounds, dest);
         }
 
-        public abstract void Clear(Color color);
-        public abstract void DrawText(string text, int x, int y, Color color, int size);
-        public void DrawText(string text, Point point, Color color, int size)
+        public abstract Task Clear(Color color);
+        public abstract Task DrawText(string text, int x, int y, Color color, int size);
+        public async Task DrawText(string text, Point point, Color color, int size)
         {
-            DrawText(text, point.X, point.Y, color, size);
+            await DrawText(text, point.X, point.Y, color, size);
         }
-        public abstract void DrawRectangle(Color color, int x, int y, int width, int height);
+        public abstract Task DrawRectangle(Color color, int x, int y, int width, int height);
         public abstract Task FillRectangleAsync(Color color, int x, int y, int width, int height);
         public async Task FillRectangleAsync(Color color, Rectangle rect)
         {
             await FillRectangleAsync(color, rect.X, rect.Y, rect.Width, rect.Height);
         }
         public abstract Task DrawEllipseAsync(Color color, int x, int y, int width, int height);
-        public abstract void FillEllipse(Color color, int x, int y, int width, int height);
-        public abstract void DrawLine(Color color, int x1, int y1, int x2, int y2);
-        public abstract void DrawArc(Color color, float v1, float v2, int v3, int v4, int v5, int v6);
-        public abstract IDisposable TranslateTransform(int x, int y);
-        public abstract IDisposable ScaleTransform(float x, float y);
+        public abstract Task FillEllipse(Color color, int x, int y, int width, int height);
+        public abstract Task DrawLine(Color color, int x1, int y1, int x2, int y2);
+        public abstract Task DrawArc(Color color, float v1, float v2, int v3, int v4, int v5, int v6);
+        public abstract Task<IAsyncDisposable> TranslateTransform(int x, int y);
+        public abstract Task<IAsyncDisposable> ScaleTransform(float x, float y);
     }
+
+    public class AsyncDisposableWrapper : IAsyncDisposable
+    {
+        private IDisposable disposable;
+
+        public AsyncDisposableWrapper(IDisposable disposable)
+        {
+            this.disposable = disposable;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            this.disposable.Dispose();
+            return ValueTask.CompletedTask;
+        }
+    }
+
+#if NET48
+    public interface IAsyncDisposable
+    {
+        ValueTask DisposeAsync();
+    }
+
+    public struct ValueTask
+    {
+        public bool IsCompleted { get; }
+        public static ValueTask CompletedTask;
+    }
+#endif
 }

@@ -28,6 +28,7 @@ namespace GameEngine.UI.NAudio
             }
             else
             {
+                Console.WriteLine("Audio is not supported for this platform");
                 return;
             }
 

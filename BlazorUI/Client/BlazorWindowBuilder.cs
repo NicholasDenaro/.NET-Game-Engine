@@ -9,7 +9,6 @@ namespace BlazorUI.Client
     {
         public IGameWindow Run(IGameUI frame)
         {
-            Console.WriteLine("GameEngineUIMain");
             GameEngine._2D.Bitmap.SetBitmapImpl(new BlazorBitmapCreator());
             var builder = WebAssemblyHostBuilder.CreateDefault(null);
             builder.RootComponents.Add<App>("#app");
@@ -22,7 +21,7 @@ namespace BlazorUI.Client
                 await builder.Build().RunAsync();
             });
 
-            return new BlazorWindow();
+            return new BlazorWindow(frame.Bounds.Width, frame.Bounds.Height, frame.ScaleX, frame.ScaleY);
         }
     }
 }

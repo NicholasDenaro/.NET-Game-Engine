@@ -98,9 +98,10 @@ namespace GameEngine.UI.AvaloniaUI
         {
         }
 
-        public override void Clear(_2D.Color color)
+        public override async Task Clear(_2D.Color color)
         {
             container.Clear(color);
+            await Task.CompletedTask;
         }
 
         public override Task DrawImageAsync(_2D.Bitmap bmp, RectangleF source, RectangleF dest)
@@ -128,7 +129,7 @@ namespace GameEngine.UI.AvaloniaUI
                 new Avalonia.Rect(dest.X, dest.Y, dest.Width, dest.Height));
         }
 
-        public override void DrawText(string text, int x, int y, _2D.Color color, int size)
+        public override Task DrawText(string text, int x, int y, _2D.Color color, int size)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -141,6 +142,8 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 DrawTextImpl(text, x, y, color, size);
             }
+
+            return Task.CompletedTask;
         }
 
         private void DrawTextImpl(string text, int x, int y, _2D.Color color, int size)
@@ -151,7 +154,7 @@ namespace GameEngine.UI.AvaloniaUI
                     new FormattedText(text, new Typeface("consola", FontStyle.Normal, FontWeight.Bold), size, TextAlignment.Left, TextWrapping.NoWrap, new Avalonia.Size(1000, 1000)));
         }
 
-        public override void DrawRectangle(_2D.Color color, int x, int y, int width, int height)
+        public override Task DrawRectangle(_2D.Color color, int x, int y, int width, int height)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -164,6 +167,8 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 DrawRectangleImpl(color, x, y, width, height);
             }
+
+            return Task.CompletedTask;
         }
 
         private void DrawRectangleImpl(_2D.Color color, int x, int y, int width, int height)
@@ -199,7 +204,7 @@ namespace GameEngine.UI.AvaloniaUI
                 new Avalonia.Rect(x, y, width, height));
         }
 
-        public override void FillEllipse(_2D.Color color, int x, int y, int width, int height)
+        public override Task FillEllipse(_2D.Color color, int x, int y, int width, int height)
         {
             Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
             {   
@@ -210,6 +215,8 @@ namespace GameEngine.UI.AvaloniaUI
                     width / 2,
                     height / 2);
             });
+
+            return Task.CompletedTask;
         }
 
         public override Task DrawEllipseAsync(_2D.Color color, int x, int y, int width, int height)
@@ -239,7 +246,7 @@ namespace GameEngine.UI.AvaloniaUI
                     height / 2);
         }
 
-        public override void DrawArc(_2D.Color color, float v1, float v2, int v3, int v4, int v5, int v6)
+        public override Task DrawArc(_2D.Color color, float v1, float v2, int v3, int v4, int v5, int v6)
         {
             if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
@@ -252,6 +259,8 @@ namespace GameEngine.UI.AvaloniaUI
             {
                 DrawArcImpl(color, v1, v2, v3, v4, v5, v6);
             }
+
+            return Task.CompletedTask;
         }
 
         public void DrawArcImpl(_2D.Color color, float v1, float v2, int v3, int v4, int v5, int v6)
@@ -269,22 +278,24 @@ namespace GameEngine.UI.AvaloniaUI
                 );
         }
 
-        public override void DrawLine(_2D.Color color, int x1, int y1, int x2, int y2)
+        public override Task DrawLine(_2D.Color color, int x1, int y1, int x2, int y2)
         {
             gfx.DrawLine(
                 new Pen(new SolidColorBrush(new Avalonia.Media.Color(color.A, color.R, color.G, color.B))),
                 new Avalonia.Point(x1, y1),
                 new Avalonia.Point(x2, y2));
+
+            return Task.CompletedTask;
         }
 
-        public override IDisposable TranslateTransform(int x, int y)
+        public override Task<IAsyncDisposable> TranslateTransform(int x, int y)
         {
-            return gfx.PushPreTransform(new Avalonia.Matrix(1, 0, 0, 1, x, y));
+            return Task.FromResult<IAsyncDisposable>(new AsyncDisposableWrapper(gfx.PushPreTransform(new Avalonia.Matrix(1, 0, 0, 1, x, y))));
         }
 
-        public override IDisposable ScaleTransform(float x, float y)
+        public override Task<IAsyncDisposable> ScaleTransform(float x, float y)
         {
-            return gfx.PushPreTransform(new Avalonia.Matrix(x, 0, 0, y , 0, 0));
+            return Task.FromResult<IAsyncDisposable>(new AsyncDisposableWrapper(gfx.PushPreTransform(new Avalonia.Matrix(x, 0, 0, y , 0, 0))));
         }
     }
 

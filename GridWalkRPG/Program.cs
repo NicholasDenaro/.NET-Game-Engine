@@ -28,7 +28,7 @@ namespace GridWalkRPG
         public static GameEngine.GameEngine Engine { get; private set; }
 
         public static int TPS = 60;
-        public static bool playmusic = false;
+        public static bool playmusic = true;
         public static GameUI UI { get; private set; }
         public static Queue<string> states = new Queue<string>();
 
@@ -38,7 +38,6 @@ namespace GridWalkRPG
 
         public static async Task Main(string[] args)
         {
-            Console.WriteLine("ExampleMain");
             (Engine, UI) = new GameBuilder()
                 .GameEngine(new FixedTickEngine(TPS))
 #if Avalonia
@@ -101,7 +100,6 @@ namespace GridWalkRPG
             Engine.TickEnd(0) += (s, e) => Entity.Entities[playerId].TickAction = pActions.TickAction;
             player.TickAction = pActions.TickAction;
             Engine.AddEntity(0, player);
-            Engine.TickEnd(0) += (s, e) => dp.ImageIndex++;
 
             Bitmap circleb = await Bitmap.CreateAsync("circleb", 16, 16);
             hudBitmap = await Bitmap.CreateAsync("hudb", UI.Bounds.Width, UI.Bounds.Height);
@@ -402,16 +400,16 @@ namespace GridWalkRPG
             { (int)Avalonia.Input.Key.OemCloseBrackets, KEYS.EXIT },
 #endif
 #if Blazor
-            { (int)0, KEYS.UP},
-            { (int)1, KEYS.DOWN },
-            { (int)2, KEYS.LEFT },
-            { (int)3, KEYS.RIGHT },
-            { (int)4, KEYS.A },
-            { (int)5, KEYS.B },
-            { (int)6, KEYS.X },
-            { (int)7, KEYS.Y },
-            { (int)8, KEYS.RESET },
-            { (int)9, KEYS.EXIT },
+            { BlazorWindow.KeyCodes.ArrowUp, KEYS.UP},
+            { BlazorWindow.KeyCodes.ArrowDown, KEYS.DOWN },
+            { BlazorWindow.KeyCodes.ArrowLeft, KEYS.LEFT },
+            { BlazorWindow.KeyCodes.ArrowRight, KEYS.RIGHT },
+            { BlazorWindow.KeyCodes.KeyX, KEYS.A },
+            { BlazorWindow.KeyCodes.KeyZ, KEYS.B },
+            { BlazorWindow.KeyCodes.KeyA, KEYS.X },
+            { BlazorWindow.KeyCodes.KeyS, KEYS.Y },
+            { BlazorWindow.KeyCodes.OEMBracketOpen, KEYS.RESET },
+            { BlazorWindow.KeyCodes.OEMBracketClose, KEYS.EXIT },
 #endif
         };
         public static Dictionary<XBoxController.Key, object> xboxkeymap = new Dictionary<XBoxController.Key, object>()

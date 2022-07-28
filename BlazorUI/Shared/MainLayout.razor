@@ -19,7 +19,7 @@
             <BECanvas Width=width Height=height @ref="@cvRefs[bmpId]"></BECanvas>
         }
     </div>
-    <div class="canvas" style="@style">
+    <div class="gamePanel" style="@style">
         <BECanvas Width=@width Height=@height @ref=canvas></BECanvas>
     </div>
 </div>
@@ -34,19 +34,24 @@
     Dictionary<string, ElementReference> bmpRefs = new Dictionary<string, ElementReference>();
     List<(string, int, int)> canvases = new List<(string, int, int)>();
     Dictionary<string, BECanvasComponent> cvRefs = new Dictionary<string, BECanvasComponent>();
-    int width = (int)(320 * 1);
-    int height = (int)(240 * 1);
+    int width = 1;
+    int height = 1;
     double scale = 1;
     string style = "";
 
+    public delegate void KeyEvent(KeyboardEventArgs args);
+
+    public KeyEvent keyPress;
+    public KeyEvent keyRelease;
+
     public void Pressed(KeyboardEventArgs args)
     {
-        Console.WriteLine(args.Key);
+        keyPress(args);
     }
 
     public void Released(KeyboardEventArgs args)
     {
-        Console.WriteLine(args.Key);
+        keyRelease(args);
     }
 
     protected override void OnInitialized()
@@ -54,6 +59,12 @@
         base.OnInitialized();
         style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
         Instance = this;
+    }
+
+    public void HookKeyboard(KeyEvent press, KeyEvent release)
+    {
+        this.keyPress += press;
+        this.keyRelease += release;
     }
 
     public static async Task WaitInitialized()
@@ -64,9 +75,29 @@
         }
     }
 
+    public async Task SetDesktopScaling(BlazorPanel panel)
+    {
+        panel.DesktopScaling = await JS.InvokeAsync<double>("Utils.getPixelRatio");
+    }
+
+    public void SetBounds(int w, int h, double sw, double sh)
+    {
+        Task.Run(async () =>
+        {
+            double devicePixelRatio = await JS.InvokeAsync<double>("Utils.getPixelRatio");
+            width = (int)(w);
+            height = (int)(h);
+            style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
+            
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+            await JS.InvokeVoidAsync("Utils.disableSmoothing");
+        });
+    }
+
     int x = 0;
     Stopwatch sw = new Stopwatch();
-    public async Task Draw(Drawer2DBlazor drawer)
+    public async Task Draw(BlazorPanel panel, Drawer2DBlazor drawer)
     {
         await this._context.ClearRectAsync(0, 0, width, height);
         await this._context.SetFillStyleAsync("white");
@@ -74,25 +105,22 @@
         await this._context.StrokeRectAsync(0, 0, width, height);
 
 
-        //Console.WriteLine("Attempting to draw");
         try
         {
             await this._context.StrokeTextAsync($"{x}", 4, 16);
-            await drawer.Draw(this._context);
+            await drawer.Draw(panel, this._context);
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            //throw;
+            throw;
         }
-        //Console.WriteLine("Finished drawing");
 
         await this._context.StrokeTextAsync($"{x}", 4, 16);
         x++;
 
         if (sw.ElapsedTicks >= Stopwatch.Frequency)
         {
-            //Console.WriteLine($"x={x}");
             x = 0;
             sw.Restart();
         }
@@ -105,10 +133,8 @@
             return cvRefs[name];
         }
 
-        Console.WriteLine($"adding new canvas {name}");
         canvases.Add((name, width, height));
         this.StateHasChanged();
-        //this.OnInitialized();
 
         while (!cvRefs.ContainsKey(name))
         {
@@ -117,7 +143,6 @@
 
         await Task.Delay(TimeSpan.FromMilliseconds(10));
 
-        //return new ElementReference(name);
         return cvRefs[name];
     }
 
@@ -128,10 +153,8 @@
             return bmpRefs[name];
         }
 
-        Console.WriteLine($"adding new bitmap {name}");
         bitmaps.Add(name);
         this.StateHasChanged();
-        //this.OnInitialized();
 
         try
         {
@@ -144,16 +167,14 @@
 
             try
             {
-                await JS.InvokeVoidAsync("setImage", name, stream);
+                await JS.InvokeVoidAsync("Utils.setImage", name, stream);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"failed to setImage {name}");
                 Console.WriteLine(ex);
                 throw;
             }
 
-            //eref = new ElementReference(name);
             return bmpRefs[name];
         }
         catch (Exception ex)
@@ -169,15 +190,8 @@
         if (firstRender)
         {
             this._context = await this.canvas.CreateCanvas2DAsync();
-            await this._context.ScaleAsync(scale, scale);
             BlazorWindow.Instance.Init(this);
             sw.Start();
-            //await this._context.SetFillStyleAsync("green");
-
-            //await this._context.FillRectAsync(10, 100, 100, 100);
-
-            //await this._context.SetFontAsync("48px serif");
-            //await this._context.StrokeTextAsync("Hello Blazor!!!", 10, 100);
         }
     }
 }

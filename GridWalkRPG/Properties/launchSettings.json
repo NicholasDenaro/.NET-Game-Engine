@@ -13,6 +13,9 @@
       "environmentVariables": {},
       "distributionName": ""
     },
+    "GridWalkRPGExampleAvalonia": {
+      "commandName": "Project"
+    },
     "GridWalkRPGExampleBlazor": {
       "commandName": "Project",
       "launchBrowser": true,

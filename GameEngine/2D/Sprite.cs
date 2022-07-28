@@ -37,13 +37,11 @@ namespace GameEngine._2D
 
         private Sprite(string name, string bmpFile, int tileWidth, int tileHeight, int x = 0, int y = 0) : this(name, loadingAssembly.GetManifestResourceStream($"{loadingAssembly.GetName().Name}.{bmpFile.Replace("/", ".")}") ?? File.OpenRead(bmpFile), x, y)
         {
-            Console.WriteLine($"==spriteload=={loadingAssembly.GetName().Name}.{bmpFile.Replace("/", ".")}");
             Width = tileWidth;
             Height = tileHeight;
 
             initCallback = () =>
             {
-                Console.WriteLine($"img w{image.Width} h{image.Height}");
                 hSubImages = Math.Max(image.Width / Width, 1);
                 vSubImages = Math.Max(image.Height / Height, 1);
             };

@@ -74,7 +74,6 @@ namespace GameEngine
 
         public static async Task<Location> Load(Assembly assembly, string fname)
         {
-            Console.WriteLine($"file: {fname}\nresources: {string.Join(",\n", assembly.GetManifestResourceNames())}");
             using (Stream stream = assembly.GetManifestResourceStream(fname))
             using (BinaryReader reader = new BinaryReader(stream))
             {
@@ -84,7 +83,6 @@ namespace GameEngine
                 int tileWidth = reader.ReadInt32();
                 int tileHeight = reader.ReadInt32();
                 Sprite sprite = await Sprite.Create(Path.GetFileNameWithoutExtension(spName), spName, tileWidth, tileHeight);
-                Console.WriteLine($"loaded baked in sprite: {sprite.Name}\nw{sprite.Width}, h{sprite.Height}, h{sprite.HImages}, v{sprite.VImages}");
                 TileMap map = new TileMap(sprite, width, height);
                 Location location = new Location(map);
                 int tiles = reader.ReadInt32();

@@ -13,6 +13,9 @@ namespace BlazorUI.Client
 
         public SortedDictionary<int, List<Func<Canvas2DContext, Task>>> Drawings => drawings;
         public SortedDictionary<int, List<Func<Canvas2DContext, Task>>> Overlays => overlays;
+
+        public GameView2D View { get; set; }
+
         public Drawer2DBlazor()
         {
             drawings = new SortedDictionary<int, List<Func<Canvas2DContext, Task>>>();
@@ -65,7 +68,6 @@ namespace BlazorUI.Client
                         GameEngine._2D.BitmapSection bmpSection = description.Image();
                         BlazorBitmap img = bmpSection.Bitmap as BlazorBitmap;
 
-                        //Console.WriteLine($"drawing image: {img.Image().Id}");
                         if (img.IsInitialized && gfx != null)
                         {
                             await gfx.DrawImageAsync(img.Image(),
@@ -91,11 +93,7 @@ namespace BlazorUI.Client
             {
                 if (tiles == null)
                 {
-                    //tiles = new RenderTargetBitmap(new PixelSize(map.Width, map.Height));
-                    //using DrawingContext mgfx = new DrawingContext(tiles.CreateDrawingContext(null));
-                    Console.WriteLine("Trying to create _tiles");
                     tiles = (await GameEngine._2D.Bitmap.CreateAsync("_tiles", map.Width, map.Height)) as BlazorBitmap;
-                    Console.WriteLine("Created tile map");
                 }
                 else if (tiles.IsInitialized && !createdMap)
                 {
@@ -103,11 +101,9 @@ namespace BlazorUI.Client
                     int x = 0;
                     int y = 0;
 
-                    //await (mgfx as BlazorGraphics).BatchStart();
                     foreach (int tile in map.Tiles)
                     {
                         GameEngine._2D.BitmapSection bmpSection = map.Image(tile);
-                        //Console.WriteLine($"{tile}: {bmpSection.Bounds.X},{bmpSection.Bounds.Y},{bmpSection.Bounds.Width},{bmpSection.Bounds.Height}");
                         GameEngine._2D.Bitmap img = bmpSection.Bitmap as BlazorBitmap;
 
                         await mgfx.DrawImageAsync(img, bmpSection.Bounds, new Rectangle(x * map.Sprite.Width, y * map.Sprite.Height, map.Sprite.Width, map.Sprite.Height));
@@ -118,38 +114,52 @@ namespace BlazorUI.Client
                             y++;
                         }
                     }
-                    //await (mgfx as BlazorGraphics).BatchEnd();
                     createdMap = true;
-                    Console.WriteLine("==Finished creating tilemap image==");
                 }
                 if (gfx != null && tiles != null && tiles.IsInitialized && createdMap)
                 {
-                    //Console.WriteLine("drawing tilemap to screen");
                     await gfx.DrawImageAsync(tiles.Image(), 0, 0, tiles.Width, tiles.Height, 0, 0, tiles.Width, tiles.Height);
                 }
             }
         }
 
-        public async Task Draw(Canvas2DContext gfx)
+        public async Task Draw(BlazorPanel panel, Canvas2DContext gfx)
         {
             var localDrawings = new SortedDictionary<int, List<Func<Canvas2DContext, Task>>>(drawings);
             var localOverlays = new SortedDictionary<int, List<Func<Canvas2DContext, Task>>>(overlays);
 
             drawings.Clear();
             overlays.Clear();
-            foreach (var key in localDrawings.Keys)
+
+
+            if (localDrawings != null)
             {
-                foreach (Func<Canvas2DContext, Task> act in localDrawings[key])
+                await gfx.BeginBatchAsync();
+                await gfx.ScaleAsync(panel.ScaleX, panel.ScaleY);
+                await gfx.TranslateAsync(-View?.ViewBounds.X ?? 0, -View?.ViewBounds.Y ?? 0);
+
+                foreach (var key in localDrawings.Keys)
                 {
-                    await act(gfx);
+                    foreach (Func<Canvas2DContext, Task> act in localDrawings[key])
+                    {
+                        await act(gfx);
+                    }
                 }
+
+                await gfx.TranslateAsync(View?.ViewBounds.X ?? 0, View?.ViewBounds.Y ?? 0);
+                await gfx.ScaleAsync(1.0 / panel.ScaleX, 1.0 / panel.ScaleY);
+                await gfx.EndBatchAsync();
+
             }
 
-            foreach (var key in localOverlays.Keys)
+            if (localOverlays != null)
             {
-                foreach (Func<Canvas2DContext, Task> act in localOverlays[key])
+                foreach (var key in localOverlays.Keys)
                 {
-                    await act(gfx);
+                    foreach (Func<Canvas2DContext, Task> act in localOverlays[key])
+                    {
+                        await act(gfx);
+                    }
                 }
             }
         }
