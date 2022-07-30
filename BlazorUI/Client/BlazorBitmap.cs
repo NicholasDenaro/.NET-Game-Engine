@@ -142,8 +142,9 @@ namespace BlazorUI.Client
             await this.context.SetStrokeStyleAsync(ColorToString(color));
             await this.context.SetFillStyleAsync(ColorToString(Color.Transparent));
             await this.context.BeginBatchAsync();
+            int radius = Math.Max(width / 2, height / 2);
             await this.context.TransformAsync(width * 1.0 / Math.Max(width, height), 0, 0, height * 1.0 / Math.Max(width, height), 0, 0);
-            await this.context.ArcAsync(x + width / 2, y + height / 2, height / 2, 0, Math.PI * 2, false);
+            await this.context.ArcAsync(x + radius, y + radius, radius, 0, Math.PI * 2, false);
             await this.context.StrokeAsync();
             await this.context.TransformAsync(Math.Max(width, height) * 1.0 / width, 0, 0, Math.Max(width, height) * 1.0 / height, 0, 0);
             await this.context.EndBatchAsync();
@@ -176,11 +177,12 @@ namespace BlazorUI.Client
         {
             await this.context.SetStrokeStyleAsync(ColorToString(color));
             await this.context.SetFillStyleAsync(ColorToString(color));
+            await this.context.SetFontAsync($"{size}px serif");
             // TODO: set font size
             foreach (string line in text.Split('\n'))
             {
-                await this.context.FillTextAsync(line, x + 1, y + 10);
-                y += 10;
+                await this.context.FillTextAsync(line, x + 1 + (line[0] == '\t' ? size / 2 : 0), y + size);
+                y += size;
             }
         }
 
@@ -188,9 +190,13 @@ namespace BlazorUI.Client
         {
             await this.context.SetStrokeStyleAsync(ColorToString(color));
             await this.context.SetFillStyleAsync(ColorToString(color));
+            await this.context.BeginBatchAsync();
+            int radius = Math.Max(width / 2, height / 2);
             await this.context.TransformAsync(width * 1.0 / Math.Max(width, height), 0, 0, height * 1.0 / Math.Max(width, height), 0, 0);
-            await this.context.ArcAsync(x + width / 2 , y + height / 2, height / 2, 0, Math.PI);
-            await this.context.TransformAsync(1, 0, 0, 1, 0, 0);
+            await this.context.ArcAsync(x + radius, y + radius, radius, 0, Math.PI * 2, false);
+            await this.context.StrokeAsync();
+            await this.context.TransformAsync(Math.Max(width, height) * 1.0 / width, 0, 0, Math.Max(width, height) * 1.0 / height, 0, 0);
+            await this.context.EndBatchAsync();
         }
 
         public override async Task FillRectangleAsync(Color color, int x, int y, int width, int height)

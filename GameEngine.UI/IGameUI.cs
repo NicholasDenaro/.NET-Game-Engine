@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GameEngine.UI
 {
     public interface IGameUI
     {
         void Start();
+
+        Task WaitInitialized();
 
         void PlayResource(string resource);
         void PlayStream(Stream stream);

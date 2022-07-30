@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace GameEngine.UI
 {
@@ -22,7 +23,7 @@ namespace GameEngine.UI
 
         internal IGameWindowBuilder windowBuilder;
 
-        private ISoundPlayer soundPlayer;
+        public ISoundPlayer SoundPlayer { get; private set; }
 
         public GameUI(IGameWindowBuilder windowBuilder, int x, int y, int width, int height, int xScale, int yScale)
         {
@@ -51,9 +52,23 @@ namespace GameEngine.UI
             }
         }
 
+        public void SetInitialized()
+        {
+            initialized = true;
+        }
+
+        private bool initialized;
+        public async Task WaitInitialized()
+        {
+            while (!initialized)
+            {
+                await Task.Delay(1);
+            }
+        }
+
         internal void SetSoundPlayer(ISoundPlayer soundPlayer)
         {
-            this.soundPlayer = soundPlayer;
+            this.SoundPlayer = soundPlayer;
         }
 
         public void Start()
@@ -74,25 +89,45 @@ namespace GameEngine.UI
             this.Window.SetBounds(x, y, width, height);
         }
 
+        public delegate Task CacheEvent(string name, Stream stream, int samples);
+
+        public CacheEvent CacheImpl { get; set; }
+
+        public async Task CacheAduio(ITrack track)
+        {
+            foreach (ISound sound in track.Channels())
+            {
+                await CacheAduio(sound);
+            }
+        }
+
+        public async Task CacheAduio(ISound sound)
+        {
+            if (CacheImpl != null)
+            {
+                await CacheImpl(sound.Name, sound.GetStream(), sound.TotalSamples);
+            }
+        }
+
         public void PlayResource(string resource)
         {
             Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{resource}");
-            soundPlayer.PlayStream(stream);
+            SoundPlayer.PlayStream(stream);
         }
 
         public void PlayStream(Stream stream)
         {
-            soundPlayer.PlayStream(stream);
+            SoundPlayer.PlayStream(stream);
         }
 
         public void PlaySound(ISound sound)
         {
-            soundPlayer.PlaySound(sound);
+            SoundPlayer.PlaySound(sound);
         }
 
         public void PlayTrack(ITrack track)
         {
-            soundPlayer.PlayTrack(track);
+            SoundPlayer.PlayTrack(track);
         }
 
         public void DrawHandle(object sender, View view)

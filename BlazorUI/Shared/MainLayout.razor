@@ -75,6 +75,50 @@
         }
     }
 
+    public async Task CacheAudio(string name, Stream stream, int samples)
+    {
+        await JS.InvokeVoidAsync("GameAudioPlayer.cacheAudio", name, new DotNetStreamReference(stream, true), samples);
+    }
+
+    //public async Task SoundSink(float[] floatBuffer, int channels)
+    //{
+    //    Stopwatch sw = Stopwatch.StartNew();
+    //    float[] unweavedBuffer = new float[floatBuffer.Length];
+    //    int offsets = floatBuffer.Length / channels;
+    //    for (int i = 0; i < floatBuffer.Length; i++)
+    //    {
+    //        unweavedBuffer[(i / channels) + ((i % channels) * offsets)] = floatBuffer[i];
+    //    }
+
+    //    byte[] outbuf = new byte[floatBuffer.Length * sizeof(float)];
+    //    Buffer.BlockCopy(unweavedBuffer, 0, outbuf, 0, outbuf.Length);
+    //    var stream = new DotNetStreamReference(new MemoryStream(outbuf), true);
+    //    sw.Stop();
+    //    sw.Restart();
+
+    //    await JS.InvokeAsync<bool>("GameAudioPlayer.setupStream", stream);
+    //    // JS.InvokeAsync<bool>("GameAudioPlayer.playNoise", unweavedBuffer, channels);
+    //    sw.Stop();
+    //}
+
+    public async Task PlaySound(string name, Stream stream)
+    {
+        if (name != null)
+        {
+            await PlayCachedAudio(name);
+        }
+    }
+
+    public async Task PlayCachedAudio(string name)
+    {
+        await JS.InvokeAsync<bool>("GameAudioPlayer.playStream", name);
+    }
+
+    public async Task HookAudio(Stream stream)
+    {
+        await JS.InvokeAsync<bool>("GameAudioPlayer.setupStream", new DotNetStreamReference(stream, true));
+    }
+
     public async Task SetDesktopScaling(BlazorPanel panel)
     {
         panel.DesktopScaling = await JS.InvokeAsync<double>("Utils.getPixelRatio");
@@ -88,7 +132,7 @@
             width = (int)(w);
             height = (int)(h);
             style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
-            
+
             await Task.Delay(TimeSpan.FromMilliseconds(100));
 
             await JS.InvokeVoidAsync("Utils.disableSmoothing");
@@ -190,6 +234,8 @@
         if (firstRender)
         {
             this._context = await this.canvas.CreateCanvas2DAsync();
+            var sampleRate = await JS.InvokeAsync<int>("GameAudioPlayer.initAudio");
+            Console.WriteLine($"initialized audio context with sample rate {sampleRate}hz");
             BlazorWindow.Instance.Init(this);
             sw.Start();
         }

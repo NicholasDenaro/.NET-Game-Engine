@@ -2,6 +2,7 @@
 using GameEngine.UI;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using System.Diagnostics;
 
 namespace BlazorUI.Client
 {
@@ -19,6 +20,25 @@ namespace BlazorUI.Client
             Task.Run(async () =>
             {
                 await builder.Build().RunAsync();
+            });
+
+            Task.Run(async () =>
+            {
+                GameUI ui = frame as GameUI;
+                Stopwatch sw = Stopwatch.StartNew();
+                bool hooked = false;
+                while (!hooked && sw.Elapsed.TotalSeconds < 5)
+                {
+                    if (ui.SoundPlayer != null && MainLayout.Instance != null)
+                    {
+                        ui.CacheImpl += MainLayout.Instance.CacheAudio;
+                        ui.SoundPlayer.Hook(MainLayout.Instance.PlaySound);
+                        //ui.SoundPlayer.Hook(MainLayout.Instance.SoundSink);
+                        ui.SetInitialized();
+                        hooked = true;
+                    }
+                    await Task.Delay(1);
+                }
             });
 
             return new BlazorWindow(frame.Bounds.Width, frame.Bounds.Height, frame.ScaleX, frame.ScaleY);

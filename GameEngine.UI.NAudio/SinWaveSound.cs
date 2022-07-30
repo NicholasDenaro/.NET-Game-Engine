@@ -64,8 +64,8 @@ namespace GameEngine.UI.NAudio
             if (IsFinished)
             {
                 sw.Stop();
-                Console.WriteLine($"[end] {count} values");
-                Console.WriteLine($"{sw.ElapsedTicks * 1.0 / Stopwatch.Frequency}");
+                //Console.WriteLine($"[end] {count} values");
+                //Console.WriteLine($"{sw.ElapsedTicks * 1.0 / Stopwatch.Frequency}");
                 return -1;
             }
 
@@ -89,9 +89,9 @@ namespace GameEngine.UI.NAudio
                     else
                     {
                         Amplitude = 0;
-                        Console.WriteLine($"number of values in SinWaveSound is {count + n}");
-                        Console.WriteLine($"{sw.ElapsedTicks * 1.0 / Stopwatch.Frequency}");
-                        Console.WriteLine($"finished: {IsFinished}");
+                        //Console.WriteLine($"number of values in SinWaveSound is {count + n}");
+                        //Console.WriteLine($"{sw.ElapsedTicks * 1.0 / Stopwatch.Frequency}");
+                        //Console.WriteLine($"finished: {IsFinished}");
                         break;
                     }
                 }
@@ -120,10 +120,10 @@ namespace GameEngine.UI.NAudio
 
             if (first)
             {
-                Console.WriteLine($"SinWaveSound:{sampleCount} : {sampleCount * sizeof(float)}bytes");
+                //Console.WriteLine($"SinWaveSound:{sampleCount} : {sampleCount * sizeof(float)}bytes");
                 var bbuff = new byte[sampleCount * sizeof(float)];
                 Buffer.BlockCopy(buffer, 0, bbuff, 0, bbuff.Length);
-                Console.WriteLine($"{string.Join("", Convert.ToBase64String(bbuff).Take(20))}");
+                //Console.WriteLine($"{string.Join("", Convert.ToBase64String(bbuff).Take(20))}");
                 first = false;
                 sw.Start();
             }

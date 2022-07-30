@@ -44,6 +44,8 @@ namespace GameEngine.UI.AvaloniaUI
                 {
                     Thread.Yield();
                 }
+
+                (frame as GameUI).SetInitialized();
             }
             else
             {

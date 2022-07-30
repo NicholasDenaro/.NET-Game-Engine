@@ -30,7 +30,7 @@
             }
 
             static disableSmoothing() {
-                console.log(`clear smothing`);
+                console.log(`set canvas to proper scaling size and canvas context imageSmoothingEnabled to false`);
                 let gamePanel = document.getElementsByClassName('gamePanel')[0].getElementsByTagName('canvas')[0];
                 gamePanel.style = `scale: ${1 / window.devicePixelRatio}`;
                 let id = gamePanel.id;
@@ -39,8 +39,48 @@
         }
         window.Utils = Utils;
 
+        class GameAudioPlayer {
+            // for cross browser compatibility
+            AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = {};
 
-        
+            streams = {};
+
+            async cacheAudio(name, stream, samples) {
+                let channels = 2;
+                const buf = new Float32Array(await stream.arrayBuffer());
+
+                let arrayBuffer = new AudioBuffer({ numberOfChannels: channels, length: samples, sampleRate: this.audioCtx.sampleRate });
+
+                for (let ch = 0; ch < channels; ch++) {
+                    let buffering = arrayBuffer.getChannelData(ch);
+                    for (let i = 0; i < samples; i++) {
+                        buffering[i] = buf[i * 2 + (ch % 2)];
+                    }
+                }
+
+                this.streams[name] = arrayBuffer;
+            }
+
+            initAudio() {
+                console.log('init audio');
+                // creation of audio context cannot not be done on loading file, must be done afterwards
+                this.audioCtx = new AudioContext({ sampleRate: 44100 });
+                console.log('audio created');
+                console.log(`rate ${this.audioCtx.sampleRate}`);
+                return this.audioCtx.sampleRate;
+            }
+
+            playStream(name) {
+                let src = this.audioCtx.createBufferSource();
+                src.buffer = this.streams[name];
+                src.connect(this.audioCtx.destination);
+                src.start();
+            }
+        }
+
+        window.GameAudioPlayer = new GameAudioPlayer();
+        console.log(`setup js ${window.GameAudioPlayer}`);
     </script>
 
 </head >

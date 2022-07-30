@@ -13,6 +13,7 @@ namespace GameEngine.UI.NAudio
 
         public AudioConverter(WaveFileReader wfr)
         {
+            Console.WriteLine("Using AudioConverter");
             reader = wfr;
             format = wfr.WaveFormat;
             SetWaveFormat(outputSampleRate, outputChannels);

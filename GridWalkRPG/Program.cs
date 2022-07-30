@@ -49,14 +49,15 @@ namespace GridWalkRPG
                         .CanResize(false)
                         .ShowInTaskBar(true)
                     , 0, 0, 240, 160, 4, 4))
+                .SoundPlayer(new NAudioSoundPlayer())
 #endif
 #if Blazor
                 .GameView(new GameView2D(new Drawer2DBlazor(), 240, 160, 4, 4, Color.FromArgb(0, Color.Transparent)))
                 .GameFrame(new GameUI(
                     new BlazorUI.Client.BlazorWindowBuilder()
                     , 0, 0, 240, 160, 4, 4))
+                .SoundPlayer(new NAudioClipPlayer())
 #endif
-                .SoundPlayer(new NAudioSoundPlayer())
                 .Controller(new WindowsKeyController(keymap))
 #if Avalonia
                 .Controller(new XBoxController(xboxkeymap))
@@ -87,6 +88,9 @@ namespace GridWalkRPG
                     new []{ Engine.Controllers(0)[MAIN_CONTROLLER] });
             }
 #endif
+
+
+            await UI.WaitInitialized();
 
             Assembly assembly = Assembly.GetAssembly(typeof(Program));
             Sprite.loadingAssembly = assembly;
@@ -263,11 +267,23 @@ namespace GridWalkRPG
             MML mml3 = new MML(new string[] {
                 "t140l16r1r1r1r1r1r1r1r1o4drerf4grarb4>c8<bre2&e4drerf4grarb4>c8dre2&e4<drerf4grarb4>c8<bre2&e4d8crf8erg8fra8grb8ar>c8<br>d8crefrde1&e2r4",
             });
+
             if (playmusic)
             {
-                UI.PlayTrack(new NAudioMMLTrack(Waves.TRIANGLE, mml1));
-                UI.PlayTrack(new NAudioMMLTrack(Waves.PIANO, mml2));
-                UI.PlayTrack(new NAudioMMLTrack(Waves.PLUCKY, mml3));
+                await UI.CacheAduio(new NAudioMMLTrack("mml1", Waves.TRIANGLE, mml1));
+                await UI.CacheAduio(new NAudioMMLTrack("mml2", Waves.PIANO, mml2));
+                await UI.CacheAduio(new NAudioMMLTrack("mml3", Waves.PLUCKY, mml3));
+                bool firstTick = true;
+                Engine.TickEnd(0) += (s, e) =>
+                {
+                    if (firstTick)
+                    {
+                        UI.PlayTrack(NAudioMMLTrack.Tracks["mml1"]);
+                        UI.PlayTrack(NAudioMMLTrack.Tracks["mml2"]);
+                        UI.PlayTrack(NAudioMMLTrack.Tracks["mml3"]);
+                        firstTick = false;
+                    }
+                };
             }
 
             TileMap map = Engine.Location(0).Description as TileMap;

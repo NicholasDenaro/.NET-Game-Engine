@@ -7,6 +7,10 @@ namespace GameEngine.UI.Audio
 {
     public interface ISound
     {
+        string Name { get; }
+
         Stream GetStream();
+
+        int TotalSamples { get; }
     }
 }

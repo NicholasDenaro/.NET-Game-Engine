@@ -5,6 +5,7 @@ using NAudio.Wave.SampleProviders;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using static GameEngine.UI.Audio.ISoundPlayer;
 
 namespace GameEngine.UI.NAudio
 {
@@ -28,8 +29,7 @@ namespace GameEngine.UI.NAudio
             }
             else
             {
-                Console.WriteLine("Audio is not supported for this platform");
-                return;
+                player = new SourceWaveOutEvent();
             }
 
             WaveFormat format = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
@@ -38,6 +38,17 @@ namespace GameEngine.UI.NAudio
             player.Init(provider);
             initialized = true;
         }
+
+        public void Hook(WaveEvent evt)
+        {
+            SourceWaveOutEvent swoe;
+            if ((swoe = player as SourceWaveOutEvent) != null)
+            {
+                swoe.EventEmitter += evt;
+            }
+        }
+
+        public Stream MemoryStream => (player as SourceWaveOutEvent)?.Stream;
 
         public void PlayStream(Stream stream)
         {

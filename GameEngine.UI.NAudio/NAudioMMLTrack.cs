@@ -12,10 +12,16 @@ namespace GameEngine.UI.NAudio
         private MML mml;
         private IEnumerable<NAudioSound> channels;
 
-        public NAudioMMLTrack(Waves wave, MML mml)
+        public string Name { get; private set; }
+
+        public static Dictionary<string, NAudioMMLTrack> Tracks { get; private set; } = new Dictionary<string, NAudioMMLTrack>();
+
+        public NAudioMMLTrack(string name, Waves wave, MML mml)
         {
+            Name = name;
+            Tracks.Add(name, this);
             this.mml = mml;
-            this.channels = mml.Channels.Select(channel => new NAudioSound(wave, channel));
+            this.channels = mml.Channels.Select((channel, i) => new NAudioSound($"{name}_{i}", wave, channel)).ToList();
         }
 
         public int Length => mml.Channels.Count();
