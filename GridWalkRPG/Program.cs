@@ -34,7 +34,8 @@ namespace GridWalkRPG
 
         private static Bitmap hudBitmap;
 
-        private const int MAIN_CONTROLLER = 0; //0 is keyboard, 1 is xbox controlelr
+        private const int MAIN_CONTROLLER = 0;
+        private const int MOUSE_CONTROLLER = 1;
 
         public static async Task Main(string[] args)
         {
@@ -60,6 +61,7 @@ namespace GridWalkRPG
                 .SoundPlayer(new NAudioClipPlayer())
 #endif
                 .Controller(new WindowsKeyController(keymap))
+                .Controller(new WindowsMouseController(mousemap))
 #if Avalonia
                 .Controller(new XBoxController(xboxkeymap))
 #endif
@@ -131,7 +133,10 @@ namespace GridWalkRPG
                 $"\nUP: {state.Controllers[MAIN_CONTROLLER][KEYS.UP].IsDown()}" +
                 $"\nDOWN: {state.Controllers[MAIN_CONTROLLER][KEYS.DOWN].IsDown()}" +
                 $"\nLEFT: {state.Controllers[MAIN_CONTROLLER][KEYS.LEFT].IsDown()}" +
-                $"\nRIGHT: {state.Controllers[MAIN_CONTROLLER][KEYS.RIGHT].IsDown()}";
+                $"\nRIGHT: {state.Controllers[MAIN_CONTROLLER][KEYS.RIGHT].IsDown()}" +
+                $"\nLClick: {state.Controllers[MOUSE_CONTROLLER][KEYS.LCLICK]?.IsDown()}" +
+                $"\nRClick: {state.Controllers[MOUSE_CONTROLLER][KEYS.RCLICK]?.IsDown()}" +
+                $"\nmousepos: {(state.Controllers[MOUSE_CONTROLLER][KEYS.MOUSEINFO].Info as MouseControllerInfo)?.X}, {(state.Controllers[MOUSE_CONTROLLER][KEYS.MOUSEINFO].Info as MouseControllerInfo)?.Y}";
                 hudBitmap.GetGraphics().DrawText(info, 0, 0, Color.Black, 20);
             };
             Engine.AddEntity(0, hude);
@@ -389,7 +394,7 @@ namespace GridWalkRPG
             }
         }
 
-        public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5, X = 6, Y = 7, RESET = 8, EXIT=9 }
+        public enum KEYS { UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3, A = 4, B = 5, X = 6, Y = 7, RESET = 8, EXIT = 9, LCLICK = 10, RCLICK = 11, MOUSEINFO = 12 }
 
         public static Dictionary<int, object> keymap = new Dictionary<int, object>()
         {
@@ -429,6 +434,21 @@ namespace GridWalkRPG
             { BlazorWindow.KeyCodes.OEMBracketClose, KEYS.EXIT },
 #endif
         };
+
+        public static Dictionary<int, object> mousemap = new Dictionary<int, object>()
+        {
+#if Avalonia
+            { Avalonia.Input.PointerUpdateKind.LeftButtonPressed, Actions.MOVE },
+            { Avalonia.Input.PointerUpdateKind.Other, Actions.MOUSEINFO },
+            { Avalonia.Input.PointerUpdateKind.RightButtonPressed, Actions.CANCEL },
+#endif
+#if Blazor
+            { BlazorWindow.MouseCodes.Left, KEYS.LCLICK},
+            { BlazorWindow.MouseCodes.Right, KEYS.RCLICK },
+            { BlazorWindow.MouseCodes.None, KEYS.MOUSEINFO },
+#endif
+        };
+
         public static Dictionary<XBoxController.Key, object> xboxkeymap = new Dictionary<XBoxController.Key, object>()
         {
 #if Avalonia

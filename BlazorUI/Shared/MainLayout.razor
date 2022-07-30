@@ -4,7 +4,14 @@
 @inject IJSRuntime JS
 @inherits LayoutComponentBase
 
-<div class="page" @onkeydown=@Pressed @onkeyup=@Released tabindex="0">
+<div
+    class="page"
+    @onkeydown=@Pressed
+    @onkeyup=@Released
+    onmousemove="(async function(event) { await window.Utils.callMouseEvent('onmousemove', event) })(event)"
+    onmousedown="(async function(event) { await window.Utils.callMouseEvent('onmousedown', event) })(event)"
+    onmouseup="(async function(event) { await window.Utils.callMouseEvent('onmouseup', event) })(event)"
+    tabindex="0">
     <div class="sprites" style="height: 0px; overflow:hidden;">
         @foreach (var bmp in bitmaps)
         {
@@ -18,6 +25,9 @@
             var height = cv.Item3;
             <BECanvas Width=width Height=height @ref="@cvRefs[bmpId]"></BECanvas>
         }
+    </div>
+    <div style="position: absolute; left: calc(50% - 8ch); top: 50%;" tabindex="1">
+        Starting game...
     </div>
     <div class="gamePanel" style="@style">
         <BECanvas Width=@width Height=@height @ref=canvas></BECanvas>
@@ -40,18 +50,94 @@
     string style = "";
 
     public delegate void KeyEvent(KeyboardEventArgs args);
+    public delegate void MouseEvent(MouseEventArgs args);
 
     public KeyEvent keyPress;
     public KeyEvent keyRelease;
 
+    public MouseEvent mousePress;
+    public MouseEvent mouseRelease;
+    public MouseEvent mouseInfo;
+
     public void Pressed(KeyboardEventArgs args)
     {
-        keyPress(args);
+        keyPress?.Invoke(args);
     }
 
     public void Released(KeyboardEventArgs args)
     {
-        keyRelease(args);
+        keyRelease?.Invoke(args);
+    }
+
+    bool mouseLeftIsPressed = false;
+    bool mouseRightIsPressed = false;
+
+    [JSInvokable]
+    public Task MouseInterop(string method, int button, int x, int y)
+    {
+        switch (method)
+        {
+            default:
+            case "onmousemove":
+
+                if (!mouseLeftIsPressed && !mouseRightIsPressed)
+                {
+                    MouseInfo(new MouseEventArgs() { Button = BlazorWindow.MouseCodes.None, OffsetX = x, OffsetY = y });
+                }
+                else
+                {
+                    if (mouseLeftIsPressed)
+                    {
+                        MouseInfo(new MouseEventArgs() { Button = BlazorWindow.MouseCodes.Left, OffsetX = x, OffsetY = y });
+                    }
+                    if (mouseRightIsPressed)
+                    {
+                        MouseInfo(new MouseEventArgs() { Button = BlazorWindow.MouseCodes.Right, OffsetX = x, OffsetY = y });
+                    }
+                }
+                break;
+            case "onmousedown":
+                MousePressed(new MouseEventArgs() { Button = button, OffsetX = x, OffsetY = y });
+                if (button == BlazorWindow.MouseCodes.Left)
+                {
+                    mouseLeftIsPressed = true;
+                }
+                else if (button == BlazorWindow.MouseCodes.Right)
+                {
+                    mouseRightIsPressed = true;
+                }
+                break;
+            case "onmouseup":
+                MouseReleased(new MouseEventArgs() { Button = button, OffsetX = x, OffsetY = y });
+                if (button == BlazorWindow.MouseCodes.Left)
+                {
+                    mouseLeftIsPressed = false;
+                }
+                else if (button == BlazorWindow.MouseCodes.Right)
+                {
+                    mouseRightIsPressed = false;
+                }
+                break;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task MousePressed(MouseEventArgs args)
+    {
+        mousePress?.Invoke(args);
+        return Task.CompletedTask;
+    }
+
+    public Task MouseReleased(MouseEventArgs args)
+    {
+        mouseRelease?.Invoke(args);
+        return Task.CompletedTask;
+    }
+
+    public Task MouseInfo(MouseEventArgs args)
+    {
+        mouseInfo?.Invoke(args);
+        return Task.CompletedTask;
     }
 
     protected override void OnInitialized()
@@ -59,12 +145,20 @@
         base.OnInitialized();
         style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
         Instance = this;
+        JS.InvokeVoidAsync("Utils.setInstanceRef", DotNetObjectReference.Create(Instance));
     }
 
     public void HookKeyboard(KeyEvent press, KeyEvent release)
     {
         this.keyPress += press;
         this.keyRelease += release;
+    }
+
+    public void HookMouse(MouseEvent press, MouseEvent release, MouseEvent info)
+    {
+        this.mousePress += press;
+        this.mouseRelease += release;
+        this.mouseInfo += info;
     }
 
     public static async Task WaitInitialized()
@@ -151,7 +245,7 @@
 
         try
         {
-            await this._context.StrokeTextAsync($"{x}", 4, 16);
+            //await this._context.StrokeTextAsync($"{x}", 4, 16);
             await drawer.Draw(panel, this._context);
         }
         catch (Exception ex)
@@ -160,7 +254,7 @@
             throw;
         }
 
-        await this._context.StrokeTextAsync($"{x}", 4, 16);
+        //await this._context.StrokeTextAsync($"{x}", 4, 16);
         x++;
 
         if (sw.ElapsedTicks >= Stopwatch.Frequency)

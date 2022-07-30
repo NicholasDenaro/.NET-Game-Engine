@@ -13,6 +13,8 @@
 
     <script>
         class Utils {
+            static InstanceRef;
+
             static async setImage (imageElementId, imageStream) {
                 const arrayBuffer = await imageStream.arrayBuffer();
                 const blob = new Blob([arrayBuffer]);
@@ -21,7 +23,21 @@
                 URL.revokeObjectURL(url);
             }
 
+            static setInstanceRef(inst) {
+                Utils.InstanceRef = inst;
+            }
+
+            static async callMouseEvent(method, event) {
+                document.getElementsByClassName('page')[0].focus();
+                event.preventDefault();
+                if (event.target.tagName == 'CANVAS') {
+                    let rects = event.target.getClientRects()[0];
+                    await Utils.InstanceRef.invokeMethodAsync('MouseInterop', method, parseInt(event.button), parseInt((event.x - rects.x) * window.devicePixelRatio), parseInt((event.y - rects.y) * window.devicePixelRatio));
+                }
+            }
+
             static getPixelRatio() {
+                document.getElementsByClassName('page')[0].focus();
                 return window.devicePixelRatio;
             }
 
@@ -85,7 +101,7 @@
 
 </head >
 
-    <body>
+    <body oncontextmenu="return false;">
         <div id="app">Loading...</div>
 
         <div id="blazor-error-ui">

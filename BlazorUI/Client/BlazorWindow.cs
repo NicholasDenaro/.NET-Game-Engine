@@ -97,7 +97,20 @@ namespace BlazorUI.Client
 
         public bool HookMouse(Action<object, MouseEventArgs> frame_KeyInfo, Action<object, MouseEventArgs> frame_KeyDown, Action<object, MouseEventArgs> frame_KeyUp)
         {
-            return false;
+            MainLayout.Instance.HookMouse(
+                (args) =>
+                {
+                    frame_KeyDown(this, new MouseEventArgs((int)args.Button, 1, (int)args.OffsetX, (int)args.OffsetY, 0));
+                },
+                (args) =>
+                {
+                    frame_KeyUp(this, new MouseEventArgs((int)args.Button, 1, (int)args.OffsetX, (int)args.OffsetY, 0));
+                },
+                (args) =>
+                {
+                    frame_KeyInfo(this, new MouseEventArgs(-1, 0, (int)args.OffsetX, (int)args.OffsetY, 0));
+                });
+            return true;
         }
 
         public void SetBounds(int x, int y, int width, int height)
@@ -116,6 +129,14 @@ namespace BlazorUI.Client
             public const int KeyS = KeyA + 's' - 'a';
             public const int OEMBracketOpen = '[';
             public const int OEMBracketClose = ']';
+        }
+
+        public static class MouseCodes
+        {
+            public const int None = -1;
+            public const int Left = 0;
+            public const int Right = 2;
+
         }
     }
 }
