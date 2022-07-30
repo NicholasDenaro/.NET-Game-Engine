@@ -16,6 +16,9 @@
     "GridWalkRPGExampleAvalonia": {
       "commandName": "Project"
     },
+    "GridWalkRPGExampleWeb": {
+      "commandName": "Project"
+    },
     "GridWalkRPGExampleBlazor": {
       "commandName": "Project",
       "launchBrowser": true,

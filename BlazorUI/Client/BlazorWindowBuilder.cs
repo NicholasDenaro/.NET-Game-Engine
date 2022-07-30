@@ -10,6 +10,7 @@ namespace BlazorUI.Client
     {
         public IGameWindow Run(IGameUI frame)
         {
+            Console.WriteLine("Building Blazor Window");
             GameEngine._2D.Bitmap.SetBitmapImpl(new BlazorBitmapCreator());
             var builder = WebAssemblyHostBuilder.CreateDefault(null);
             builder.RootComponents.Add<App>("#app");
@@ -19,15 +20,18 @@ namespace BlazorUI.Client
 
             Task.Run(async () =>
             {
+                Console.WriteLine("Building components");
                 await builder.Build().RunAsync();
+                Console.WriteLine("finished building components");
             });
 
             Task.Run(async () =>
             {
+                Console.WriteLine("Building window");
                 GameUI ui = frame as GameUI;
                 Stopwatch sw = Stopwatch.StartNew();
                 bool hooked = false;
-                while (!hooked && sw.Elapsed.TotalSeconds < 5)
+                while (!hooked && sw.Elapsed.TotalSeconds < 10)
                 {
                     if (ui.SoundPlayer != null && MainLayout.Instance != null)
                     {
@@ -36,9 +40,12 @@ namespace BlazorUI.Client
                         //ui.SoundPlayer.Hook(MainLayout.Instance.SoundSink);
                         ui.SetInitialized();
                         hooked = true;
+                        return;
                     }
-                    await Task.Delay(1);
+                    await Task.Delay(10);
                 }
+
+                Console.WriteLine("Failed to build window");
             });
 
             return new BlazorWindow(frame.Bounds.Width, frame.Bounds.Height, frame.ScaleX, frame.ScaleY);

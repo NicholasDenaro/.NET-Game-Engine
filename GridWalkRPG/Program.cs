@@ -38,6 +38,7 @@ namespace GridWalkRPG
 
         public static async Task Main(string[] args)
         {
+            Console.WriteLine("loading game");
             (Engine, UI) = new GameBuilder()
                 .GameEngine(new FixedTickEngine(TPS))
 #if Avalonia

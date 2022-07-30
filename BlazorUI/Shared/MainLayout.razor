@@ -236,8 +236,22 @@
             this._context = await this.canvas.CreateCanvas2DAsync();
             var sampleRate = await JS.InvokeAsync<int>("GameAudioPlayer.initAudio");
             Console.WriteLine($"initialized audio context with sample rate {sampleRate}hz");
-            BlazorWindow.Instance.Init(this);
+            Console.WriteLine($"window instance: {BlazorWindow.Instance}");
             sw.Start();
+            while (BlazorWindow.Instance == null && sw.Elapsed.Seconds < 10)
+            {
+                await Task.Delay(10);
+            }
+            Console.WriteLine($"window instance: {BlazorWindow.Instance}");
+            if (BlazorWindow.Instance == null)
+            {
+                sw.Restart();
+                return;
+            }
+
+
+            BlazorWindow.Instance.Init(this);
+            sw.Restart();
         }
     }
 }

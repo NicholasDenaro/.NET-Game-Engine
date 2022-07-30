@@ -8,6 +8,7 @@ namespace BlazorUI
     {
         public static async Task Main(string[] args)
         {
+            Console.WriteLine("Launching BlazorUI");
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
