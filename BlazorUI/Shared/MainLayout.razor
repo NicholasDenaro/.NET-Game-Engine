@@ -75,6 +75,8 @@
     [JSInvokable]
     public Task MouseInterop(string method, int button, int x, int y)
     {
+        x = (int)(x / scale);
+        y = (int)(y / scale);
         switch (method)
         {
             default:
@@ -225,6 +227,7 @@
             double devicePixelRatio = await JS.InvokeAsync<double>("Utils.getPixelRatio");
             width = (int)(w);
             height = (int)(h);
+            scale = sw;
             style = $"position: relative; left: calc(50% - {width / 2}px); top: calc(50% - {height / 2}px); width: {width}px; height: {height}px;";
 
             await Task.Delay(TimeSpan.FromMilliseconds(100));
