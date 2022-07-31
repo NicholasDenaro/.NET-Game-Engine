@@ -48,6 +48,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Maps\map.dat" />
+    <None Remove="Sounds\sfxK06.wav" />
     <None Remove="Sprites\circle.png" />
     <None Remove="Sprites\TileMap.png" />
   </ItemGroup>
@@ -55,6 +56,7 @@
     <EmbeddedResource Include="Maps\map.dat">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Sounds\sfxK06.wav" />
     <EmbeddedResource Include="Sprites\circle.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>

@@ -49,8 +49,7 @@ namespace GameEngine.UI.NAudio
                 return;
             }
 
-            NAudioSound sound = s as NAudioSound;
-            PlayImpl(sound.Name);
+            PlayImpl(s.Name);
         }
 
         public void PlayTrack(ITrack t)

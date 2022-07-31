@@ -109,9 +109,9 @@ namespace GameEngine.UI
             }
         }
 
-        public void PlayResource(string resource)
+        public void PlayResource(Assembly assembly, string resource)
         {
-            Stream stream = Assembly.GetEntryAssembly().GetManifestResourceStream($"{Assembly.GetEntryAssembly().GetName().Name}.{resource}");
+            Stream stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.{resource}");
             SoundPlayer.PlayStream(stream);
         }
 

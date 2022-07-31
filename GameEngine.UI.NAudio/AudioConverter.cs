@@ -126,7 +126,7 @@ namespace GameEngine.UI.NAudio
                 }
                 //Console.WriteLine($"\twrite :{samplesOut} bytes");
 
-                return samplesOut;
+                return Math.Min(samplesOut, sampleCount);
             }
             else if (channels == 1)
             {

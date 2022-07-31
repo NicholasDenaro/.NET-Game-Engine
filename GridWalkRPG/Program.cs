@@ -279,6 +279,9 @@ namespace GridWalkRPG
                 await UI.CacheAduio(new NAudioMMLTrack("mml1", Waves.TRIANGLE, mml1));
                 await UI.CacheAduio(new NAudioMMLTrack("mml2", Waves.PIANO, mml2));
                 await UI.CacheAduio(new NAudioMMLTrack("mml3", Waves.PLUCKY, mml3));
+
+                await UI.CacheAduio(new SoundClip(assembly, "Sounds.sfxK06.wav"));
+
                 bool firstTick = true;
                 Engine.TickEnd(0) += (s, e) =>
                 {
@@ -288,6 +291,12 @@ namespace GridWalkRPG
                         UI.PlayTrack(NAudioMMLTrack.Tracks["mml2"]);
                         UI.PlayTrack(NAudioMMLTrack.Tracks["mml3"]);
                         firstTick = false;
+
+                        Task.Run(async () =>
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(3));
+                            UI.PlaySound(SoundClip.Sounds["Sounds.sfxK06.wav"]);
+                        });
                     }
                 };
             }
