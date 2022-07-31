@@ -20,7 +20,7 @@
                 const blob = new Blob([arrayBuffer]);
                 const url = URL.createObjectURL(blob);
                 document.getElementById(imageElementId).src = url;
-                URL.revokeObjectURL(url);
+                //URL.revokeObjectURL(url);
             }
 
             static setInstanceRef(inst) {
@@ -48,7 +48,8 @@
             static disableSmoothing() {
                 console.log(`set canvas to proper scaling size and canvas context imageSmoothingEnabled to false`);
                 let gamePanel = document.getElementsByClassName('gamePanel')[0].getElementsByTagName('canvas')[0];
-                gamePanel.style = `scale: ${1 / window.devicePixelRatio}`;
+                //gamePanel.style = `scale: ${1 / window.devicePixelRatio}`;
+                gamePanel.style = `transform: scale(${1 / window.devicePixelRatio})`;
                 let id = gamePanel.id;
                 BlazorExtensions.Canvas2d.contexts.get(id).imageSmoothingEnabled = false;
             }
